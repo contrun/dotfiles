@@ -1,0 +1,45 @@
+set imap_user = `pass show email/unified | grep username | cut -d: -f2 | xargs`
+set imap_pass = `pass show email/unified | head -n1`
+set smtp_url = "smtp://$imap_user@smtp-mail.outlook.com:587/"
+set smtp_pass = "$imap_pass"
+set from = "$imap_user"
+set realname = "nonsense"
+set folder = "imaps://imap-mail.outlook.com:993"
+set spoolfile = "+INBOX"
+set postponed = "+[Live]/Drafts"
+set header_cache = ~/.mutt/unified/cache/headers
+set message_cachedir = ~/.mutt/unified/cache/bodies
+set certificate_file = ~/.mutt/unified/certificates
+set ssl_force_tls = yes
+
+set move = no
+set imap_keepalive = 900
+set imap_idle = yes
+set editor = 'vi'
+set include
+set sort = 'threads'
+set sort_aux = 'reverse-last-date-received'
+set auto_tag = yes
+set mail_check = 120
+
+# urlsca
+macro index,pager \cb "<pipe-message> urlscan<Enter>" "call urlscan to extract URLs out of a message"
+macro attach,compose \cb "<pipe-entry> urlscan<Enter>" "call urlscan to extract URLs out of a message"
+
+# Colors
+
+color attachment brightmagenta default
+color error      brightred    default
+color hdrdefault red          default
+color indicator  brightyellow red
+color markers    brightcyan   default
+color message    brightcyan   default
+color normal     default      default
+color quoted     brightblue   default
+color search     default      green
+color signature  red          default
+color status     yellow       blue
+color tilde      magenta      default
+color tree       magenta      default
+
+

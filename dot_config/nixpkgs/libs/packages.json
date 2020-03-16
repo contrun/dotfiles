@@ -1,0 +1,114 @@
+{
+  "mpickering/old-ghc-nix": {
+    "owner": "mpickering",
+    "repo": "old-ghc-nix",
+    "rev": "70178a1f088e900663180f82214ed9b173db4e95",
+    "sha256": "1w9n8gl128qacp7q4gw06dkj72maxxbsgnkkl1c5dh7l3cvvmpan",
+    "fetchMethod": "fetchFromGitHub"
+  },
+  "old-ghc-nix": {
+    "owner": "mpickering",
+    "repo": "old-ghc-nix",
+    "rev": "70178a1f088e900663180f82214ed9b173db4e95",
+    "sha256": "1w9n8gl128qacp7q4gw06dkj72maxxbsgnkkl1c5dh7l3cvvmpan",
+    "fetchMethod": "fetchFromGitHub"
+  },
+  "infinisil/all-hies": {
+    "owner": "infinisil",
+    "repo": "all-hies",
+    "rev": "d98bdbff3ebdab408a12a9b7890d4cf400180839",
+    "sha256": "1lr4dw10f37fp68b6ig065dgrl8h1v4xmigy5ncljdz74k0jvhg4",
+    "fetchMethod": "fetchFromGitHub"
+  },
+  "all-hies": {
+    "owner": "infinisil",
+    "repo": "all-hies",
+    "rev": "d98bdbff3ebdab408a12a9b7890d4cf400180839",
+    "sha256": "1lr4dw10f37fp68b6ig065dgrl8h1v4xmigy5ncljdz74k0jvhg4",
+    "fetchMethod": "fetchFromGitHub"
+  },
+  "nix-community/nur-combined": {
+    "owner": "nix-community",
+    "repo": "nur-combined",
+    "rev": "b5d10631d2386d788f01f4704059f1475b10b728",
+    "sha256": "1f97658n87qcnv4djfjlcqipx6l77f8rp9s82kmlsqm97rnnwbd9",
+    "fetchMethod": "fetchFromGitHub"
+  },
+  "nur-combined": {
+    "owner": "nix-community",
+    "repo": "nur-combined",
+    "rev": "b5d10631d2386d788f01f4704059f1475b10b728",
+    "sha256": "1f97658n87qcnv4djfjlcqipx6l77f8rp9s82kmlsqm97rnnwbd9",
+    "fetchMethod": "fetchFromGitHub"
+  },
+  "gibiansky/ihaskell": {
+    "owner": "gibiansky",
+    "repo": "ihaskell",
+    "rev": "9dd237ea0480302fd7a34c0eeef0fe97bca3ae1a",
+    "sha256": "1a8m2yi173j5cmj6698bx8fdzlk0x76zp9yn4la76vlyznhqvxfh",
+    "fetchMethod": "fetchFromGitHub"
+  },
+  "ihaskell": {
+    "owner": "gibiansky",
+    "repo": "ihaskell",
+    "rev": "9dd237ea0480302fd7a34c0eeef0fe97bca3ae1a",
+    "sha256": "1a8m2yi173j5cmj6698bx8fdzlk0x76zp9yn4la76vlyznhqvxfh",
+    "fetchMethod": "fetchFromGitHub"
+  },
+  "hercules-ci/ghcide-nix": {
+    "owner": "hercules-ci",
+    "repo": "ghcide-nix",
+    "rev": "c940edd61eedba6750671fc142c9422cced73528",
+    "sha256": "01f2x5sgncd468h99w3mpkkb1203akachm12czmiwbvgishf7dwp",
+    "fetchMethod": "fetchFromGitHub"
+  },
+  "ghcide-nix": {
+    "owner": "hercules-ci",
+    "repo": "ghcide-nix",
+    "rev": "c940edd61eedba6750671fc142c9422cced73528",
+    "sha256": "01f2x5sgncd468h99w3mpkkb1203akachm12czmiwbvgishf7dwp",
+    "fetchMethod": "fetchFromGitHub"
+  },
+  "aartamonau/authinfo": {
+    "owner": "aartamonau",
+    "repo": "authinfo",
+    "rev": "0098545479fa81234ebc1c2951610cb8c70f5c44",
+    "sha256": "0f60yi4xfwvp6lzm7ib8yanr601riyf818m6k77z4ll5v00pp7gb",
+    "fetchMethod": "fetchFromGitHub"
+  },
+  "authinfo": {
+    "owner": "aartamonau",
+    "repo": "authinfo",
+    "rev": "0098545479fa81234ebc1c2951610cb8c70f5c44",
+    "sha256": "0f60yi4xfwvp6lzm7ib8yanr601riyf818m6k77z4ll5v00pp7gb",
+    "fetchMethod": "fetchFromGitHub"
+  },
+  "2mol/pboy": {
+    "owner": "2mol",
+    "repo": "pboy",
+    "rev": "887bdbe666ab87ed92f9046697422d9bdec7d1ae",
+    "sha256": "04kisv6p30w8lky78jzc31pmhm8ifpbm9z9zr97zvlz50b0194j9",
+    "fetchMethod": "fetchFromGitHub"
+  },
+  "pboy": {
+    "owner": "2mol",
+    "repo": "pboy",
+    "rev": "887bdbe666ab87ed92f9046697422d9bdec7d1ae",
+    "sha256": "04kisv6p30w8lky78jzc31pmhm8ifpbm9z9zr97zvlz50b0194j9",
+    "fetchMethod": "fetchFromGitHub"
+  },
+  "mozilla/nixpkgs-mozilla": {
+    "owner": "mozilla",
+    "repo": "nixpkgs-mozilla",
+    "rev": "e912ed483e980dfb4666ae0ed17845c4220e5e7c",
+    "sha256": "08fvzb8w80bkkabc1iyhzd15f4sm7ra10jn32kfch5klgl0gj3j3",
+    "fetchMethod": "fetchFromGitHub"
+  },
+  "nixpkgs-mozilla": {
+    "owner": "mozilla",
+    "repo": "nixpkgs-mozilla",
+    "rev": "e912ed483e980dfb4666ae0ed17845c4220e5e7c",
+    "sha256": "08fvzb8w80bkkabc1iyhzd15f4sm7ra10jn32kfch5klgl0gj3j3",
+    "fetchMethod": "fetchFromGitHub"
+  }
+}

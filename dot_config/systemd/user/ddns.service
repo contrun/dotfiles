@@ -1,0 +1,11 @@
+[Unit]
+Description=ddns
+
+[Service]
+Type=oneshot
+ExecStart=%h/.bin/ddns.sh
+# Give 120 seconds for offlineimap to gracefully stop before hard killing it:
+TimeoutStopSec=120
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,101 @@
+Config
+  { font = "-misc-fixed-*-*-*-*-16-*-*-*-*-*-*-*",
+    additionalFonts = [],
+    borderColor = "black",
+    border = TopB,
+    -- , bgColor = "black"
+    -- , fgColor = "grey"
+    alpha = 255,
+    position = Top,
+    textOffset = -1,
+    iconOffset = -1,
+    lowerOnStart = True,
+    pickBroadest = False,
+    persistent = False,
+    hideOnStart = False,
+    iconRoot = ".",
+    allDesktops = True,
+    overrideRedirect = True,
+    commands =
+      [ Run StdinReader,
+        -- , Run Weather "EGPF" ["-t","<station>: <tempC>C",
+        --                       "-L","18","-H","25",
+        --                       "--normal","yellow",
+        --                       "--high","red",
+        --                       "--low","lightblue"] 36000
+        Run DynNetwork
+          [ "-L",
+            "1000",
+            "-H",
+            "10000",
+            "--normal",
+            "yellow",
+            "--high",
+            "red",
+            "-t",
+            "N: <rx>K <tx>K"
+          ]
+          10,
+        Run MultiCpu
+          [ "-t",
+            "C: <total>%",
+            "-L",
+            "3",
+            "-H",
+            "50",
+            "--normal",
+            "yellow",
+            "--high",
+            "red"
+          ]
+          10,
+        Run Memory
+          [ "-t",
+            "M: <usedratio>%",
+            "-L",
+            "40",
+            "-H",
+            "75",
+            "--normal",
+            "yellow",
+            "--high",
+            "red"
+          ]
+          10,
+        Run Volume "default" "Master"
+          [ "-t",
+            "V: <volume>%",
+            "-L",
+            "40",
+            "-H",
+            "75",
+            "--normal",
+            "yellow",
+            "--high",
+            "red"
+          ]
+          10,
+        Run Battery
+          [ "-t",
+            "<acstatus> <left>%",
+            "--",
+            "charge_full",
+            "-O",
+            "AC",
+            "-o",
+            "Bat",
+            "-h",
+            "yellow",
+            "-l",
+            "red"
+          ]
+          10,
+        Run Date "%a %b %d %Y %H:%M:%S" "date" 10,
+        -- , Run Brightness ["-t", "B: <bar>"] 60
+        Run ComX "sh" ["-c", "echo \"D: $(zpool list -o capacity | tail -n -1 | xargs)\""] "N/A" "zpool_usage" 600
+        -- , Run Uptime [] 36000
+      ],
+    sepChar = "%",
+    alignSep = "}{",
+    template = "%StdinReader% } <fc=#ee9a00>%date%</fc> { %multicpu% | %memory% | %zpool_usage% | %default:Master% | %dynnetwork% | %battery%"
+  }

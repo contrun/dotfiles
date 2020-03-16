@@ -1,0 +1,27 @@
+#
+# ~/.bashrc
+#
+
+# If not running interactively, don't do anything
+[[ $- != *i* ]] && return
+
+# alias ls='ls --color=auto'
+# PS1='[\u@\h \W]\$ '
+# EDITOR=nano
+
+# [ -f ~/.fzf.bash ] && source ~/.fzf.bash
+# if [ -f $(brew --prefix)/etc/bash_completion ]; then source $(brew --prefix)/etc/bash_completion; fi
+# Yavide alias
+# alias yavide="gvim --servername yavide -f -N -u /opt/yavide/.vimrc"
+# Yavide alias
+# alias yavide="gvim --servername yavide -f -N -u /opt/yavide/.vimrc -u /opt/yavide/.vimrc"
+
+# start tmux and zsh
+if [ -z "$TMUX" ] && command -v tmux.sh && [ -z "$NO_TMUX" ]; then
+        :
+        # echo "$(date -R) test" >> ~/tttt
+        # MYSHELL=bash tmux.sh
+        # tmux attach -t TMUX || tmux new -s TMUX
+fi
+
+source ~/.config/broot/launcher/bash/br

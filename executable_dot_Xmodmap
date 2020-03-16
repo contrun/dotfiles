@@ -1,0 +1,85 @@
+#!/usr/bin/env bash
+cat <<EOF | xmodmap -
+! change modifier keys
+clear      lock
+clear      control
+clear      shift
+clear      mod1
+clear      mod2
+clear      mod3
+clear      mod4
+clear      mod5
+keycode 65 = Mode_switch
+keycode  66 = Control_L NoSymbol Control_L NoSymbol Control_L Control_L
+keycode  94 = Control_R NoSymbol Control_R NoSymbol Control_R Control_R
+keycode 133 = Hyper_R NoSymbol Hyper_R NoSymbol Hyper_R Hyper_R
+keycode  105 = Super_R NoSymbol Super_R NoSymbol Super_R Super_R
+add        control = Control_L Control_R
+add        shift = Shift_L Shift_R
+add        mod1 = Alt_L Alt_R Meta_L
+add        mod2 = Num_Lock
+add        mod3 = Hyper_L Hyper_R
+add        mod4 = Super_L Super_R
+add        mod5 = Mode_switch ISO_Level3_Shift
+
+! change usual keys
+keycode  10 = 1 exclam exclam 1 exclam 1 exclam
+keycode  11 = 2 at at 2 at 2 at
+keycode  12 = 3 numbersign numbersign 3 numbersign 3   numbersign
+keycode  13 = 4 dollar dollar 4 dollar 4 dollar
+keycode  14 = 5 percent percent 5 percent 5 percent
+keycode  15 = 6 asciicircum asciicircum 6 asciicircum 6 asciicircum
+keycode  16 = 7 ampersand ampersand 7 ampersand 7     ampersand
+keycode  17 = 8 asterisk asterisk 8 asterisk 8     asterisk
+keycode  18 = 9 parenleft parenleft 9 parenleft 9 parenleft
+keycode  20 = minus underscore underscore minus underscore minus underscore
+keycode  21 = equal plus plus equal plus equal plus
+keycode  22 = BackSpace BackSpace Delete BackSpace BackSpace BackSpace BackSpace BackSpace
+keycode  24 = q Q F17 F18 q Q q Q
+keycode  25 = w W F19 F20 q Q q Q
+keycode  26 = e E Escape E e E e E
+keycode  27 = r R Return Print r R r R
+keycode  28 = t T Tab ISO_Left_Tab t T t T
+keycode  29 = y Y F21 F22 y Y y Y
+keycode  30 = u U F23 F24 u U u U
+keycode  31 = i I i Insert i I i I
+keycode  32 = o O Return space o O o O
+keycode  33 = p P Prior Home P p P p P
+keycode  34 = bracketleft braceleft braceleft bracketleft braceleft bracketleft braceleft
+keycode  35 = bracketright braceright braceright bracketright braceright bracketright braceright
+keycode  38 = a A a A a A a A
+keycode  39 = s S space Return S s S s
+keycode  40 = d D Delete BackSpace d D d D
+keycode  41 = f F F8 F35 f F f F
+keycode  42 = g G F33 F34 g G g G
+keycode  43 = h H Left Home h H h H
+keycode  44 = j J Down Next J j J
+keycode  45 = k K Up Prior k K k K
+keycode  46 = l L Right End L l L
+keycode  47 = semicolon colon colon semicolon semicolon colon semicolon colon
+keycode  48 = apostrophe quotedbl quotedbl apostrophe quotedbl apostrophe quotedbl
+keycode  49 = grave asciitilde asciitilde grave asciitilde grave asciitilde
+keycode  51 = backslash bar bar backslash bar backslash bar
+keycode  52 = z Z F25 F26 z Z z Z
+keycode  53 = x X F27 F28 x X x X
+keycode  54 = c C F29 F30 c C c C
+keycode  55 = v V F31 F32 v V v V
+keycode  56 = b B BackSpace Delete b B b B
+keycode  57 = n N Next End n N n N
+keycode  58 = m M Menu Caps_Lock m M m M
+keycode  59 = comma less less comma less comma less
+keycode  60 = period greater greater period greater period greater
+keycode  61 = slash question question slash question slash question
+keycode 111 = Up NoSymbol Prior
+keycode 113 = Left NoSymbol Home
+keycode 114 = Right NoSymbol End
+keycode 116 = Down NoSymbol Next
+keycode 250 = Escape NoSymbol Escape
+keycode 251 = space NoSymbol space
+
+EOF
+
+[ -f ~/.mouse.left ] && xinput list | perl -ne 'print "$1\n" if m|mouse\s+.*id=([0-9]+).*|i' | xargs -I _ xinput set-button-map _ 3 2 1
+
+pkill -f "xcape.*Mode_switch.*space"
+xcape -e 'Mode_switch=space'
