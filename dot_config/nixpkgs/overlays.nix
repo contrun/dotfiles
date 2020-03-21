@@ -428,6 +428,7 @@ let
           gnome3.seahorse
           mlocate
           htop
+          ytop
           iotop
           inotifyTools
           noti

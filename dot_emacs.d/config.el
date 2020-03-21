@@ -2120,6 +2120,24 @@ With arg N, insert N newlines."
 (use-package gitconfig-mode)
 (use-package git-timemachine)
 
+(use-package github-clone)
+(use-package magithub)
+(use-package magit-gh-pulls)
+(use-package git-link)
+(use-package browse-at-remote)
+(use-package gitignore-templates)
+(use-package github-review)
+(use-package org2issue)
+(use-package github-stars)
+(use-package git-timemachine)
+(use-package gitconfig-mode)
+(use-package gitignore-mode)
+(use-package orgit)
+(use-package yagist)
+
+(use-package bug-reference-github
+  :hook
+  (prog-mode . bug-reference-prog-mode))
 
 (use-package magit
   :init
@@ -2136,7 +2154,7 @@ With arg N, insert N newlines."
   :config
   (define-key magit-status-mode-map (kbd "C-M-<up>") 'magit-section-up)
   (fullframe magit-status magit-mode-quit-window)
-  (magit-todos-mode)
+  ;; (magit-todos-mode)
   )
 
 (use-package git-commit
@@ -2192,16 +2210,6 @@ With arg N, insert N newlines."
 ;; (provide 'init-git)
 ;; (require 'init-github)
 ;; (require 'init-git)
-
-(use-package yagist)
-(use-package bug-reference-github
-  :hook
-  (prog-mode . bug-reference-prog-mode)
-  )
-
-(use-package github-clone)
-(use-package magithub)
-
 
 ;; (provide 'init-github)
 
@@ -2885,8 +2893,7 @@ With arg N, insert N newlines."
           :template ("* %?%:description"
                      "Entered on %U"
                      "  %:initial"
-                     "  %a")
-          :kill-buffer 1)
+                     "  %a"))
          ("vocabulary builder"
           :keys "v"
           :file ,(expand-file-name "vocabulary.org" my-org-capture-directory)
@@ -4453,7 +4460,7 @@ This command currently blocks the UI, sorry."
   :defer t
   :hook
   (LaTeX-mode . (lambda () (format-all-mode 1) (lsp)))
-  :config
+  :init
   (setq TeX-engine 'luatex)
   (setq TeX-save-query nil)
   (setq reftex-plug-into-AUCTeX t)
@@ -5181,6 +5188,69 @@ This command currently blocks the UI, sorry."
   )
 
 ;; (provide 'init-mu4e)
+
+(use-package elfeed
+  :bind
+  (:map elfeed-search-mode-map
+        ("R" . my/elfeed-mark-above-as-read)
+        )
+  :config
+  (setq elfeed-use-curl t)
+  (defun ap/elfeed-search-mark-group-as-read (predicate)
+    "Mark all non-starred entries as read in the group at point, grouped by PREDICATE."
+    (let* ((offset (- (line-number-at-pos) elfeed-search--offset))
+           (current-entry (nth offset elfeed-search-entries))
+           (value (funcall predicate current-entry))
+           (entries (--filter (and (equal value (funcall predicate it))
+                                   (not (member 'starred (elfeed-entry-tags it))))
+                              elfeed-search-entries)))
+      (elfeed-untag entries 'unread)
+      (mapc #'elfeed-search-update-entry entries)))
+
+  (defun ap/elfeed-search-mark-site-as-read ()
+    "Mark all entries as read in the current site and day at point."
+    (interactive)
+    (ap/elfeed-search-mark-group-as-read (lambda (entry)
+                                           (list (time-to-days (seconds-to-time (elfeed-entry-date entry)))
+                                                 (pocket-reader--url-domain (elfeed-entry-link entry))))))
+  (defun ap/elfeed-search-mark-day-as-read ()
+    "Mark all entries as read in the day at point."
+    (interactive)
+    (ap/elfeed-search-mark-group-as-read (lambda (entry)
+                                           (time-to-days (seconds-to-time (elfeed-entry-date entry))))))
+
+  (defun my/elfeed-mark-above-as-read ()
+    "Mark the feeds above point as read."
+    (interactive)
+    (save-excursion
+      (set-mark-command nil)
+      (goto-char (point-min))
+      (elfeed-search-untag-all-unread)))
+
+  (defun my/elfeed-mark-below-as-read ()
+    "Mark the feeds above point as read."
+    (interactive)
+    (save-excursion
+      (set-mark-command nil)
+      (goto-char (point-max))
+      (elfeed-search-untag-all-unread)))
+  )
+
+(use-package elfeed-protocol
+  :config
+  (setq elfeed-curl-extra-arguments '("-c" "/tmp/newsblur-cookie"
+                                      "-b" "/tmp/newsblur-cookie"))
+  (setq elfeed-protocol-newsblur-maxpages 20)
+  (setq elfeed-feeds (list
+                      (let* ((file (expand-file-name "~/.config/elfeed-newsblur"))
+                             (password-file (if (file-exists-p file)
+                                                (list :password-file file)))
+                             (password (unless (file-exists-p file)
+                                         (list :password (my/shell-command-to-string "secretTool.py newsblur password")))))
+                        (append '("newsblur+https://vvv@newsblur.com") password-file password))))
+  (elfeed-protocol-enable)
+  )
+
 ;; (require 'init-ledger)
 (use-package ledger-mode
   :init

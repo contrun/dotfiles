@@ -1,0 +1,64 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.33.0.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: 94c5e1171c68a9aae064436377f3d60936a9d2fb9359b82dfa24afe3b98d21db
+
+name:           my-xmonad
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/contrun/dotfiles#readme>
+homepage:       https://github.com/contrun/dotfiles#readme
+bug-reports:    https://github.com/contrun/dotfiles/issues
+author:         Author name here
+maintainer:     example@example.com
+copyright:      2019 Author name here
+license:        BSD3
+build-type:     Simple
+
+source-repository head
+  type: git
+  location: https://github.com/contrun/dotfiles
+
+library
+  other-modules:
+      Paths_my_xmonad
+  hs-source-dirs:
+      src
+  build-depends:
+      base >=4.7 && <5
+    , containers
+    , hashmap
+    , lens
+    , monad-loops
+    , process
+    , random
+    , sort
+    , tuple
+    , unordered-containers
+    , xmonad
+    , xmonad-contrib
+    , xmonad-extras
+  default-language: Haskell2010
+
+executable my-xmonad
+  main-is: xmonad.hs
+  other-modules:
+      Paths_my_xmonad
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , containers
+    , hashmap
+    , lens
+    , monad-loops
+    , process
+    , random
+    , sort
+    , tuple
+    , unordered-containers
+    , xmonad
+    , xmonad-contrib
+    , xmonad-extras
+  default-language: Haskell2010
