@@ -1,4 +1,4 @@
-;; -*- lexical-binding: t -*-
+;; -*- lexical-binding: t; coding: utf-8; no-byte-compile: t; -*-
 
 (add-to-list 'load-path (expand-file-name "lisp" my/emacs-d))
 
@@ -15,18 +15,6 @@
   (add-hook 'emacs-startup-hook
             (lambda () (setq gc-cons-threshold normal-gc-cons-threshold))))
 (setq read-process-output-max (* 1024 1024))
-
-;;----------------------------------------------------------------------------
-;; Bootstrap config
-;;----------------------------------------------------------------------------
-;; (require 'init-utils)
-(if (fboundp 'with-eval-after-load)
-    (defalias 'after-load 'with-eval-after-load)
-  (defmacro after-load (feature &rest body)
-    "After FEATURE is loaded, evaluate BODY."
-    (declare (indent defun))
-    `(eval-after-load ,feature
-       '(progn ,@body))))
 
 ;;----------------------------------------------------------------------------
 ;; Handier way to add modes to auto-mode-alist
@@ -606,6 +594,7 @@ Selectively runs either `after-make-console-frame-hooks' or
    ;; "s-j" 'other-window
    "s-k" 'delete-window
    ;; "s-y" 'browse-kill-ring
+   "s-T" 'theme-looper-enable-random-theme
    "s-y" 'aya-expand
    "s-v" 'aya-create
    "s-d" 'helm-dash-at-point
@@ -825,7 +814,7 @@ Selectively runs either `after-make-console-frame-hooks' or
   (global-set-key (kbd "M-`") 'ns-next-frame)
   (global-set-key (kbd "M-h") 'ns-do-hide-emacs)
   (global-set-key (kbd "M-˙") 'ns-do-hide-others)
-  (after-load 'nxml-mode
+  (with-eval-after-load 'nxml-mode
     (define-key nxml-mode-map (kbd "M-h") nil))
   (global-set-key (kbd "M-ˍ") 'ns-do-hide-others) ;; what describe-key reports for cmd-option-h
   )
@@ -1060,7 +1049,7 @@ Selectively runs either `after-make-console-frame-hooks' or
   (global-set-key [remap query-replace] 'anzu-query-replace))
 
 ;; Activate occur easily inside isearch
-(after-load 'isearch
+(with-eval-after-load 'isearch
   ;; DEL during isearch should edit the search string, not jump back to the previous result
   (define-key isearch-mode-map [remap isearch-delete-char] 'isearch-del-char)
 
@@ -1188,7 +1177,7 @@ Get required params to call `dash-docs-result-url' from SEARCH-RESULT."
 
 (use-package fullframe
   :init
-  (after-load 'ibuffer
+  (with-eval-after-load 'ibuffer
     (fullframe ibuffer ibuffer-quit))
   )
 
@@ -1201,7 +1190,7 @@ Get required params to call `dash-docs-result-url' from SEARCH-RESULT."
     (ibuffer-vc-set-filter-groups-by-vc-root)
     (unless (eq ibuffer-sorting-mode 'filename/process)
       (ibuffer-do-sort-by-filename/process)))
-  (after-load 'ibuffer
+  (with-eval-after-load 'ibuffer
     (require 'ibuffer-vc))
   (setq ibuffer-formats
         '((mark modified read-only vc-status-mini " "
@@ -1417,7 +1406,7 @@ instead."
   (define-key company-active-map (kbd "C-p") 'company-select-previous)
   (setq-default company-dabbrev-other-buffers 'all
                 company-tooltip-align-annotations t)
-  (after-load 'page-break-lines
+  (with-eval-after-load 'page-break-lines
     (defvar sanityinc/page-break-lines-on-p nil)
     (make-variable-buffer-local 'sanityinc/page-break-lines-on-p)
 
@@ -1740,7 +1729,7 @@ This is helpful for writeroom-mode, in particular."
 (add-hook 'after-init-hook 'global-auto-revert-mode)
 (setq global-auto-revert-non-file-buffers t
       auto-revert-verbose nil)
-(after-load 'autorevert
+(with-eval-after-load 'autorevert
   (diminish 'auto-revert-mode))
 
 (add-hook 'after-init-hook 'transient-mark-mode)
@@ -1791,7 +1780,7 @@ This is helpful for writeroom-mode, in particular."
 
 
 
-(after-load 'subword
+(with-eval-after-load 'subword
   (diminish 'subword-mode))
 
 
@@ -1881,11 +1870,11 @@ This is helpful for writeroom-mode, in particular."
   :init
   (setq browse-kill-ring-separator "\f")
   (global-set-key (kbd "M-Y") 'browse-kill-ring)
-  (after-load 'browse-kill-ring
+  (with-eval-after-load 'browse-kill-ring
     (define-key browse-kill-ring-mode-map (kbd "C-g") 'browse-kill-ring-quit)
     (define-key browse-kill-ring-mode-map (kbd "M-n") 'browse-kill-ring-forward)
     (define-key browse-kill-ring-mode-map (kbd "M-p") 'browse-kill-ring-previous))
-  (after-load 'page-break-lines
+  (with-eval-after-load 'page-break-lines
     (push 'browse-kill-ring-mode page-break-lines-modes))
   )
 
@@ -2019,7 +2008,7 @@ This is helpful for writeroom-mode, in particular."
   "Add an advice to suspend `MODE-NAME' while selecting a CUA rectangle."
   (let ((flagvar (intern (format "%s-was-active-before-cua-rectangle" mode-name)))
         (advice-name (intern (format "suspend-%s" mode-name))))
-    (eval-after-load 'cua-rect
+    (with-eval-after-load 'cua-rect
       `(progn
          (defvar ,flagvar nil)
          (make-variable-buffer-local ',flagvar)
@@ -2211,18 +2200,18 @@ With arg N, insert N newlines."
 
 
 (when *is-a-mac*
-  (after-load 'magit
+  (with-eval-after-load 'magit
     (add-hook 'magit-mode-hook (lambda () (local-unset-key [(meta h)])))))
 
 
 
 ;; Convenient binding for vc-git-grep
-(after-load 'vc
+(with-eval-after-load 'vc
   (define-key vc-prefix-map (kbd "f") 'vc-git-grep))
 
 
 
-(after-load 'compile
+(with-eval-after-load 'compile
   (dolist (defn (list '(git-svn-updated "^\t[A-Z]\t\\(.*\\)$" 1 nil nil 0 1)
                       '(git-svn-needs-update "^\\(.*\\): needs update$" 1 nil nil 2 1)))
     (add-to-list 'compilation-error-regexp-alist-alist defn)
@@ -2249,7 +2238,7 @@ With arg N, insert N newlines."
 
 (use-package git-messenger)
 ;; Though see also vc-annotate's "n" & "p" bindings
-(after-load 'vc
+(with-eval-after-load 'vc
   (setq git-messenger:show-detail t)
   (define-key vc-prefix-map (kbd "p") #'git-messenger:popup-message))
 
@@ -2508,14 +2497,14 @@ With arg N, insert N newlines."
              :buffer buf
              :category 'compilation))))
 
-(after-load 'compile
+(with-eval-after-load 'compile
   (add-hook 'compilation-finish-functions
             'sanityinc/alert-after-compilation-finish))
 
 (defvar sanityinc/last-compilation-buffer nil
   "The last buffer in which compilation took place.")
 
-(after-load 'compile
+(with-eval-after-load 'compile
   (defadvice compilation-start (after sanityinc/save-compilation-buffer activate)
     "Save the compilation buffer to find it later."
     (setq sanityinc/last-compilation-buffer next-error-last-buffer))
@@ -2542,7 +2531,7 @@ With arg N, insert N newlines."
       (view-mode 1))))
 
 
-(after-load 'compile
+(with-eval-after-load 'compile
   (require 'ansi-color)
   (defun sanityinc/colourise-compilation-buffer ()
     (when (eq major-mode 'compilation-mode)
@@ -2567,7 +2556,7 @@ With arg N, insert N newlines."
 (use-package markdown-mode
   :init
   (add-auto-mode 'markdown-mode "\\.md\\.html\\'")
-  (after-load 'whitespace-cleanup-mode
+  (with-eval-after-load 'whitespace-cleanup-mode
     (push 'markdown-mode whitespace-cleanup-mode-ignore-modes)))
 
 
@@ -2617,7 +2606,7 @@ With arg N, insert N newlines."
 
 ;; Change some defaults: customize them to override
 (setq-default js2-bounce-indent-p nil)
-(after-load 'js2-mode
+(with-eval-after-load 'js2-mode
   ;; Disable js2 mode's syntax error highlighting by default...
   (setq-default js2-mode-show-parse-errors nil
                 js2-mode-show-strict-warnings nil)
@@ -2643,7 +2632,7 @@ With arg N, insert N newlines."
 
 (when (and (executable-find "ag")
            (my/try-install-package 'xref-js2))
-  (after-load 'js2-mode
+  (with-eval-after-load 'js2-mode
     (define-key js2-mode-map (kbd "M-.") nil)
     (add-hook 'js2-mode-hook
               (lambda () (add-hook 'xref-backend-functions #'xref-js2-xref-backend nil t)))))
@@ -2652,7 +2641,7 @@ With arg N, insert N newlines."
 
 ;;; Coffeescript
 
-(after-load 'coffee-mode
+(with-eval-after-load 'coffee-mode
   (setq coffee-js-mode preferred-javascript-mode
         coffee-tab-width preferred-javascript-indent-level))
 
@@ -2698,9 +2687,9 @@ With arg N, insert N newlines."
 
 (use-package add-node-modules-path
   :init
-  (after-load 'typescript-mode
+  (with-eval-after-load 'typescript-mode
     (add-hook 'typescript-mode-hook 'add-node-modules-path))
-  (after-load 'js2-mode
+  (with-eval-after-load 'js2-mode
     (add-hook 'js2-mode-hook 'add-node-modules-path))
   )
 
@@ -3074,7 +3063,7 @@ With arg N, insert N newlines."
       (when (file-exists-p zip-temp)
         (delete-file zip-temp)))))
 
-(after-load 'ob-ditaa
+(with-eval-after-load 'ob-ditaa
   (unless (and (boundp 'org-ditaa-jar-path)
                (file-exists-p org-ditaa-jar-path))
     (let ((jar-name "ditaa0_9.jar")
@@ -3083,7 +3072,7 @@ With arg N, insert N newlines."
       (unless (file-exists-p org-ditaa-jar-path)
         (sanityinc/grab-ditaa url jar-name)))))
 
-(after-load 'ob-plantuml
+(with-eval-after-load 'ob-plantuml
   (let ((jar-name "plantuml.jar")
         (url "http://jaist.dl.sourceforge.net/project/plantuml/plantuml.jar"))
     (setq org-plantuml-jar-path (expand-file-name jar-name (file-name-directory user-init-file)))
@@ -3092,7 +3081,7 @@ With arg N, insert N newlines."
 
 
 ;; Re-align tags when window shape changes
-(after-load 'org-agenda
+(with-eval-after-load 'org-agenda
   (add-hook 'org-agenda-mode-hook
             (lambda () (add-hook 'window-configuration-change-hook 'org-agenda-align-tags nil t))))
 
@@ -3163,7 +3152,7 @@ With arg N, insert N newlines."
 ;; Targets include this file and any file contributing to the agenda - up to 5 levels deep
 (setq org-refile-targets '((nil :maxlevel . 5) (org-agenda-files :maxlevel . 5)))
 
-(after-load 'org-agenda
+(with-eval-after-load 'org-agenda
   (add-to-list 'org-agenda-after-show-hook 'org-show-entry))
 
 (defadvice org-refile (after sanityinc/save-all-after-refile activate)
@@ -3306,7 +3295,7 @@ With arg N, insert N newlines."
 ;;; Org clock
 
 ;; Save the running clock and all clock history when exiting Emacs, load it on startup
-(after-load 'org
+(with-eval-after-load 'org
   (org-clock-persistence-insinuate))
 (setq org-clock-persist t)
 (setq org-clock-in-resume t)
@@ -3335,7 +3324,7 @@ With arg N, insert N newlines."
 (add-hook 'org-clock-out-hook 'sanityinc/hide-org-clock-from-header-line)
 (add-hook 'org-clock-cancel-hook 'sanityinc/hide-org-clock-from-header-line)
 
-(after-load 'org-clock
+(with-eval-after-load 'org-clock
   (define-key org-clock-mode-line-map [header-line mouse-2] 'org-clock-goto)
   (define-key org-clock-mode-line-map [header-line mouse-1] 'org-clock-menu))
 
@@ -3368,7 +3357,7 @@ With arg N, insert N newlines."
 (use-package org-pomodoro
   :custom (org-pomodoro-keep-killed-pomodoro-time t)
   :init
-  (after-load 'org-agenda
+  (with-eval-after-load 'org-agenda
     (define-key org-agenda-mode-map (kbd "P") 'org-pomodoro))
   )
 
@@ -3442,13 +3431,13 @@ With arg N, insert N newlines."
 ;;                 (insert (match-string 0))))))
 
 
-(after-load 'org
+(with-eval-after-load 'org
   (define-key org-mode-map (kbd "C-M-<up>") 'org-up-element)
   (when *is-a-mac*
     (define-key org-mode-map (kbd "M-h") nil)
     (define-key org-mode-map (kbd "C-c g") 'org-mac-grab-link)))
 
-(after-load 'org
+(with-eval-after-load 'org
   (org-babel-do-load-languages
    'org-babel-load-languages
    `((R . t)
@@ -3525,7 +3514,7 @@ With arg N, insert N newlines."
 ;; (provide 'init-nxml)
 ;; (require 'init-html)
 (use-package tagedit)
-(after-load 'sgml-mode
+(with-eval-after-load 'sgml-mode
   (tagedit-add-paredit-like-keybindings)
   (define-key tagedit-mode-map (kbd "M-?") nil)
   (add-hook 'sgml-mode-hook (lambda () (tagedit-mode 1))))
@@ -3545,7 +3534,7 @@ With arg N, insert N newlines."
 
 ;;; Embedding in html
 (use-package mmm-mode)
-(after-load 'mmm-vars
+(with-eval-after-load 'mmm-vars
   (mmm-add-group
    'html-css
    '((css-cdata
@@ -3607,7 +3596,7 @@ With arg N, insert N newlines."
 ;; (require 'init-haml)
 (use-package haml-mode)
 
-(after-load 'haml-mode
+(with-eval-after-load 'haml-mode
   (define-key haml-mode-map (kbd "C-o") 'open-line))
 
 ;; (provide 'init-haml)
@@ -3680,7 +3669,7 @@ With arg N, insert N newlines."
  ruby-use-encoding-map nil
  ruby-insert-encoding-magic-comment nil)
 
-(after-load 'ruby-mode
+(with-eval-after-load 'ruby-mode
   ;; Stupidly the non-bundled ruby-mode isn't a derived mode of
   ;; prog-mode: we run the latter's hooks anyway in that case.
   (add-hook 'ruby-mode-hook
@@ -3690,7 +3679,7 @@ With arg N, insert N newlines."
 
 (add-hook 'ruby-mode-hook 'subword-mode)
 
-(after-load 'page-break-lines
+(with-eval-after-load 'page-break-lines
   (push 'ruby-mode page-break-lines-modes))
 
 (use-package rspec-mode)
@@ -3710,12 +3699,12 @@ With arg N, insert N newlines."
 ;;; Ruby compilation
 (use-package ruby-compilation)
 
-(after-load 'ruby-mode
+(with-eval-after-load 'ruby-mode
   (let ((m ruby-mode-map))
     (define-key m [S-f7] 'ruby-compilation-this-buffer)
     (define-key m [f7] 'ruby-compilation-this-test)))
 
-(after-load 'ruby-compilation
+(with-eval-after-load 'ruby-compilation
   (defalias 'rake 'ruby-compilation-rake))
 
 
@@ -3723,9 +3712,9 @@ With arg N, insert N newlines."
 ;;; Robe
 (use-package robe
   :init
-  (after-load 'ruby-mode
+  (with-eval-after-load 'ruby-mode
     (add-hook 'ruby-mode-hook 'robe-mode))
-  (after-load 'company
+  (with-eval-after-load 'company
     (dolist (hook (mapcar 'derived-mode-hook-name '(ruby-mode inf-ruby-mode html-erb-mode haml-mode)))
       (add-hook hook
                 (lambda () (local-push-company-backend 'company-robe))))))
@@ -3785,7 +3774,7 @@ With arg N, insert N newlines."
 ;; Needs to run after rinari to avoid clobbering font-lock-keywords?
 
 ;; (my/try-install-package 'mmm-mode)
-;; (eval-after-load 'mmm-mode
+;; (with-eval-after-load 'mmm-mode
 ;;   '(progn
 ;;      (mmm-add-classes
 ;;       '((ruby-heredoc-sql
@@ -3812,7 +3801,7 @@ With arg N, insert N newlines."
 
 ;; (provide 'init-rails)
 ;; (require 'init-sql)
-(after-load 'sql
+(with-eval-after-load 'sql
   ;; sql-mode pretty much requires your psql to be uncustomised from stock settings
   (push "--no-psqlrc" sql-postgres-options))
 
@@ -3836,7 +3825,7 @@ With arg N, insert N newlines."
     (when sql-buffer
       (sanityinc/pop-to-sqli-buffer))))
 
-(after-load 'sql
+(with-eval-after-load 'sql
   (define-key sql-mode-map (kbd "C-c C-z") 'sanityinc/pop-to-sqli-buffer)
   (when (package-installed-p 'dash-at-point)
     (defun sanityinc/maybe-set-dash-db-docset ()
@@ -3873,7 +3862,7 @@ With arg N, insert N newlines."
                 (point))))
   (shell-command-on-region beg end "sqlformat -r -" nil t "*sqlformat-errors*" t))
 
-(after-load 'sql
+(with-eval-after-load 'sql
   (define-key sql-mode-map (kbd "C-c C-f") 'sanityinc/sqlformat))
 
 ;; Package ideas:
@@ -3936,12 +3925,12 @@ With arg N, insert N newlines."
 
 
 ;; Submitted upstream as https://github.com/stanaka/dash-at-point/pull/28
-(after-load 'sql
-  (after-load 'dash-at-point
+(with-eval-after-load 'sql
+  (with-eval-after-load 'dash-at-point
     (add-to-list 'dash-at-point-mode-alist '(sql-mode . "psql,mysql,sqlite,postgis"))))
 
 
-(after-load 'page-break-lines
+(with-eval-after-load 'page-break-lines
   (push 'sql-mode page-break-lines-modes))
 
 ;; (provide 'init-sql)
@@ -4086,7 +4075,7 @@ With arg N, insert N newlines."
 
 (global-set-key [remap eval-expression] 'pp-eval-expression)
 
-(after-load 'lisp-mode
+(with-eval-after-load 'lisp-mode
   (define-key emacs-lisp-mode-map (kbd "C-x C-e") 'sanityinc/eval-last-sexp-or-region))
 
 ;; (when (my/try-install-package 'ipretty)
@@ -4135,9 +4124,9 @@ With arg N, insert N newlines."
       (funcall sanityinc/repl-switch-function sanityinc/repl-original-buffer)
     (error "No original buffer")))
 
-(after-load 'elisp-mode
+(with-eval-after-load 'elisp-mode
   (define-key emacs-lisp-mode-map (kbd "C-c C-z") 'sanityinc/switch-to-ielm))
-(after-load 'ielm
+(with-eval-after-load 'ielm
   (define-key ielm-map (kbd "C-c C-z") 'sanityinc/repl-switch-back))
 
 ;; ----------------------------------------------------------------------------
@@ -4285,7 +4274,7 @@ With arg N, insert N newlines."
 
 (use-package macrostep)
 
-(after-load 'lisp-mode
+(with-eval-after-load 'lisp-mode
   (define-key emacs-lisp-mode-map (kbd "C-c e") 'macrostep-expand))
 
 
@@ -4334,7 +4323,7 @@ With arg N, insert N newlines."
 
 
 ;; ERT
-(after-load 'ert
+(with-eval-after-load 'ert
   (define-key ert-results-mode-map (kbd "g") 'ert-results-rerun-all-tests))
 
 
@@ -4385,7 +4374,7 @@ With arg N, insert N newlines."
   "Mode setup function for slime lisp buffers."
   (set-up-slime-hippie-expand))
 
-(after-load 'slime
+(with-eval-after-load 'slime
   (setq slime-protocol-version 'ignore)
   (setq slime-net-coding-system 'utf-8-unix)
   (let ((extras (when (require 'slime-company nil t)
@@ -4404,9 +4393,9 @@ With arg N, insert N newlines."
   (set-up-slime-hippie-expand)
   (setq show-trailing-whitespace nil))
 
-(after-load 'slime-repl
+(with-eval-after-load 'slime-repl
   ;; Stop SLIME's REPL from grabbing DEL, which is annoying when backspacing over a '('
-  (after-load 'paredit
+  (with-eval-after-load 'paredit
     (define-key slime-repl-mode-map (read-kbd-macro paredit-backward-delete-key) nil))
 
   ;; Bind TAB to `indent-for-tab-command', as in regular Slime buffers.
@@ -4423,7 +4412,7 @@ With arg N, insert N newlines."
   :init
   (use-package cljsbuild-mode)
   (use-package elein)
-  (after-load 'clojure-mode
+  (with-eval-after-load 'clojure-mode
     (add-hook 'clojure-mode-hook 'sanityinc/lisp-setup)
     (add-hook 'clojure-mode-hook 'subword-mode))
   )
@@ -4437,7 +4426,7 @@ With arg N, insert N newlines."
   :init
   (setq nrepl-popup-stacktraces nil)
 
-  (after-load 'cider
+  (with-eval-after-load 'cider
     (add-hook 'cider-mode-hook 'eldoc-mode)
     (add-hook 'cider-repl-mode-hook 'subword-mode)
     (add-hook 'cider-repl-mode-hook 'paredit-mode)
@@ -4446,9 +4435,9 @@ With arg N, insert N newlines."
     (add-hook 'cider-repl-mode-hook 'sanityinc/no-trailing-whitespace))
 
   (use-package flycheck-clojure)
-  (after-load 'clojure-mode
-    (after-load 'cider
-      (after-load 'flycheck
+  (with-eval-after-load 'clojure-mode
+    (with-eval-after-load 'cider
+      (with-eval-after-load 'flycheck
         (flycheck-clojure-setup)))))
 
 
@@ -4461,7 +4450,7 @@ With arg N, insert N newlines."
                               (require 'slime)
                               (normal-mode))))
 
-(after-load 'slime
+(with-eval-after-load 'slime
   (when (executable-find "sbcl")
     (add-to-list 'slime-lisp-implementations
                  '(sbcl ("sbcl") :coding-system utf-8-unix)))
@@ -4594,10 +4583,10 @@ With arg N, insert N newlines."
     (TeX-save-document (TeX-master-file))
     (TeX-command "TeX" 'TeX-master-file))
 
-  (eval-after-load 'latex
+  (with-eval-after-load 'latex
     '(define-key LaTeX-mode-map (kbd "C-c C-a") 'my-LaTeX-compile))
 
-  (eval-after-load 'plain-tex
+  (with-eval-after-load 'plain-tex
     '(define-key plain-TeX-mode-map (kbd "C-c C-a") 'my-TeX-compile))
 
   ;;(global-set-key (kbd "<f1> C-a") 'my-TeX-command-run-all)
@@ -4761,7 +4750,7 @@ With arg N, insert N newlines."
    )
 
   (setq ispell-dictionary "english")
-  (after-load 'flyspell
+  (with-eval-after-load 'flyspell
     ;; (define-key flyspell-mode-map (kbd "C-;") nil)
     (add-to-list 'flyspell-prog-text-faces 'nxml-text-face))
   ;; if (aspell installed) { use aspell}
@@ -4922,7 +4911,7 @@ With arg N, insert N newlines."
 
 
 ;; Handle the prompt pattern for the 1password command-line interface
-(after-load 'comint
+(with-eval-after-load 'comint
   (setq comint-password-prompt-regexp
         (concat
          comint-password-prompt-regexp
@@ -4959,7 +4948,7 @@ With arg N, insert N newlines."
   (regex-tool-backend 'perl)
   )
 
-(after-load 're-builder
+(with-eval-after-load 're-builder
   ;; Support a slightly more idiomatic quit binding in re-builder
   (define-key reb-mode-map (kbd "C-c C-k") 'reb-quit))
 
@@ -5385,44 +5374,36 @@ With arg N, insert N newlines."
   (load custom-file))
 
 
-;;----------------------------------------------------------------------------
-;; Locales (setting them earlier in this file doesn't work in X)
-;;----------------------------------------------------------------------------
-;; (require 'init-locales)
-(defun sanityinc/utf8-locale-p (v)
-  "Return whether locale string V relates to a UTF-8 locale."
-  (and v (string-match "UTF-8" v)))
+(use-package my/locales
+  :ensure nil
+  :init
+  (defun sanityinc/utf8-locale-p (v)
+    "Return whether locale string V relates to a UTF-8 locale."
+    (and v (string-match "UTF-8" v)))
 
-(defun sanityinc/locale-is-utf8-p ()
-  "Return t iff the \"locale\" command or environment variables prefer UTF-8."
-  (or (sanityinc/utf8-locale-p (and (executable-find "locale") (shell-command-to-string "locale")))
-      (sanityinc/utf8-locale-p (getenv "LC_ALL"))
-      (sanityinc/utf8-locale-p (getenv "LC_CTYPE"))
-      (sanityinc/utf8-locale-p (getenv "LANG"))))
+  (defun sanityinc/locale-is-utf8-p ()
+    "Return t iff the \"locale\" command or environment variables prefer UTF-8."
+    (or (sanityinc/utf8-locale-p (and (executable-find "locale") (shell-command-to-string "locale")))
+        (sanityinc/utf8-locale-p (getenv "LC_ALL"))
+        (sanityinc/utf8-locale-p (getenv "LC_CTYPE"))
+        (sanityinc/utf8-locale-p (getenv "LANG"))))
 
-(when (or window-system (sanityinc/locale-is-utf8-p))
-  (set-language-environment 'utf-8)
-  (setq locale-coding-system 'utf-8)
-  (set-default-coding-systems 'utf-8)
-  (set-terminal-coding-system 'utf-8)
-  (set-selection-coding-system (if (eq system-type 'windows-nt) 'utf-16-le 'utf-8))
-  (prefer-coding-system 'utf-8))
+  (when (or window-system (sanityinc/locale-is-utf8-p))
+    (set-language-environment 'utf-8)
+    (setq locale-coding-system 'utf-8)
+    (set-default-coding-systems 'utf-8)
+    (set-terminal-coding-system 'utf-8)
+    (set-selection-coding-system (if (eq system-type 'windows-nt) 'utf-16-le 'utf-8))
+    (prefer-coding-system 'utf-8))
 
-(setq system-time-locale "en_US.UTF-8")
-
-;; (provide 'init-locales)
+  (setq system-time-locale "en_US.UTF-8")
+  )
 
 (use-package my/appearance
   :ensure nil
   :init
   (set-face-attribute 'default nil :foreground "white" :background "black")
-  (use-package theme-looper
-    :hook
-    (after-init . immortal-scratch-mode)
-    :bind
-    ("s-t" . theme-looper-enable-random-theme)
-    )
-  )
+  (use-package theme-looper))
 
 (use-package format-all
   :hook
@@ -5445,18 +5426,3 @@ With arg N, insert N newlines."
     (if (f-exists? (expand-file-name my/just-format-it-root-marker (projectile-project-root)))
         (format-all-mode 1)
       (format-all-mode -1))))
-
-;;----------------------------------------------------------------------------
-;; Allow users to provide an optional "init-local" containing personal settings
-;;----------------------------------------------------------------------------
-(require 'init-local nil t)
-
-
-
-;; (provide 'init)
-
-;; Local Variables:
-;; coding: utf-8
-;; no-byte-compile: t
-;; End:
-(put 'set-goal-column 'disabled nil)
