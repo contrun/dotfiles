@@ -12,8 +12,6 @@
 (setq read-process-output-max (* 1024 1024))
 (require 'cl-lib)
 
-;;; Utilities for grabbing upstream libs
-
 (defun my/path-under-emacs-d (path)
   "Expand `PATH' to path under `my/emacs-d'"
   (expand-file-name path my/emacs-d))
@@ -114,15 +112,15 @@ locate PACKAGE."
 (setq use-package-always-defer t
       use-package-always-ensure t)
 
-;;; Utilities for grabbing upstream libs
+
 
 (use-package my/constants
   :ensure nil
   :init
-  (defconst *is-a-mac* (eq system-type 'darwin))
+  (defconst my/is-mac (eq system-type 'darwin))
   (defconst my/emacs-tmp-d (my/path-under-emacs-d "tmp")))
 
-;;; Utilities for grabbing upstream libs
+
 
 (use-package my/functions
   :ensure nil
@@ -141,153 +139,8 @@ locate PACKAGE."
       result))
   )
 
-;;; Utilities for grabbing upstream libs
+
 
-(use-package my/bootstrap-straight
-  :ensure nil
-  :init
-  (defun my/bootstrap-straight ()
-    (let ((bootstrap-file (concat my/emacs-d "straight/repos/straight.el/bootstrap.el"))
-          (bootstrap-version 3))
-      (unless (file-exists-p bootstrap-file)
-        (with-current-buffer
-            (url-retrieve-synchronously
-             "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
-             'silent 'inhibit-cookies)
-          (goto-char (point-max))
-          (eval-print-last-sexp)))
-      (load bootstrap-file nil 'nomessage)))
-  ;; (my/bootstrap-straight)
-  )
-
-(use-package el-get
-  :demand t
-  :init
-  (defvar my/el-get-d
-    (expand-file-name "el-get/el-get" my/emacs-d))
-  (add-to-list 'load-path my/el-get-d)
-  (setq el-get-recipe-path
-        (list (expand-file-name "recipes" my/el-get-d)
-              (expand-file-name "el-get/user/recipes" my/emacs-d)))
-  (setq el-get-user-package-directory
-        (expand-file-name "el-get/user/init-files" my/emacs-d))
-  )
-
-(use-package req-package)
-
-(use-package quelpa
-  :demand t
-  )
-
-(use-package quelpa-use-package
-  :demand t
-  )
-
-(use-package auto-package-update
-  :init
-  (setq auto-package-update-delete-old-versions t)
-  (setq auto-package-update-hide-results t)
-  (auto-package-update-maybe))
-
-(use-package paradox
-  :defer t
-  :custom
-  (paradox-execute-asynchronously t)
-  (paradox-lines-per-entry        1)
-  (paradox-automatically-star     t)
-  (paradox-github-token           nil)
-  :commands (paradox-enable
-             paradox-upgrade-packages
-             paradox-list-packages)
-  )
-
-;;; Utilities for grabbing upstream libs
-
-(use-package exec-path-from-shell
-  :init
-  (setq exec-path-from-shell-variables '("SSH_AUTH_SOCK" "SSH_AGENT_PID" "GPG_AGENT_INFO" "LANG" "LC_CTYPE" "GOPATH" "PYTHONPATH" "PATH"))
-  (when (memq window-system '(mac ns x))
-    (exec-path-from-shell-initialize))
-  )
-
-(use-package ssh-agency)
-
-(use-package no-littering
-  :config
-  (setq no-littering-etc-directory
-        (expand-file-name "config/" user-emacs-directory))
-  (setq no-littering-var-directory
-        (expand-file-name "data/" user-emacs-directory))
-  )
-
-(use-package wgrep)
-(use-package diminish)
-(use-package scratch)
-(use-package command-log-mode)
-
-;; (require 'init-frame-hooks)
-(defvar after-make-console-frame-hooks '()
-  "Hooks to run after creating a new TTY frame")
-(defvar after-make-window-system-frame-hooks '()
-  "Hooks to run after creating a new window-system frame")
-
-(defun run-after-make-frame-hooks (frame)
-  "Run configured hooks in response to the newly-created FRAME.
-Selectively runs either `after-make-console-frame-hooks' or
-`after-make-window-system-frame-hooks'"
-  (with-selected-frame frame
-    (run-hooks (if window-system
-                   'after-make-window-system-frame-hooks
-                 'after-make-console-frame-hooks))))
-
-(add-hook 'after-make-frame-functions 'run-after-make-frame-hooks)
-
-(defconst sanityinc/initial-frame (selected-frame)
-  "The frame (if any) active during Emacs initialization.")
-
-(add-hook 'after-init-hook
-          (lambda () (when sanityinc/initial-frame
-                       (run-after-make-frame-hooks sanityinc/initial-frame))))
-
-
-;; (provide 'init-frame-hooks)
-;; (require 'init-xterm)
-;; (require 'init-frame-hooks)
-
-(global-set-key [mouse-4] (lambda () (interactive) (scroll-down 1)))
-(global-set-key [mouse-5] (lambda () (interactive) (scroll-up 1)))
-
-(autoload 'mwheel-install "mwheel")
-
-(defun sanityinc/console-frame-setup ()
-  (xterm-mouse-mode 1) ; Mouse in a terminal (Use shift to paste with middle button)
-  (mwheel-install))
-
-
-(add-hook 'after-make-console-frame-hooks 'sanityinc/console-frame-setup)
-
-;; (provide 'init-xterm)
-;; (require 'init-themes)
-
-;; Ensure that themes will be applied even if they have not been customized
-(defun reapply-themes ()
-  "Forcibly load the themes listed in `custom-enabled-themes'."
-  (dolist (theme custom-enabled-themes)
-    (unless (custom-theme-p theme)
-      (load-theme theme t)))
-  (custom-set-variables `(custom-enabled-themes (quote ,custom-enabled-themes))))
-
-(add-hook 'after-init-hook 'reapply-themes)
-
-(use-package dimmer
-  :hook
-  (after-init . dimmer-mode)
-  :custom
-  (dimmer-fraction 0.15)
-  )
-
-;; (provide 'init-themes)
-;; (require 'init-keys)
 (use-package general
   :init
   (dolist (key '("s-q" "s-t" "s-h" "s-m" "<f1>" "s-g" "s-j" "s-k"
@@ -518,116 +371,135 @@ pressing `<leader> m`. Set it to `nil` to disable it.")
                      (define-key key-translation-map key def)))
   )
 
+
 
-
-;; (provide 'init-keys)
-;; (require 'init-osx-keys)
-(when *is-a-mac*
-  (setq mac-command-modifier 'meta)
-  (setq mac-option-modifier 'none)
-  ;; Make mouse wheel / trackpad scrolling less jerky
-  (setq mouse-wheel-scroll-amount '(1
-                                    ((shift) . 5)
-                                    ((control))))
-  (dolist (multiple '("" "double-" "triple-"))
-    (dolist (direction '("right" "left"))
-      (global-set-key (read-kbd-macro (concat "<" multiple "wheel-" direction ">")) 'ignore)))
-  (global-set-key (kbd "M-`") 'ns-next-frame)
-  (global-set-key (kbd "M-h") 'ns-do-hide-emacs)
-  (global-set-key (kbd "M-˙") 'ns-do-hide-others)
-  (with-eval-after-load 'nxml-mode
-    (define-key nxml-mode-map (kbd "M-h") nil))
-  (global-set-key (kbd "M-ˍ") 'ns-do-hide-others) ;; what describe-key reports for cmd-option-h
+(use-package my/bootstrap-straight
+  :ensure nil
+  :init
+  (defun my/bootstrap-straight ()
+    (let ((bootstrap-file (concat my/emacs-d "straight/repos/straight.el/bootstrap.el"))
+          (bootstrap-version 3))
+      (unless (file-exists-p bootstrap-file)
+        (with-current-buffer
+            (url-retrieve-synchronously
+             "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
+             'silent 'inhibit-cookies)
+          (goto-char (point-max))
+          (eval-print-last-sexp)))
+      (load bootstrap-file nil 'nomessage)))
+  ;; (my/bootstrap-straight)
   )
 
+(use-package el-get
+  :demand t
+  :init
+  (defvar my/el-get-d
+    (expand-file-name "el-get/el-get" my/emacs-d))
+  (add-to-list 'load-path my/el-get-d)
+  (setq el-get-recipe-path
+        (list (expand-file-name "recipes" my/el-get-d)
+              (expand-file-name "el-get/user/recipes" my/emacs-d)))
+  (setq el-get-user-package-directory
+        (expand-file-name "el-get/user/init-files" my/emacs-d))
+  )
 
-;; (provide 'init-osx-keys)
-;; (require 'init-gui-frames)
-;;----------------------------------------------------------------------------
-;; Stop C-z from minimizing windows under OS X
-;;----------------------------------------------------------------------------
-(defun sanityinc/maybe-suspend-frame ()
-  (interactive)
-  (unless (and *is-a-mac* window-system)
-    (suspend-frame)))
+(use-package req-package)
 
-(global-set-key (kbd "C-z") 'sanityinc/maybe-suspend-frame)
+(use-package quelpa
+  :demand t
+  )
 
+(use-package quelpa-use-package
+  :demand t
+  )
 
-;;----------------------------------------------------------------------------
-;; Suppress GUI features
-;;----------------------------------------------------------------------------
-(setq use-file-dialog nil)
-(setq use-dialog-box nil)
-(setq inhibit-startup-screen t)
+(use-package auto-package-update
+  :init
+  (setq auto-package-update-delete-old-versions t)
+  (setq auto-package-update-hide-results t)
+  (auto-package-update-maybe))
 
+(use-package paradox
+  :defer t
+  :custom
+  (paradox-execute-asynchronously t)
+  (paradox-lines-per-entry        1)
+  (paradox-automatically-star     t)
+  (paradox-github-token           nil)
+  :commands (paradox-enable
+             paradox-upgrade-packages
+             paradox-list-packages)
+  )
 
-;;----------------------------------------------------------------------------
-;; Window size and features
-;;----------------------------------------------------------------------------
-(when (fboundp 'tool-bar-mode)
-  (tool-bar-mode -1))
-(when (fboundp 'set-scroll-bar-mode)
-  (set-scroll-bar-mode nil))
+
 
-;; I generally prefer to hide the menu bar, but doing this on OS X
-;; simply makes it update unreliably in GUI frames, so we make an
-;; exception.
-(if *is-a-mac*
-    (add-hook 'after-make-frame-functions
-              (lambda (frame)
-                (set-frame-parameter frame 'menu-bar-lines
-                                     (if (display-graphic-p frame)
-                                         1 0))))
-  (when (fboundp 'menu-bar-mode)
-    (menu-bar-mode -1)))
+(use-package exec-path-from-shell
+  :init
+  (setq exec-path-from-shell-variables '("SSH_AUTH_SOCK" "SSH_AGENT_PID" "GPG_AGENT_INFO" "LANG" "LC_CTYPE" "GOPATH" "PYTHONPATH" "PATH"))
+  (when (memq window-system '(mac ns x))
+    (exec-path-from-shell-initialize))
+  )
 
-(when (fboundp 'pixel-scroll-mode)
-  (pixel-scroll-mode 1))
+(use-package ssh-agency)
 
-(let ((no-border '(internal-border-width . 0)))
-  (add-to-list 'default-frame-alist no-border)
-  (add-to-list 'initial-frame-alist no-border))
+(use-package no-littering
+  :config
+  (setq no-littering-etc-directory
+        (expand-file-name "config/" user-emacs-directory))
+  (setq no-littering-var-directory
+        (expand-file-name "data/" user-emacs-directory))
+  )
 
-(defun sanityinc/adjust-opacity (frame incr)
-  "Adjust the background opacity of FRAME by increment INCR."
-  (unless (display-graphic-p frame)
-    (error "Cannot adjust opacity of this frame"))
-  (let* ((oldalpha (or (frame-parameter frame 'alpha) 100))
-         ;; The 'alpha frame param became a pair at some point in
-         ;; emacs 24.x, e.g. (100 100)
-         (oldalpha (if (listp oldalpha) (car oldalpha) oldalpha))
-         (newalpha (+ incr oldalpha)))
-    (when (and (<= frame-alpha-lower-limit newalpha) (>= 100 newalpha))
-      (modify-frame-parameters frame (list (cons 'alpha newalpha))))))
+(use-package wgrep)
+(use-package diminish)
+(use-package scratch)
+(use-package command-log-mode)
 
-(when (and *is-a-mac* (fboundp 'toggle-frame-fullscreen))
-  ;; Command-Option-f to toggle fullscreen mode
-  ;; Hint: Customize `ns-use-native-fullscreen'
-  (global-set-key (kbd "M-ƒ") 'toggle-frame-fullscreen))
+(use-package my/frame-hooks
+  :ensure nil
+  :init
+  (defvar after-make-console-frame-hooks '()
+    "Hooks to run after creating a new TTY frame")
+  (defvar after-make-window-system-frame-hooks '()
+    "Hooks to run after creating a new window-system frame")
 
-;; TODO: use seethru package instead?
-(global-set-key (kbd "M-C-8") (lambda () (interactive) (sanityinc/adjust-opacity nil -2)))
-(global-set-key (kbd "M-C-9") (lambda () (interactive) (sanityinc/adjust-opacity nil 2)))
-(global-set-key (kbd "M-C-7") (lambda () (interactive) (modify-frame-parameters nil `((alpha . 100)))))
+  (defun run-after-make-frame-hooks (frame)
+    "Run configured hooks in response to the newly-created FRAME.
+Selectively runs either `after-make-console-frame-hooks' or
+`after-make-window-system-frame-hooks'"
+    (with-selected-frame frame
+      (run-hooks (if window-system
+                     'after-make-window-system-frame-hooks
+                   'after-make-console-frame-hooks))))
 
+  (add-hook 'after-make-frame-functions 'run-after-make-frame-hooks)
 
-(setq frame-title-format
-      '((:eval (if (buffer-file-name)
-                   (abbreviate-file-name (buffer-file-name))
-                 "%b"))))
+  (defconst my/initial-frame (selected-frame)
+    "The frame (if any) active during Emacs initialization.")
 
-;; Non-zero values for `line-spacing' can mess up ansi-term and co,
-;; so we zero it explicitly in those cases.
-(add-hook 'term-mode-hook
-          (lambda ()
-            (setq line-spacing 0)))
+  (global-set-key [mouse-4] (lambda () (interactive) (scroll-down 1)))
+  (global-set-key [mouse-5] (lambda () (interactive) (scroll-up 1)))
+
+  (autoload 'mwheel-install "mwheel")
+
+  (defun my/console-frame-setup ()
+    (xterm-mouse-mode 1) ; Mouse in a terminal (Use shift to paste with middle button)
+    (mwheel-install))
+
+  :hook
+  (after-make-console-frame . my/console-frame-setup)
+  (after-init . (lambda () (when my/initial-frame
+                        (run-after-make-frame-hooks my/initial-frame))))
+  )
+
+(use-package term-mode
+  :ensure nil
+  :hook
+  (term-mode-hook . (lambda () (setq line-spacing 0))))
 
 
 (use-package disable-mouse)
 
-
-;; (provide 'init-gui-frames)
 ;; (require 'init-dired)
 (setq-default dired-dwim-target t)
 
@@ -810,9 +682,6 @@ This is useful when followed by an immediate kill."
 ;; (provide 'init-isearch)
 (setq-default grep-highlight-matches t
               grep-scroll-output t)
-
-(when *is-a-mac*
-  (setq-default locate-command "mdfind"))
 
 (use-package helm-dash
   :hook
@@ -1002,7 +871,6 @@ Get required params to call `dash-docs-result-url' from SEARCH-RESULT."
   (global-set-key [remap execute-extended-command] 'smex))
 
 ;; (require 'init-ivy)
-;;; -*- lexical-binding: t -*-
 (use-package ivy
   :hook (after-init . ivy-mode)
   :diminish ivy-mode
@@ -1160,7 +1028,6 @@ instead."
   )
 
 ;; (require 'init-windows)
-;;; -*- lexical-binding: t -*-
 
 ;; NOTE: This is not about the "Windows" OS, but rather Emacs's
 ;; "windows" concept: these are the panels within an Emacs frame which
@@ -1665,8 +1532,6 @@ This is helpful for writeroom-mode, in particular."
 (global-unset-key [M-left])
 (global-unset-key [M-right])
 
-
-
 (defun kill-back-to-indentation ()
   "Kill from point back to the first non-whitespace character on the line."
   (interactive)
@@ -1701,20 +1566,6 @@ This is helpful for writeroom-mode, in particular."
   (global-set-key (kbd "C-c d") 'md/duplicate-down)
   (global-set-key (kbd "C-c u") 'md/duplicate-up)
   )
-
-;;----------------------------------------------------------------------------
-;; Fix backward-up-list to understand quotes, see http://bit.ly/h7mdIL
-;;----------------------------------------------------------------------------
-(defun backward-up-sexp (arg)
-  "Jump up to the start of the ARG'th enclosing sexp."
-  (interactive "p")
-  (let ((ppss (syntax-ppss)))
-    (cond ((elt ppss 3)
-           (goto-char (elt ppss 8))
-           (backward-up-sexp (1- arg)))
-          ((backward-up-list arg)))))
-
-(global-set-key [remap backward-up-list] 'backward-up-sexp) ; C-M-u, C-M-up
 
 
 ;;----------------------------------------------------------------------------
@@ -1817,22 +1668,6 @@ With arg N, insert N newlines."
 
 ;;; Whitespace
 
-(defun sanityinc/no-trailing-whitespace ()
-  "Turn off display of trailing whitespace in this buffer."
-  (setq show-trailing-whitespace nil))
-
-;; But don't show trailing whitespace in SQLi, inf-ruby etc.
-(dolist (hook '(special-mode-hook
-                Info-mode-hook
-                eww-mode-hook
-                term-mode-hook
-                comint-mode-hook
-                compilation-mode-hook
-                twittering-mode-hook
-                minibuffer-setup-hook))
-  (add-hook hook #'sanityinc/no-trailing-whitespace))
-
-
 (use-package whitespace-cleanup-mode
   :hook (after-init . global-whitespace-cleanup-mode)
   :diminish whitespace-cleanup-mode
@@ -1840,8 +1675,6 @@ With arg N, insert N newlines."
 
 (global-set-key [remap just-one-space] 'cycle-spacing)
 
-
-;; (provide 'init-whitespace)
 
 ;; (require 'init-vc)
 (use-package diff-hl
@@ -1907,8 +1740,6 @@ With arg N, insert N newlines."
   (global-set-key (kbd "C-x M-g") 'magit-dispatch-popup)
   (use-package magit-todos)
   (use-package fullframe)
-  :hook
-  (magit-popup-mode . sanityinc/no-trailing-whitespace)
   :config
   (define-key magit-status-mode-map (kbd "C-M-<up>") 'magit-section-up)
   (fullframe magit-status magit-mode-quit-window)
@@ -1919,12 +1750,6 @@ With arg N, insert N newlines."
   :hook
   (git-commit-mode . goto-address-mode)
   )
-
-
-(when *is-a-mac*
-  (with-eval-after-load 'magit
-    (add-hook 'magit-mode-hook (lambda () (local-unset-key [(meta h)])))))
-
 
 
 ;; Convenient binding for vc-git-grep
@@ -2266,21 +2091,17 @@ With arg N, insert N newlines."
 
 ;; (provide 'init-compile)
 ;; (require 'init-crontab)
-;; (require 'init-textile)
 (use-package textile-mode
-  :init
-  (setq auto-mode-alist
-        (cons '("\\.textile\\'" . textile-mode) auto-mode-alist))
+  :mode "\\.textile\\'"
   )
 
-;; (provide 'init-textile)
-;; (require 'init-markdown)
 (use-package markdown-mode
   :mode "\\.md\\.html\\'"
   :init
-  (with-eval-after-load 'whitespace-cleanup-mode
-    (push 'markdown-mode whitespace-cleanup-mode-ignore-modes)))
-
+  (use-package whitespace-cleanup-mode
+    :config
+    (push 'markdown-mode whitespace-cleanup-mode-ignore-modes))
+  )
 
 (use-package csv-mode
   :mode "\\.[Cc][Ss][Vv]\\'"
@@ -2396,7 +2217,7 @@ With arg N, insert N newlines."
 
 (use-package skewer-mode
   :hook
-  (skewer-mode-hook . (lambda () (inferior-js-keys-mode -1)))
+  (skewer-mode . (lambda () (inferior-js-keys-mode -1)))
   )
 
 
@@ -2432,9 +2253,6 @@ With arg N, insert N newlines."
 (use-package org-fragtog
   :hook (org-mode . org-fragtog-mode)
   )
-
-(when *is-a-mac*
-  (use-package grab-mac-link))
 
 (use-package org-cliplink)
 
@@ -3049,16 +2867,6 @@ With arg N, insert N newlines."
 
 
 
-(when (and *is-a-mac* (file-directory-p "/Applications/org-clock-statusbar.app"))
-  (add-hook 'org-clock-in-hook
-            (lambda () (call-process "/usr/bin/osascript" nil 0 nil "-e"
-                                (concat "tell application \"org-clock-statusbar\" to clock in \"" org-clock-current-task "\""))))
-  (add-hook 'org-clock-out-hook
-            (lambda () (call-process "/usr/bin/osascript" nil 0 nil "-e"
-                                "tell application \"org-clock-statusbar\" to clock out"))))
-
-
-
 ;; TODO: warn about inconsistent items, e.g. TODO inside non-PROJECT
 ;; TODO: nested projects!
 
@@ -3129,32 +2937,9 @@ With arg N, insert N newlines."
   (setq bibtex-completion-pdf-open-function 'org-open-file)
   )
 
-;; ;; Show iCal calendars in the org agenda
-;; (when (and *is-a-mac* (require 'org-mac-iCal nil t))
-;;   (setq org-agenda-include-diary t
-;;         org-agenda-custom-commands
-;;         '(("I" "Import diary from iCal" agenda ""
-;;            ((org-agenda-mode-hook #'org-mac-iCal)))))
-
-;;   (add-hook 'org-agenda-cleanup-fancy-diary-hook
-;;             (lambda ()
-;;               (goto-char (point-min))
-;;               (save-excursion
-;;                 (while (re-search-forward "^[a-z]" nil t)
-;;                   (goto-char (match-beginning 0))
-;;                   (insert "0:00-24:00 ")))
-;;               (while (re-search-forward "^ [a-z]" nil t)
-;;                 (goto-char (match-beginning 0))
-;;                 (save-excursion
-;;                   (re-search-backward "^[0-9]+:[0-9]+-[0-9]+:[0-9]+ " nil t))
-;;                 (insert (match-string 0))))))
-
-
 (with-eval-after-load 'org
   (define-key org-mode-map (kbd "C-M-<up>") 'org-up-element)
-  (when *is-a-mac*
-    (define-key org-mode-map (kbd "M-h") nil)
-    (define-key org-mode-map (kbd "C-c g") 'org-mac-grab-link)))
+  )
 
 (with-eval-after-load 'org
   (org-babel-do-load-languages
@@ -3718,11 +3503,13 @@ With arg N, insert N newlines."
 ;; (provide 'init-nix)
 ;; (require 'init-direnv)
 (use-package direnv
-  :init (use-package projectile-direnv)
+  :init
   :hook
   (after-init . direnv-mode)
   )
 
+(use-package projectile-direnv
+  :after projectile direnv)
 
 ;; (provide 'init-direnv)
 
@@ -3758,11 +3545,9 @@ With arg N, insert N newlines."
   ("s-a x" .   'sp-kill-hybrid-sexp)
   ("s-a s-d" .   'sp-backward-kill-sexp)
   ("s-a s-c" . 'sp-copy-sexp)
-  ("s-a d" . 'delete-sexp)
-  ("s-a M-d" . 'backward-kill-word)
-  ("s-a C-d" . 'sp-backward-kill-word)
   ("s-a u" . 'sp-backward-unwrap-sexp)
   ("s-a s-u" . 'sp-unwrap-sexp)
+  ("s-a s-r" . 'sp-rewrap-sexp)
   ("s-a (" .  'wrap-with-parens)
   ("s-a [" .  'wrap-with-brackets)
   ("s-a {" .  'wrap-with-braces)
@@ -3919,25 +3704,24 @@ With arg N, insert N newlines."
 ;; ----------------------------------------------------------------------------
 ;; Enable desired features for all lisp modes
 ;; ----------------------------------------------------------------------------
-(defun sanityinc/enable-check-parens-on-save ()
+
+(defun my/lisp-setup ()
+  "Enable features useful in any Lisp mode."
+  (run-hooks 'my/lispy-modes-hook))
+
+(defvar my/lispy-modes-hook
+  '(my/enable-check-parens-on-save)
+  "Hook run in all Lisp modes.")
+
+(defun my/enable-check-parens-on-save ()
   "Run `check-parens' when the current buffer is saved."
   (add-hook 'after-save-hook #'check-parens nil t))
 
-(defvar sanityinc/lispy-modes-hook
-  '(turn-on-eldoc-mode
-    sanityinc/enable-check-parens-on-save)
-  "Hook run in all Lisp modes.")
-
-
 (use-package aggressive-indent
   :init
-  (add-to-list 'sanityinc/lispy-modes-hook 'aggressive-indent-mode))
+  (add-to-list 'my/lispy-modes-hook 'aggressive-indent-mode))
 
-(defun sanityinc/lisp-setup ()
-  "Enable features useful in any Lisp mode."
-  (run-hooks 'sanityinc/lispy-modes-hook))
-
-(defun sanityinc/emacs-lisp-setup ()
+(defun my/emacs-lisp-setup ()
   "Enable features useful when working with elisp."
   (set-up-hippie-expand-for-elisp))
 
@@ -3953,10 +3737,10 @@ With arg N, insert N newlines."
 (require 'derived)
 
 (dolist (hook (mapcar #'derived-mode-hook-name sanityinc/lispy-modes))
-  (add-hook hook 'sanityinc/lisp-setup))
+  (add-hook hook 'my/lisp-setup))
 
 (dolist (hook (mapcar #'derived-mode-hook-name sanityinc/elispy-modes))
-  (add-hook hook 'sanityinc/emacs-lisp-setup))
+  (add-hook hook 'my/emacs-lisp-setup))
 
 (if (boundp 'eval-expression-minibuffer-setup-hook)
     (add-hook 'eval-expression-minibuffer-setup-hook #'eldoc-mode)
@@ -4009,10 +3793,9 @@ With arg N, insert N newlines."
 
 
 
-(use-package macrostep)
-
-(with-eval-after-load 'lisp-mode
-  (define-key emacs-lisp-mode-map (kbd "C-c e") 'macrostep-expand))
+(use-package macrostep
+  :bind (:map emacs-lisp-mode-map
+              ("C-c e" . macrostep-expand)))
 
 
 
@@ -4021,28 +3804,9 @@ With arg N, insert N newlines."
 
 
 
-;; Extras for theme editing
-
-(defvar sanityinc/theme-mode-hook nil
-  "Hook triggered when editing a theme file.")
-
-(defun sanityinc/run-theme-mode-hooks-if-theme ()
-  "Run `sanityinc/theme-mode-hook' if this appears to a theme."
-  (when (string-match "\\(color-theme-\\|-theme\\.el\\)" (buffer-name))
-    (run-hooks 'sanityinc/theme-mode-hook)))
-
-(add-hook 'emacs-lisp-mode-hook 'sanityinc/run-theme-mode-hooks-if-theme t)
-
 (use-package rainbow-mode
-  :init
-  (add-hook 'sanityinc/theme-mode-hook 'rainbow-mode)
-  (add-hook 'help-mode-hook 'rainbow-mode)
-  )
-
-(use-package aggressive-indent
-  :init
-  ;; Can be prohibitively slow with very long forms
-  (add-to-list 'sanityinc/theme-mode-hook (lambda () (aggressive-indent-mode -1)) t))
+  :hook
+  (help-mode . rainbow-mode))
 
 
 
@@ -4053,10 +3817,7 @@ With arg N, insert N newlines."
 
 
 
-(use-package elisp-format
-  :after 'emacs-lisp-mode
-  :hook
-  (emacs-lisp-mode . (lambda () (format-all-mode 1) (lsp))))
+(use-package elisp-format)
 
 
 ;; ERT
@@ -4094,89 +3855,46 @@ With arg N, insert N newlines."
 
 ;; (provide 'init-lisp)
 ;; (require 'init-slime)
-(use-package slime)
-;; package.el compiles the contrib subdir, but the compilation order
-;; causes problems, so we remove the .elc files there. See
-;; http://lists.common-lisp.net/pipermail/slime-devel/2012-February/018470.html
-(mapc #'delete-file
-      (file-expand-wildcards (concat my/emacs-d "elpa/slime-2*/contrib/*.elc")))
-
-(use-package hippie-expand-slime)
-(use-package slime-company)
-
-
-;;; Lisp buffers
-
-(defun sanityinc/slime-setup ()
-  "Mode setup function for slime lisp buffers."
-  (set-up-slime-hippie-expand))
-
-(with-eval-after-load 'slime
+(use-package slime
+  :config
   (setq slime-protocol-version 'ignore)
   (setq slime-net-coding-system 'utf-8-unix)
   (let ((extras (when (require 'slime-company nil t)
                   '(slime-company))))
     (slime-setup (append '(slime-repl slime-fuzzy) extras)))
   (setq slime-complete-symbol*-fancy t)
-  (setq slime-complete-symbol-function 'slime-fuzzy-complete-symbol)
-  (add-hook 'slime-mode-hook 'sanityinc/slime-setup))
+  (setq slime-complete-symbol-function 'slime-fuzzy-complete-symbol))
+
+(use-package hippie-expand-slime
+  :hook
+  (slime-mode . set-up-slime-hippie-expand))
+(use-package slime-company)
 
 
-;;; REPL
 
-(defun sanityinc/slime-repl-setup ()
-  "Mode setup function for slime REPL."
-  (sanityinc/lisp-setup)
-  (set-up-slime-hippie-expand)
-  (setq show-trailing-whitespace nil))
-
-(with-eval-after-load 'slime-repl
-  ;; Stop SLIME's REPL from grabbing DEL, which is annoying when backspacing over a '('
-  (with-eval-after-load 'paredit
-    (define-key slime-repl-mode-map (read-kbd-macro paredit-backward-delete-key) nil))
-
-  ;; Bind TAB to `indent-for-tab-command', as in regular Slime buffers.
-  (define-key slime-repl-mode-map (kbd "TAB") 'indent-for-tab-command)
-
-  (add-hook 'slime-repl-mode-hook 'sanityinc/slime-repl-setup))
-
-
-;; (provide 'init-slime)
 ;; (require 'init-clojure)
 ;; See also init-clojure-cider.el
 
 (use-package clojure-mode
+  :hook
+  (clojure-mode . my/lisp-setup)
+  (clojure-mode . subword-mode)
   :init
   (use-package cljsbuild-mode)
   (use-package elein)
   (with-eval-after-load 'clojure-mode
-    (add-hook 'clojure-mode-hook 'sanityinc/lisp-setup)
-    (add-hook 'clojure-mode-hook 'subword-mode))
+    )
   )
 
-
-;; (provide 'init-clojure)
-;; (require 'init-clojure-cider)
-;; (require 'init-clojure)
-
 (use-package cider
+  :hook
+  (cider-mode . eldoc-mode)
+  (cider-repl-mode . 'subword-mode)
+  :config
+  (flycheck-clojure-setup)
   :init
   (setq nrepl-popup-stacktraces nil)
-
-  (with-eval-after-load 'cider
-    (add-hook 'cider-mode-hook 'eldoc-mode)
-    (add-hook 'cider-repl-mode-hook 'subword-mode)
-    (add-hook 'cider-repl-mode-hook 'paredit-mode)
-
-    ;; nrepl isn't based on comint
-    (add-hook 'cider-repl-mode-hook 'sanityinc/no-trailing-whitespace))
-
-  (use-package flycheck-clojure)
-  (with-eval-after-load 'clojure-mode
-    (with-eval-after-load 'cider
-      (with-eval-after-load 'flycheck
-        (flycheck-clojure-setup)))))
-
+  (use-package flycheck-clojure))
 
 ;; (provide 'init-clojure-cider)
 
@@ -4754,28 +4472,6 @@ With arg N, insert N newlines."
 
 
 ;; (provide 'init-folding)
-;; (require 'init-dash)
-;; Support for the http://kapeli.com/dash documentation browser
-
-(defun sanityinc/dash-installed-p ()
-  "Return t if Dash is installed on this machine, or nil otherwise."
-  (let ((lsregister "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister"))
-    (and (file-executable-p lsregister)
-         (not (string-equal
-               ""
-               (shell-command-to-string
-                (concat lsregister " -dump|grep com.kapeli.dash")))))))
-
-(when (and *is-a-mac* (not (package-installed-p 'dash-at-point)))
-  (message "Checking whether Dash is installed")
-  (when (sanityinc/dash-installed-p)
-    (use-package dash-at-point)))
-
-(when (package-installed-p 'dash-at-point)
-  (global-set-key (kbd "C-c D") 'dash-at-point))
-
-;; (provide 'init-dash)
-
 ;;(require 'init-twitter)
 
 (use-package matrix-client
@@ -5058,8 +4754,8 @@ With arg N, insert N newlines."
 (use-package lua-mode)
 (use-package htmlize)
 (use-package dsvn)
-(when *is-a-mac*
-  (use-package osx-location))
+(when my/is-mac
+  )
 (unless (eq system-type 'windows-nt)
   (use-package daemons))
 (use-package dotenv-mode)
@@ -5114,9 +4810,54 @@ With arg N, insert N newlines."
 
 (use-package my/appearance
   :ensure nil
+  :hook
+  (after-init . reapply-themes)
   :init
+  (defun reapply-themes ()
+    "Forcibly load the themes listed in `custom-enabled-themes'."
+    (dolist (theme custom-enabled-themes)
+      (unless (custom-theme-p theme)
+        (load-theme theme t)))
+    (custom-set-variables `(custom-enabled-themes (quote ,custom-enabled-themes))))
+
+  (use-package dimmer
+    :hook
+    (after-init . dimmer-mode)
+    :custom
+    (dimmer-fraction 0.15)
+    )
   (set-face-attribute 'default nil :foreground "white" :background "black")
-  (use-package theme-looper))
+  (setq use-file-dialog nil)
+  (setq use-dialog-box nil)
+  (setq inhibit-startup-screen t)
+  (tool-bar-mode -1)
+  (set-scroll-bar-mode nil)
+  (menu-bar-mode -1)
+  (pixel-scroll-mode 1)
+  (setq frame-title-format
+        '((:eval (if (buffer-file-name)
+                     (abbreviate-file-name (buffer-file-name))
+                   "%b"))))
+  (let ((no-border '(internal-border-width . 0)))
+    (add-to-list 'default-frame-alist no-border)
+    (add-to-list 'initial-frame-alist no-border))
+  (defun my/adjust-opacity (frame incr)
+    "Adjust the background opacity of FRAME by increment INCR."
+    (unless (display-graphic-p frame)
+      (error "Cannot adjust opacity of this frame"))
+    (let* ((oldalpha (or (frame-parameter frame 'alpha) 100))
+           ;; The 'alpha frame param became a pair at some point in
+           ;; emacs 24.x, e.g. (100 100)
+           (oldalpha (if (listp oldalpha) (car oldalpha) oldalpha))
+           (newalpha (+ incr oldalpha)))
+      (when (and (<= frame-alpha-lower-limit newalpha) (>= 100 newalpha))
+        (modify-frame-parameters frame (list (cons 'alpha newalpha))))))
+  (global-set-key (kbd "M-C-8") (lambda () (interactive) (my/adjust-opacity nil -2)))
+  (global-set-key (kbd "M-C-9") (lambda () (interactive) (my/adjust-opacity nil 2)))
+  (global-set-key (kbd "M-C-7") (lambda () (interactive) (modify-frame-parameters nil `((alpha . 100)))))
+  )
+
+(use-package theme-looper)
 
 (use-package format-all
   :hook
@@ -5292,6 +5033,64 @@ Return the scratch buffer opened."
       (when filename
         (kill-new filename)
         (message "Copied buffer file name '%s' to the clipboard." filename))))
+  )
 
+(use-package my/mac
+  :ensure nil
+  :when (eq system-type 'darwin)
+  :init
+  (use-package osx-location)
+  (use-package dash-at-point
+    :bind ("C-c D" . dash-at-point))
+  (define-key org-mode-map (kbd "M-h") nil)
+  (define-key org-mode-map (kbd "C-c g") 'org-mac-grab-link)
+  ;; Show iCal calendars in the org agenda
+  (when (require 'org-mac-iCal nil t)
+    (setq org-agenda-include-diary t
+          org-agenda-custom-commands
+          '(("I" "Import diary from iCal" agenda ""
+             ((org-agenda-mode-hook #'org-mac-iCal)))))
 
+    (add-hook 'org-agenda-cleanup-fancy-diary-hook
+              (lambda ()
+                (goto-char (point-min))
+                (save-excursion
+                  (while (re-search-forward "^[a-z]" nil t)
+                    (goto-char (match-beginning 0))
+                    (insert "0:00-24:00 ")))
+                (while (re-search-forward "^ [a-z]" nil t)
+                  (goto-char (match-beginning 0))
+                  (save-excursion
+                    (re-search-backward "^[0-9]+:[0-9]+-[0-9]+:[0-9]+ " nil t))
+                  (insert (match-string 0))))))
+
+  (setq-default locate-command "mdfind")
+  (use-package grab-mac-link)
+  (setq mac-command-modifier 'meta)
+  (setq mac-option-modifier 'none)
+  ;; Make mouse wheel / trackpad scrolling less jerky
+  (setq mouse-wheel-scroll-amount '(1
+                                    ((shift) . 5)
+                                    ((control))))
+  (dolist (multiple '("" "double-" "triple-"))
+    (dolist (direction '("right" "left"))
+      (global-set-key (read-kbd-macro (concat "<" multiple "wheel-" direction ">")) 'ignore)))
+  (global-set-key (kbd "M-`") 'ns-next-frame)
+  (global-set-key (kbd "M-h") 'ns-do-hide-emacs)
+  (global-set-key (kbd "M-˙") 'ns-do-hide-others)
+  (with-eval-after-load 'nxml-mode
+    (define-key nxml-mode-map (kbd "M-h") nil))
+  (global-set-key (kbd "M-ˍ") 'ns-do-hide-others) ;; what describe-key reports for cmd-option-h
+  (add-hook 'after-make-frame-functions
+            (lambda (frame)
+              (set-frame-parameter frame 'menu-bar-lines
+                                   (if (display-graphic-p frame)
+                                       1 0))))
+  (when (file-directory-p "/Applications/org-clock-statusbar.app")
+    (add-hook 'org-clock-in-hook
+              (lambda () (call-process "/usr/bin/osascript" nil 0 nil "-e"
+                                  (concat "tell application \"org-clock-statusbar\" to clock in \"" org-clock-current-task "\""))))
+    (add-hook 'org-clock-out-hook
+              (lambda () (call-process "/usr/bin/osascript" nil 0 nil "-e"
+                                  "tell application \"org-clock-statusbar\" to clock out"))))
   )
