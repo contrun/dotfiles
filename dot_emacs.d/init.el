@@ -1,65 +1,47 @@
-;; -*- lexical-binding: t -*-
+;; -*- coding: utf-8; no-byte-compile: t; lexical-binding: t -*-
 ;;; This init file only loads config.el in its parent directory
 ;;; or the EMACS_CONFIG file from environmena variable.
 
 ;;* Base directory
 (defconst my/home
+  ;;; User's HOME directory
   (expand-file-name "~/"))
 
 (defconst my/emacs-d
-  ;; customized emacd directory,
-  ;; using this instead of user-emacs-directory makes serveral separate configs possible.
-  (let ((parent (file-name-directory
-                 (file-chase-links load-file-name))))
-    (if (string= parent my/home)
-        (expand-file-name "~/.emacs.d/")
-      parent)))
+  ;;; Customized `user-emacs-directory', used for several separate configurations.
+  (if (boundp 'my/emacs-d) ;; Make defining `my/emacs-d' nilpotent
+      my/emacs-d
+    (let ((parent (file-name-directory
+                   (file-chase-links load-file-name))))
+      (if (string= parent my/home)
+          (expand-file-name "~/.emacs.d/")
+        parent))))
 
-;; (setq debug-on-error t)
+(defvar my/config-location
+  ;;; Set config location to be environment variable `EMACS_CONFIG' or `config.el' under `my/emacs-d'
+  (let ((config (getenv "EMACS_CONFIG")))
+    (if config
+        config
+      (expand-file-name "config.el" my/emacs-d))))
 
-(set-face-attribute 'default nil :foreground "white" :background "black")
-
-;; Config locations
-(defvar my/config-location (let ((config (getenv "EMACS_CONFIG")))
-                             (if config
-                                 (progn
-                                   (message "Loading config %s" config)
-                                   config
-                                   )
-                               (expand-file-name "config.el" my/emacs-d))))
-
-(defvar my/config-compiled-location (concat my/config-location "c"))
+(defun my/try-load-config ()
+  "Try to load `my/config-location'"
+  (interactive)
+  (if (file-exists-p my/config-location)
+      (load-file my/config-location)
+    (message "Config file %s does not exist" my/config-location)))
 
 (defun my/is-file-more-up-to-date (file1 file2)
-  (interactive)
+  "Returns true if `file1' is more up to date than `file2'"
   (time-less-p (nth 5 (file-attributes file2)) (nth 5 (file-attributes file1))))
 
-(defun my/load-compiled-or-compile ()
-  (if (and (file-exists-p my/config-compiled-location) (my/is-file-more-up-to-date my/config-compiled-location my/config-location))
-      (progn
-        (message "Loading compiled config")
-        (load-file my/config-compiled-location))
-    (load-file my/config-location)))
+(defun my/load-compiled-or-compile (config-file)
+  "Try to load compiled `config-file' or compile and load `config-file'"
+  (let* ((compiled-config-file (concat config-file "c"))
+         (file (if (and (file-exists-p compiled-config-file) (my/is-file-more-up-to-date compiled-config-file config-file))
+                   compiled-config-file
+                 config-file)))
+    (message "Loading config %s" file)
+    (load-file file)))
 
-;; This doesn't work with straight.el, no idea why
-;;(defun my/compile-and-load-config ()
-;;  (message "Compiling and loading config")
-;;  (setq byte-compile-warnings '(not
-;;				nresolved
-;;				free-vars
-;;				unresolved
-;;				callargs
-;;				redefine
-;;				noruntime
-;;				cl-functions
-;;				interactive-only))
-;;
-;;  (byte-compile-file my/config-location t))
-
-(my/load-compiled-or-compile)
-
-;; Local Variables:
-;; coding: utf-8
-;; no-byte-compile: t
-;; End:
-(put 'set-goal-column 'disabled nil)
+(my/try-load-config)

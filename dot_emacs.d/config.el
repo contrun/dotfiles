@@ -1698,6 +1698,8 @@ This is helpful for writeroom-mode, in particular."
 ;; (require 'init-editing-utils)
 (use-package unfill)
 
+(put 'set-goal-column 'disabled nil)
+
 (when (fboundp 'electric-pair-mode)
   (add-hook 'after-init-hook 'electric-pair-mode))
 (when (eval-when-compile (version< "24.4" emacs-version))
@@ -5413,6 +5415,7 @@ With arg N, insert N newlines."
 (use-package my/appearance
   :ensure nil
   :init
+  (set-face-attribute 'default nil :foreground "white" :background "black")
   (use-package theme-looper
     :hook
     (after-init . immortal-scratch-mode)
