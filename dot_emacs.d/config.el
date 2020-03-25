@@ -2,6 +2,8 @@
 
 (add-to-list 'load-path (expand-file-name "lisp" my/emacs-d))
 
+(defconst my/emacs-tmp-d (expand-file-name "tmp" my/emacs-d))
+
 (defconst *is-a-mac* (eq system-type 'darwin))
 
 ;;----------------------------------------------------------------------------
@@ -121,23 +123,6 @@
   "Major mode leader key is a shortcut key which is the equivalent of
 pressing `<leader> m`. Set it to `nil` to disable it.")
 
-(defconst emacs-tmp-dir (expand-file-name "~/.tmp/emacs"))
-
-(let ((transforms-directory (expand-file-name "transforms/" emacs-tmp-dir))
-      (backup-directory (expand-file-name "per-save/" emacs-tmp-dir)))
-  (mkdir transforms-directory t)
-  (mkdir backup-directory t)
-  (setq auto-save-list-file-prefix emacs-tmp-dir
-        backup-by-copying t      ; don't clobber symlinks
-        backup-directory-alist `(("" . ,backup-directory))    ; don't litter my fs tree
-        delete-old-versions t
-        kept-new-versions 6
-        kept-old-versions 2
-        vc-make-backup-files t
-        auto-save-file-name-transforms `((".*" ,transforms-directory t))
-        version-control t)       ; use versioned backups
-  )
-
 (defun my-toggle-var (var)
   "..."
   (interactive
@@ -156,22 +141,6 @@ pressing `<leader> m`. Set it to `nil` to disable it.")
   (let ((sym  (intern var)))
     (set sym (not (symbol-value sym)))
     (message "`%s' is now `%s'" var (symbol-value sym))))
-
-(defun force-backup-of-buffer ()
-  ;; Make a special "per session" backup at the first save of each
-  ;; emacs session.
-  (when (not buffer-backed-up)
-    ;; Override the default parameters for per-session backups.
-    (let ((backup-directory-alist '(("" . "~/.saves/emacs/per-session")))
-          (kept-new-versions 3))
-      (backup-buffer)))
-  ;; Make a "per save" backup on each save.  The first save results in
-  ;; both a per-session and a per-save backup, to keep the numbering
-  ;; of per-save backups consistent.
-  (let ((buffer-backed-up nil))
-    (backup-buffer)))
-
-(add-hook 'before-save-hook  'force-backup-of-buffer)
 
 (defmacro my-save-excursion (&rest forms)
   (let ((old-point (gensym "old-point"))
@@ -642,7 +611,6 @@ Selectively runs either `after-make-console-frame-hooks' or
    "s-S-d" 'helm-dash
    "s-z" 'fzf-directory
    "s-." 'ace-window
-   "s-u" 'undo-tree-undo
    ;; "s-q" 'save-buffers-kill-terminal
    "s-0" 'delete-window
    "s-1" 'delete-other-windows
@@ -1837,9 +1805,79 @@ This is helpful for writeroom-mode, in particular."
 
 
 (use-package undo-tree
-  :hook
-  (after-init . global-undo-tree-mode)
   :diminish undo-tree-mode
+  :hook
+  (after-init . (lambda () (global-undo-tree-mode 1)))
+  :init
+  (setq undo-tree-auto-save-history t)
+  (setq undo-tree-history-directory-alist
+        `(("" . ,(concat my/emacs-tmp-d "undo-hist"))))
+  )
+
+(use-package undo-fu
+  :config
+  (global-undo-tree-mode -1)
+  (define-key evil-normal-state-map "u" 'undo-fu-only-undo)
+  (define-key evil-normal-state-map "\C-r" 'undo-fu-only-redo)
+  :hook
+  (after-init . global-undo-fu-mode)
+  )
+
+(use-package undo-fu-session
+  :config
+  (setq undo-fu-session-incompatible-files '("/COMMIT_EDITMSG\\'" "/git-rebase-todo\\'"))
+  :hook
+  (after-init . global-undo-fu-session-mode)
+  )
+
+
+
+(use-package my/auto-save-and-backup
+  :ensure nil
+  :hook
+  (before-save . force-backup-of-buffer)
+  :init
+  (setq autosave-dir (concat my/emacs-tmp-d "autosaves/")
+        auto-save-list-file-prefix (concat my/emacs-tmp-d
+                                           "autosave-list"))
+  (if (not (file-exists-p autosave-dir))
+      (make-directory autosave-dir t))
+  (add-to-list 'auto-save-file-name-transforms
+               `("\\`/?\\([^/]*/\\)*\\([^/]*\\)\\'" ,(concat autosave-dir "\\2") t))
+  ;; tramp autosaves
+  (setq tramp-auto-save-directory (concat my/emacs-tmp-d "tramp-autosaves/"))
+  (if (not (file-exists-p tramp-auto-save-directory))
+      (make-directory tramp-auto-save-directory))
+  (setq make-backup-files t
+        vc-make-backup-files t
+        version-control t
+        kept-new-versions 256
+        kept-old-versions 2
+        delete-old-versions t
+        backup-by-copying t)
+
+  (setq backup-dir (concat my/emacs-tmp-d "backup/"))
+  (if (not (file-exists-p backup-dir))
+      (make-directory backup-dir))
+  (add-to-list 'backup-directory-alist
+               `(".*" . ,backup-dir))
+
+  ;; this is what tramp uses
+  (setq tramp-backup-directory-alist backup-directory-alist)
+
+  (defun force-backup-of-buffer ()
+    ;; Make a special "per session" backup at the first save of each
+    ;; emacs session.
+    (when (not buffer-backed-up)
+      ;; Override the default parameters for per-session backups.
+      (let ((backup-directory-alist `(("" . ,(concat my/emacs-tmp-d "session-backup/"))))
+            (kept-new-versions 3))
+        (backup-buffer)))
+    ;; Make a "per save" backup on each save.  The first save results in
+    ;; both a per-session and a per-save backup, to keep the numbering
+    ;; of per-save backups consistent.
+    (let ((buffer-backed-up nil))
+      (backup-buffer)))
   )
 
 
@@ -2945,7 +2983,7 @@ With arg N, insert N newlines."
          ("cameo collector"
           :keys "m"
           :file ,(expand-file-name "cameo.org" my-org-capture-directory)
-          :template ("%:description"
+          :template ("* %:description"
                      " %:initial")
           :children (("English"
                       :keys "e"
@@ -4678,7 +4716,7 @@ This command currently blocks the UI, sorry."
                 (local-set-key "C-s" 'isearch-forward)
                 ))
 
-    ;; (pdf-tools-install)
+    (pdf-tools-install 't)
     (maximize-screen-estate)))
 
 ;; (provide 'init-pdf)

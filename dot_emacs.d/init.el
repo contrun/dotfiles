@@ -13,12 +13,9 @@
                  (file-chase-links load-file-name))))
     (if (string= parent my/home)
         (expand-file-name "~/.emacs.d/")
-      parent
-      )
-    )
-  )
+      parent)))
 
-(setq debug-on-error t)
+;; (setq debug-on-error t)
 
 (set-face-attribute 'default nil :foreground "white" :background "black")
 
