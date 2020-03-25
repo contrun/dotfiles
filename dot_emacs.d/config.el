@@ -598,6 +598,7 @@ Selectively runs either `after-make-console-frame-hooks' or
    "s-m" 'magit-status
    "s-c" 'org-capture
    "s-a" 'org-agenda
+   "s-u" 'undo-tree-visualize
    "s-b" 'ivy-switch-buffer
    ;; "s-r" 'session-jump-to-last-change
    "s-<tab>" 'nswbuff-switch-to-next-buffer
@@ -1807,63 +1808,37 @@ This is helpful for writeroom-mode, in particular."
 (use-package undo-tree
   :diminish undo-tree-mode
   :hook
-  (after-init . (lambda () (global-undo-tree-mode 1)))
+  (after-init . global-undo-tree-mode)
+  :custom
+  (undo-tree-auto-save-history t)
   :init
-  (setq undo-tree-auto-save-history t)
   (setq undo-tree-history-directory-alist
-        `(("" . ,(concat my/emacs-tmp-d "undo-hist"))))
-  )
-
-(use-package undo-fu
-  :config
-  (global-undo-tree-mode -1)
-  (define-key evil-normal-state-map "u" 'undo-fu-only-undo)
-  (define-key evil-normal-state-map "\C-r" 'undo-fu-only-redo)
-  :hook
-  (after-init . global-undo-fu-mode)
-  )
-
-(use-package undo-fu-session
-  :config
-  (setq undo-fu-session-incompatible-files '("/COMMIT_EDITMSG\\'" "/git-rebase-todo\\'"))
-  :hook
-  (after-init . global-undo-fu-session-mode)
-  )
+        `(("" . ,(concat my/emacs-tmp-d "undo-hist")))))
 
 
 
-(use-package my/auto-save-and-backup
+(use-package my/save-and-backup
   :ensure nil
-  :hook
-  (before-save . force-backup-of-buffer)
+  ;; :hook
+  ;; (before-save . force-backup-of-buffer)
   :init
-  (setq autosave-dir (concat my/emacs-tmp-d "autosaves/")
-        auto-save-list-file-prefix (concat my/emacs-tmp-d
-                                           "autosave-list"))
-  (if (not (file-exists-p autosave-dir))
-      (make-directory autosave-dir t))
-  (add-to-list 'auto-save-file-name-transforms
-               `("\\`/?\\([^/]*/\\)*\\([^/]*\\)\\'" ,(concat autosave-dir "\\2") t))
-  ;; tramp autosaves
-  (setq tramp-auto-save-directory (concat my/emacs-tmp-d "tramp-autosaves/"))
-  (if (not (file-exists-p tramp-auto-save-directory))
-      (make-directory tramp-auto-save-directory))
-  (setq make-backup-files t
-        vc-make-backup-files t
-        version-control t
-        kept-new-versions 256
-        kept-old-versions 2
-        delete-old-versions t
-        backup-by-copying t)
+  ;; Put backup files neatly away
+  (let ((backup-dir (expand-file-name "backup" my/emacs-tmp-d))
+        (auto-saves-dir (expand-file-name "" my/emacs-tmp-d)))
+    (dolist (dir (list backup-dir auto-saves-dir))
+      (when (not (file-directory-p dir))
+        (make-directory dir t)))
+    (setq backup-directory-alist `(("" . ,backup-dir))
+          auto-save-file-name-transforms `((".*" ,auto-saves-dir t))
+          auto-save-list-file-prefix (concat auto-saves-dir ".saves-")
+          tramp-backup-directory-alist `((".*" . ,backup-dir))
+          tramp-auto-save-directory auto-saves-dir))
 
-  (setq backup-dir (concat my/emacs-tmp-d "backup/"))
-  (if (not (file-exists-p backup-dir))
-      (make-directory backup-dir))
-  (add-to-list 'backup-directory-alist
-               `(".*" . ,backup-dir))
-
-  ;; this is what tramp uses
-  (setq tramp-backup-directory-alist backup-directory-alist)
+  (setq backup-by-copying t    ; Don't delink hardlinks
+        delete-old-versions t  ; Clean up the backups
+        version-control t      ; Use version numbers on backups,
+        kept-new-versions 5    ; keep some new versions
+        kept-old-versions 2)   ; and some old ones, too
 
   (defun force-backup-of-buffer ()
     ;; Make a special "per session" backup at the first save of each
@@ -2629,7 +2604,7 @@ With arg N, insert N newlines."
 
 ;; Need to first remove from list if present, since elpa adds entries too, which
 ;; may be in an arbitrary order
-(eval-when-compile (require 'cl))
+;; (eval-when-compile (require 'cl-lib))
 (setq auto-mode-alist (cons `("\\.\\(js\\|es6\\)\\(\\.erb\\)?\\'" . ,preferred-javascript-mode)
                             (loop for entry in auto-mode-alist
                                   unless (eq preferred-javascript-mode (cdr entry))
@@ -3126,9 +3101,9 @@ With arg N, insert N newlines."
 
 (define-minor-mode prose-mode
   "Set up a buffer for prose editing.
-This enables or modifies a number of settings so that the
-experience of editing prose is a little more like that of a
-typical word processor."
+  This enables or modifies a number of settings so that the
+  experience of editing prose is a little more like that of a
+  typical word processor."
   nil " Prose" nil
   (if prose-mode
       (progn
@@ -3415,7 +3390,7 @@ typical word processor."
              (or (eq org-caldav-resume-aborted 'always)
                  (and (eq org-caldav-resume-aborted 'ask))
                  (y-or-n-p "Last sync seems to have been aborted. \
-                         Should I try to resume? ")))
+  Should I try to resume? ")))
         (org-caldav-sync-calendar org-caldav-previous-calendar t)
       (setq org-caldav-sync-result nil)
       (if (null org-caldav-calendars)
@@ -3515,9 +3490,9 @@ typical word processor."
 ;; See: http://sinewalker.wordpress.com/2008/06/26/pretty-printing-xml-with-emacs-nxml-mode/
 (defun sanityinc/pp-xml-region (beg end)
   "Pretty format XML markup in region. The function inserts
-linebreaks to separate tags that have nothing but whitespace
-between them.  It then indents the markup by using nxml's
-indentation rules."
+  linebreaks to separate tags that have nothing but whitespace
+  between them.  It then indents the markup by using nxml's
+  indentation rules."
   (interactive "r")
   (unless (use-region-p)
     (setq beg (point-min)
@@ -3841,7 +3816,7 @@ indentation rules."
 
 (defun sanityinc/fix-postgres-prompt-regexp ()
   "Work around https://debbugs.gnu.org/cgi/bugreport.cgi?bug=22596.
-Fix for the above hasn't been released as of Emacs 25.2."
+  Fix for the above hasn't been released as of Emacs 25.2."
   (when (eq sql-product 'postgres)
     (setq-local sql-prompt-regexp "^[[:alnum:]_]*=[#>] ")
     (setq-local sql-prompt-cont-regexp "^[[:alnum:]_]*[-(][#>] ")))
@@ -3882,8 +3857,8 @@ Fix for the above hasn't been released as of Emacs 25.2."
 
 (defun sanityinc/sqlformat (beg end)
   "Reformat SQL in region from BEG to END using the \"sqlformat\" program.
-If no region is active, the current statement (paragraph) is reformatted.
-Install the \"sqlparse\" (Python) package to get \"sqlformat\"."
+  If no region is active, the current statement (paragraph) is reformatted.
+  Install the \"sqlparse\" (Python) package to get \"sqlformat\"."
   (interactive "r")
   (unless (use-region-p)
     (setq beg (save-excursion
@@ -3903,20 +3878,20 @@ Install the \"sqlparse\" (Python) package to get \"sqlformat\"."
 ;;   - PEV
 (defun sanityinc/sql-explain-region-as-json (beg end &optional copy)
   "Explain the SQL between BEG and END in detailed JSON format.
-This is suitable for pasting into tools such as
-http://tatiyants.com/pev/.
+  This is suitable for pasting into tools such as
+  http://tatiyants.com/pev/.
 
-When the prefix argument COPY is non-nil, do not display the
-resulting JSON, but instead copy it to the kill ring.
+  When the prefix argument COPY is non-nil, do not display the
+  resulting JSON, but instead copy it to the kill ring.
 
-If the region is not active, uses the current paragraph, as per
-`sql-send-paragraph'.
+  If the region is not active, uses the current paragraph, as per
+  `sql-send-paragraph'.
 
-Connection information is taken from the special sql-* variables
-set in the current buffer, so you will usually want to start a
-SQLi session first, or otherwise set `sql-database' etc.
+  Connection information is taken from the special sql-* variables
+  set in the current buffer, so you will usually want to start a
+  SQLi session first, or otherwise set `sql-database' etc.
 
-This command currently blocks the UI, sorry."
+  This command currently blocks the UI, sorry."
   (interactive "rP")
   (unless (eq sql-product 'postgres)
     (user-error "This command is for PostgreSQL only"))
@@ -3937,7 +3912,7 @@ This command currently blocks the UI, sorry."
                          "-w"             ; Never prompt for password
                          "-E"
                          "-c" (concat "EXPLAIN (ANALYZE, COSTS, VERBOSE, BUFFERS, FORMAT JSON) " query ";")
-                         ))
+  ))
              (err-file (make-temp-file "sql-explain-json")))
         (with-current-buffer (get-buffer-create "*sql-explain-json*")
           (setq buffer-read-only nil)
@@ -4691,8 +4666,9 @@ This command currently blocks the UI, sorry."
 (use-package latex-unicode-math-mode)
 
 ;; (provide 'init-tex)
+
 ;; (require 'init-pdf)
-(defun maximize-screen-estate ()
+(defun toogle-max-screen-estate ()
   "maximize screen estate"
   (interactive)
   (toggle-mode-line))
@@ -4709,15 +4685,12 @@ This command currently blocks the UI, sorry."
   :magic ("%PDF" . pdf-view-mode)
   :custom
   (image-cache-eviction-delay 150)
-  :config
-  (progn
-    (add-hook 'nix-mode-hook
-              (lambda ()
-                (local-set-key "C-s" 'isearch-forward)
-                ))
-
-    (pdf-tools-install 't)
-    (maximize-screen-estate)))
+  :hook
+  (pdf-view-mode . (lambda ()
+                     (local-set-key "C-s" 'isearch-forward)
+                     (toogle-max-screen-estate)))
+  (after-init . (lambda () (pdf-tools-install t)))
+  )
 
 ;; (provide 'init-pdf)
 

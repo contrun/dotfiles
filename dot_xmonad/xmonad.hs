@@ -372,17 +372,17 @@ myAddtionalKeys =
              (launcherMode1 "p", spawn "zathura"),
              (launcherMode1 "k", spawn "keepassxc"),
              (launcherMode1 "l", spawn "calibre"),
+             (launcherMode1 "w", spawn "wireshark"),
              (launcherMode1 "s", safeSpawn "emacsclient" ["-c", "-e", "(sunrise)"]),
              (launcherMode1 "m", safeSpawn "emacsclient" ["-c", "-e", "(mu4e)"]),
              (launcherMode1 "c", uncurryN safeSpawn $ myGetTerminalCommand Nothing Nothing ["mc"])
            ]
-        ++ [ (launcherMode2 "e", spawn "emacsclientmod"),
+        ++ [ (launcherMode2 "e", safeSpawn "emacsclient" ["-c", "-e", "(elfeed)"]),
              (launcherMode2 "d", spawn "noDisturb.sh"),
              (launcherMode2 "a", spawn "randomArt.sh"),
              (launcherMode2 "b", spawn "chromium"),
              (launcherMode2 "k", spawn "keymap.sh"),
              (launcherMode2 "m", spawn "mpv"),
-             (launcherMode1 "w", spawn "wireshark"),
              (launcherMode2 "f", spawn "pcmanfm")
            ]
         ++ [ (alternativeMode "t", myScratchpadSpawnAction)
