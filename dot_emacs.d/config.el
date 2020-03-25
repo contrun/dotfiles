@@ -1,12 +1,6 @@
 ;; -*- lexical-binding: t; coding: utf-8; no-byte-compile: t; -*-
 ;;; Main configuration file
 
-(add-to-list 'load-path (expand-file-name "lisp" my/emacs-d))
-
-(defconst my/emacs-tmp-d (expand-file-name "tmp" my/emacs-d))
-
-(defconst *is-a-mac* (eq system-type 'darwin))
-
 ;;----------------------------------------------------------------------------
 ;; Adjust garbage collection thresholds during startup, and thereafter
 ;;----------------------------------------------------------------------------
@@ -16,203 +10,23 @@
   (add-hook 'emacs-startup-hook
             (lambda () (setq gc-cons-threshold normal-gc-cons-threshold))))
 (setq read-process-output-max (* 1024 1024))
-
-;;----------------------------------------------------------------------------
-;; String utilities missing from core emacs
-;;----------------------------------------------------------------------------
-(defun sanityinc/string-all-matches (regex str &optional group)
-  "Find all matches for `REGEX' within `STR', returning the full match string or group `GROUP'."
-  (let ((result nil)
-        (pos 0)
-        (group (or group 0)))
-    (while (string-match regex str pos)
-      (push (match-string group str) result)
-      (setq pos (match-end group)))
-    result))
-
-
-;;----------------------------------------------------------------------------
-;; Delete the current file
-;;----------------------------------------------------------------------------
-(defun delete-this-file ()
-  "Delete the current file, and kill the buffer."
-  (interactive)
-  (unless (buffer-file-name)
-    (error "No file is currently being edited"))
-  (when (yes-or-no-p (format "Really delete '%s'?"
-                             (file-name-nondirectory buffer-file-name)))
-    (delete-file (buffer-file-name))
-    (kill-this-buffer)))
-
-
-;;----------------------------------------------------------------------------
-;; Rename the current file
-;;----------------------------------------------------------------------------
-;; Originally from stevey, adapted to support moving to a new directory.
-(defun rename-file-and-buffer (new-name)
-  "Renames both current buffer and file it's visiting to NEW-NAME."
-  (interactive
-   (progn
-     (if (not (buffer-file-name))
-         (error "Buffer '%s' is not visiting a file!" (buffer-name)))
-     ;; Disable ido auto merge since it too frequently jumps back to the original
-     ;; file name if you pause while typing. Reenable with C-z C-z in the prompt.
-     (let ((ido-auto-merge-work-directories-length -1))
-       (list (read-file-name (format "Rename %s to: " (file-name-nondirectory
-                                                       (buffer-file-name))))))))
-  (if (equal new-name "")
-      (error "Aborted rename"))
-  (setq new-name (if (file-directory-p new-name)
-                     (expand-file-name (file-name-nondirectory
-                                        (buffer-file-name))
-                                       new-name)
-                   (expand-file-name new-name)))
-  ;; Only rename if the file was saved before. Update the
-  ;; buffer name and visited file in all cases.
-  (if (file-exists-p (buffer-file-name))
-      (rename-file (buffer-file-name) new-name 1))
-  (let ((was-modified (buffer-modified-p)))
-    ;; This also renames the buffer, and works with uniquify
-    (set-visited-file-name new-name)
-    (if was-modified
-        (save-buffer)
-      ;; Clear buffer-modified flag caused by set-visited-file-name
-      (set-buffer-modified-p nil)))
-
-  (setq default-directory (file-name-directory new-name))
-
-  (message "Renamed to %s." new-name))
-
-;;----------------------------------------------------------------------------
-;; Browse current HTML file
-;;----------------------------------------------------------------------------
-(defun browse-current-file ()
-  "Open the current file as a URL using `browse-url'."
-  (interactive)
-  (let ((file-name (buffer-file-name)))
-    (if (and (fboundp 'tramp-tramp-file-p)
-             (tramp-tramp-file-p file-name))
-        (error "Cannot open tramp file")
-      (browse-url (concat "file://" file-name)))))
-
-;;----------------------------------------------------------------------------
-;; declare prefix for mode
-;;----------------------------------------------------------------------------
-
-(defvar my-major-mode-leader-key ","
-  "Major mode leader key is a shortcut key which is the equivalent of
-pressing `<leader> m`. Set it to `nil` to disable it.")
-
-(defun my-toggle-var (var)
-  "..."
-  (interactive
-   (let* ((def  (variable-at-point))
-          (def  (and def
-                     (not (numberp def))
-                     (memq (symbol-value def) '(nil t))
-                     (symbol-name def))))
-     (list
-      (completing-read
-       "Toggle value of variable: "
-       obarray (lambda (c)
-                 (unless (symbolp c) (setq c  (intern c)))
-                 (and (boundp c)  (memq (symbol-value c) '(nil t))))
-       'must-confirm nil 'variable-name-history def))))
-  (let ((sym  (intern var)))
-    (set sym (not (symbol-value sym)))
-    (message "`%s' is now `%s'" var (symbol-value sym))))
-
-(defmacro my-save-excursion (&rest forms)
-  (let ((old-point (gensym "old-point"))
-        (old-buff (gensym "old-buff")))
-    `(let ((,old-point (point))
-           (,old-buff (current-buffer)))
-       (prog1
-           (progn ,@forms)
-         (unless (eq (current-buffer) ,old-buff)
-           (switch-to-buffer ,old-buff))
-         (goto-char ,old-point)))))
-
-;; https://emacs.stackexchange.com/questions/80/how-can-i-quickly-toggle-between-a-file-and-a-scratch-buffer-having-the-same-m
-(defun modi/switch-to-scratch-and-back (&optional arg)
-  "Toggle between *scratch-MODE* buffer and the current buffer.
-If a scratch buffer does not exist, create it with the major mode set to that
-of the buffer from where this function is called.
-
-        COMMAND -> Open/switch to a scratch buffer in the current buffer's major mode
-    C-0 COMMAND -> Open/switch to a scratch buffer in `fundamental-mode'
-    C-u COMMAND -> Open/switch to a scratch buffer in `org-mode'
-C-u C-u COMMAND -> Open/switch to a scratch buffer in `emacs-elisp-mode'
-
-Even if the current major mode is a read-only mode (derived from `special-mode'
-or `dired-mode'), we would want to be able to write in the scratch buffer. So
-the scratch major mode is set to `org-mode' for such cases.
-
-Return the scratch buffer opened."
-  (interactive "p")
-  (if (and (or (null arg)               ; no prefix
-               (= arg 1))
-           (string-match-p "\\*scratch" (buffer-name)))
-      (switch-to-buffer (other-buffer))
-    (let* ((mode-str (cl-case arg
-                       (0  "fundamental-mode") ; C-0
-                       (4  "org-mode") ; C-u
-                       (16 "emacs-lisp-mode") ; C-u C-u
-                       ;; If the major mode turns out to be a `special-mode'
-                       ;; derived mode, a read-only mode like `help-mode', open
-                       ;; an `org-mode' scratch buffer instead.
-                       (t (if (or (derived-mode-p 'special-mode) ; no prefix
-                                  (derived-mode-p 'dired-mode))
-                              "org-mode"
-                            (format "%s" major-mode)))))
-           (buf (get-buffer-create (concat "*scratch-" mode-str "*"))))
-      (switch-to-buffer buf)
-      (funcall (intern mode-str))   ; http://stackoverflow.com/a/7539787/1219634
-      buf)))
-
-(defun switch-to-scratch-and-back ()
-  "Toggle between *scratch* buffer and the current buffer.
-     If the *scratch* buffer does not exist, create it."
-  (interactive)
-  (let ((scratch-buffer-name (get-buffer-create "*scratch*")))
-    (if (equal (current-buffer) scratch-buffer-name)
-        (switch-to-buffer (other-buffer))
-      (switch-to-buffer scratch-buffer-name (lisp-interaction-mode)))))
-
-(defun copy-file-name-to-clipboard ()
-  "Copy the current buffer file name to the clipboard."
-  (interactive)
-  (let ((filename (if (equal major-mode 'dired-mode)
-                      default-directory
-                    (buffer-file-name))))
-    (when filename
-      (kill-new filename)
-      (message "Copied buffer file name '%s' to the clipboard." filename))))
-
-;; (provide 'init-utils)
-;; (require 'init-site-lisp) ;; Must come before elpa, as it may provide package.el
-;;; Set load path
-
-
-(eval-when-compile (require 'cl-lib))
-(defun sanityinc/add-subdirs-to-load-path (parent-dir)
-  "Adds every non-hidden subdir of PARENT-DIR to `load-path'."
-  (let* ((default-directory parent-dir))
-    (progn
-      (setq load-path
-            (append
-             (cl-remove-if-not
-              (lambda (dir) (file-directory-p dir))
-              (directory-files (expand-file-name parent-dir) t "^[^\\.]"))
-             load-path)))))
-
-(let ((site-lisp-dir (expand-file-name "site-lisp" my/emacs-d)))
-  (if (file-directory-p site-lisp-dir)
-      (sanityinc/add-subdirs-to-load-path
-       (expand-file-name "site-lisp/" my/emacs-d))
-    ))
+(require 'cl-lib)
 
 ;;; Utilities for grabbing upstream libs
+
+(defun my/path-under-emacs-d (path)
+  "Expand `PATH' to path under `my/emacs-d'"
+  (expand-file-name path my/emacs-d))
+
+(defun my/add-subdirs-to-load-path (dir)
+  "Add every subdir of DIR to `load-path', do nothing on DIR does not exist"
+  (let ((default-directory dir))
+    (message "adding dir %s to load-path" dir)
+    (normal-top-level-add-to-load-path '("."))
+    (normal-top-level-add-subdirs-to-load-path)))
+
+(dolist (dir '("lisp" "site-lisp" "secret"))
+  (my/add-subdirs-to-load-path (my/path-under-emacs-d dir)))
 
 (defun site-lisp-dir-for (name)
   (expand-file-name (format "site-lisp/%s" name) my/emacs-d))
@@ -240,39 +54,20 @@ source file under ~/.emacs.d/site-lisp/name/"
   (let ((f (locate-library (symbol-name name))))
     (and f (string-prefix-p (file-name-as-directory (site-lisp-dir-for name)) f))))
 
-
-;; (provide 'init-site-lisp)
-;; Calls (package-initialize)
-;; (require 'init-secret-lisp)
-(let ((dir (expand-file-name "~/.emacs.d/secret/")))
-  (if (file-directory-p dir)
-      (progn
-        (add-to-list 'load-path dir)
-        (let ((default-directory dir))
-          (normal-top-level-add-subdirs-to-load-path))
-        )))
-
-;; (provide 'init-secret-lisp)
-;; (require 'init-elpa)      ;; Machinery for installing required packages
-(require 'package)
-
 
+(require 'package)
 ;;; Install into separate package dirs for each Emacs version, to prevent bytecode incompatibility
 (let ((versioned-package-dir
        (expand-file-name (format "elpa-%s.%s" emacs-major-version emacs-minor-version)
                          my/emacs-d)))
   (setq package-user-dir versioned-package-dir))
 
-
-
 ;;; Standard package repositories
-
-(setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3") ;; https://www.reddit.com/r/emacs/comments/cdei4p/failed_to_download_gnu_archive_bad_request/
-
 (let* ((no-ssl (and (memq system-type '(windows-nt ms-dos))
                     (not (gnutls-available-p))))
        (proto (if no-ssl "http" "https")))
   (add-to-list 'package-archives (cons "melpa" (concat proto "://melpa.org/packages/")) t)
+  (add-to-list 'package-archives (cons "org" (concat proto "://orgmode.org/elpa/")) t)
   ;; Official MELPA Mirror, in case necessary.
   ;;(add-to-list 'package-archives (cons "melpa-mirror" (concat proto "://www.mirrorservice.org/sites/melpa.org/packages/")) t)
   (if (< emacs-major-version 24)
@@ -282,14 +77,7 @@ source file under ~/.emacs.d/site-lisp/name/"
       ;; Force SSL for GNU ELPA
       (setcdr (assoc "gnu" package-archives) "https://elpa.gnu.org/packages/"))))
 
-;; We include the org repository for completeness, but don't normally
-;; use it.
-(add-to-list 'package-archives '("org" . "http://orgmode.org/elpa/"))
-
-
-
 ;;; On-demand installation of packages
-
 (defun my/install-package (package &optional min-version no-refresh)
   "Install given PACKAGE, optionally requiring MIN-VERSION.
 If NO-REFRESH is non-nil, the available package lists will not be
@@ -300,8 +88,7 @@ re-downloaded in order to locate PACKAGE."
         (package-install package)
       (progn
         (package-refresh-contents)
-        (my/install-package package min-version t))))
-  )
+        (my/install-package package min-version t)))))
 
 (defun my/try-install-package (package &optional min-version no-refresh)
   "Try to install PACKAGE, and return non-nil if successful.
@@ -315,68 +102,63 @@ locate PACKAGE."
      (message "Couldn't install optional package `%s': %S" package err)
      nil)))
 
-
 ;;; Fire up package.el
-
 (setq package-enable-at-startup nil)
 (package-initialize)
 
-;; package.el updates the saved version of package-selected-packages correctly only
-;; after custom-file has been loaded, which is a bug. We work around this by adding
-;; the required packages to package-selected-packages after startup is complete.
-;; (when (fboundp 'package--save-selected-packages)
-;;   (my/try-install-package 'seq)
-;;   (add-hook 'after-init-hook
-;;             (lambda () (package--save-selected-packages
-;;                    (seq-uniq (append sanityinc/required-packages package-selected-packages))))))
-
-;; 
-;; (my/try-install-package 'fullframe)
-;; (fullframe list-packages quit-window)
-
-;; 
-;; (my/try-install-package 'cl-lib)
-;; (require 'cl-lib)
-
-;; (defun sanityinc/set-tabulated-list-column-width (col-name width)
-;;   "Set any column with name COL-NAME to the given WIDTH."
-;;   (when (> width (length col-name))
-;;     (cl-loop for column across tabulated-list-format
-;;              when (string= col-name (car column))
-;;              do (setf (elt column 1) width))))
-
-;; (defun sanityinc/maybe-widen-package-menu-columns ()
-;;   "Widen some columns of the package menu table to avoid truncation."
-;;   (when (boundp 'tabulated-list-format)
-;;     (sanityinc/set-tabulated-list-column-width "Version" 13)
-;;     (let ((longest-archive-name (apply 'max (mapcar 'length (mapcar 'car package-archives)))))
-;;       (sanityinc/set-tabulated-list-column-width "Archive" longest-archive-name))))
-
-;; (add-hook 'package-menu-mode-hook 'sanityinc/maybe-widen-package-menu-columns)
-
+;;; Install use-package
 (my/try-install-package 'use-package)
-(eval-when-compile
-  ;; (defvar use-package-verbose t)
-  ;; (defvar use-package-expand-minimally t)
-  (require 'use-package))
+(require 'use-package)
 
 ;; Enable defer and ensure by default for use-package
 (setq use-package-always-defer t
       use-package-always-ensure t)
 
-(defun my/bootstrap-straight ()
-  (let ((bootstrap-file (concat my/emacs-d "straight/repos/straight.el/bootstrap.el"))
-        (bootstrap-version 3))
-    (unless (file-exists-p bootstrap-file)
-      (with-current-buffer
-          (url-retrieve-synchronously
-           "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
-           'silent 'inhibit-cookies)
-        (goto-char (point-max))
-        (eval-print-last-sexp)))
-    (load bootstrap-file nil 'nomessage)))
+;;; Utilities for grabbing upstream libs
 
-;; (my/bootstrap-straight)
+(use-package my/constants
+  :ensure nil
+  :init
+  (defconst *is-a-mac* (eq system-type 'darwin))
+  (defconst my/emacs-tmp-d (my/path-under-emacs-d "tmp")))
+
+;;; Utilities for grabbing upstream libs
+
+(use-package my/functions
+  :ensure nil
+  :init
+  ;;----------------------------------------------------------------------------
+  ;; String utilities missing from core emacs
+  ;;----------------------------------------------------------------------------
+  (defun sanityinc/string-all-matches (regex str &optional group)
+    "Find all matches for `REGEX' within `STR', returning the full match string or group `GROUP'."
+    (let ((result nil)
+          (pos 0)
+          (group (or group 0)))
+      (while (string-match regex str pos)
+        (push (match-string group str) result)
+        (setq pos (match-end group)))
+      result))
+  )
+
+;;; Utilities for grabbing upstream libs
+
+(use-package my/bootstrap-straight
+  :ensure nil
+  :init
+  (defun my/bootstrap-straight ()
+    (let ((bootstrap-file (concat my/emacs-d "straight/repos/straight.el/bootstrap.el"))
+          (bootstrap-version 3))
+      (unless (file-exists-p bootstrap-file)
+        (with-current-buffer
+            (url-retrieve-synchronously
+             "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
+             'silent 'inhibit-cookies)
+          (goto-char (point-max))
+          (eval-print-last-sexp)))
+      (load bootstrap-file nil 'nomessage)))
+  ;; (my/bootstrap-straight)
+  )
 
 (use-package el-get
   :demand t
@@ -402,7 +184,7 @@ locate PACKAGE."
   )
 
 (use-package auto-package-update
-  :config
+  :init
   (setq auto-package-update-delete-old-versions t)
   (setq auto-package-update-hide-results t)
   (auto-package-update-maybe))
@@ -419,7 +201,7 @@ locate PACKAGE."
              paradox-list-packages)
   )
 
-;; (provide 'init-elpa)
+;;; Utilities for grabbing upstream libs
 
 (use-package exec-path-from-shell
   :init
@@ -430,10 +212,6 @@ locate PACKAGE."
 
 (use-package ssh-agency)
 
-;;----------------------------------------------------------------------------
-;; Allow users to provide an optional "init-preload-local.el"
-;;----------------------------------------------------------------------------
-;; (require 'init-preload-local nil t)
 (use-package no-littering
   :config
   (setq no-littering-etc-directory
@@ -441,12 +219,6 @@ locate PACKAGE."
   (setq no-littering-var-directory
         (expand-file-name "data/" user-emacs-directory))
   )
-
-;; (provide 'init-preload-local)
-
-;;----------------------------------------------------------------------------
-;; Load configs for specific features and modes
-;;----------------------------------------------------------------------------
 
 (use-package wgrep)
 (use-package diminish)
@@ -524,14 +296,17 @@ Selectively runs either `after-make-console-frame-hooks' or
 
   ;; Set your own keyboard shortcuts to reload/save/switch WGs:
   ;; "s" == "Super" or "Win"-key, "S" == Shift, "C" == Control
+  (defvar my-major-mode-leader-key ","
+    "Major mode leader key is a shortcut key which is the equivalent of
+pressing `<leader> m`. Set it to `nil` to disable it.")
   (setq my-leader1 "s-,")
   (general-define-key :prefix my-leader1
                       "g" 'counsel-git
                       "s" 'counsel-git-grep
                       "k" 'counsel-ag
-                      "l" 'counsel-locate
+                      "L" 'counsel-locate
                       "b" 'link-hint-open-link
-                      "c" 'link-hint-copy-link
+                      "l" 'link-hint-copy-link
                       "a" 'org-agenda
                       "p" 'prodigy
                       "x" 'my-expand-file-name-at-point
@@ -577,7 +352,6 @@ Selectively runs either `after-make-console-frame-hooks' or
    "s-s" 'modi/switch-to-scratch-and-back
    "s-m" 'magit-status
    "s-c" 'org-capture
-   "s-a" 'org-agenda
    "s-u" 'undo-tree-visualize
    "s-b" 'ivy-switch-buffer
    ;; "s-r" 'session-jump-to-last-change
@@ -624,53 +398,8 @@ Selectively runs either `after-make-console-frame-hooks' or
    "C-S-<pause>" 'wg-save-session
 
    "<f23>" 'set-mark-command)
+
   (define-key read-expression-map (kbd "C-r") 'counsel-expression-history)
-  (setq sp-leader "s-'")
-  (general-define-key :prefix sp-leader :keymaps 'smartparens-mode-map
-                      "s-a" 'sp-beginning-of-sexp
-                      "s-e" 'sp-end-of-sexp
-
-                      "j" 'sp-down-sexp
-                      "k"   'sp-up-sexp
-                      "s-j" 'sp-backward-down-sexp
-                      "s-k" 'sp-backward-up-sexp
-                      "s-f" 'sp-forward-sexp
-                      "s-b" 'sp-backward-sexp
-
-                      "s-n" 'sp-next-sexp
-                      "s-p" 'sp-previous-sexp
-
-                      "f" 'sp-forward-symbol
-                      "b" 'sp-backward-symbol
-
-                      "l" 'sp-forward-slurp-sexp
-                      "s-l" 'sp-forward-barf-sexp
-                      "h"  'sp-backward-slurp-sexp
-                      "s-h"  'sp-backward-barf-sexp
-                      "s-t" 'sp-transpose-sexp
-                      "s-x" 'sp-kill-sexp
-                      "x"   'sp-kill-hybrid-sexp
-                      "s-d"   'sp-backward-kill-sexp
-                      "s-c" 'sp-copy-sexp
-                      "d" 'delete-sexp
-
-                      "M-d" 'backward-kill-word
-                      "C-d" 'sp-backward-kill-word
-                      ;;[remap sp-backward-kill-word] 'backward-kill-word
-
-                      "u" 'sp-backward-unwrap-sexp
-                      "s-u" 'sp-unwrap-sexp
-
-                      "("  'wrap-with-parens
-                      "["  'wrap-with-brackets
-                      "{"  'wrap-with-braces
-                      "'"  'wrap-with-single-quotes
-
-
-                      "\"" 'wrap-with-double-quotes
-                      "_"  'wrap-with-underscores
-                      "`"  'wrap-with-back-quotes
-                      )
 
   ;; set up my own map
   (define-prefix-command 'customized-map)
@@ -1382,7 +1111,7 @@ instead."
 (add-to-list 'completion-styles 'initials t)
 
 (use-package company
-  :diminish company "CMP"
+  :diminish
   :init
   (global-company-mode 1)
   (defun local-push-company-backend (backend)
@@ -1416,6 +1145,7 @@ instead."
   )
 
 (use-package company-box
+  :diminish
   :hook (company-mode . company-box-mode))
 
 (use-package company-tabnine
@@ -3322,10 +3052,10 @@ With arg N, insert N newlines."
 (when (and *is-a-mac* (file-directory-p "/Applications/org-clock-statusbar.app"))
   (add-hook 'org-clock-in-hook
             (lambda () (call-process "/usr/bin/osascript" nil 0 nil "-e"
-                                     (concat "tell application \"org-clock-statusbar\" to clock in \"" org-clock-current-task "\""))))
+                                (concat "tell application \"org-clock-statusbar\" to clock in \"" org-clock-current-task "\""))))
   (add-hook 'org-clock-out-hook
             (lambda () (call-process "/usr/bin/osascript" nil 0 nil "-e"
-                                     "tell application \"org-clock-statusbar\" to clock out"))))
+                                "tell application \"org-clock-statusbar\" to clock out"))))
 
 
 
@@ -3877,8 +3607,8 @@ With arg N, insert N newlines."
                          "-w"             ; Never prompt for password
                          "-E"
                          "-c" (concat "EXPLAIN (ANALYZE, COSTS, VERBOSE, BUFFERS, FORMAT JSON) " query ";")
-  ))
-  (err-file (make-temp-file "sql-explain-json")))
+                         ))
+             (err-file (make-temp-file "sql-explain-json")))
         (with-current-buffer (get-buffer-create "*sql-explain-json*")
           (setq buffer-read-only nil)
           (delete-region (point-min) (point-max))
@@ -3921,7 +3651,6 @@ With arg N, insert N newlines."
   :hook
   (yaml-mode . goto-address-prog-mode)
   )
-
 
 ;; (provide 'init-yaml)
 ;; (require 'init-json)
@@ -4002,11 +3731,46 @@ With arg N, insert N newlines."
 ;; See also init-paredit.el
 
 (use-package smartparens
-  :config
+  :init
   (setq sp-show-pair-from-inside nil)
   (require 'smartparens-config)
   (smartparens-global-mode 1)
-  :diminish smartparens-mode)
+  :diminish smartparens-mode
+  :bind
+  ("s-a s-a" . 'sp-beginning-of-sexp)
+  ("s-a s-e" . 'sp-end-of-sexp)
+  ("s-a j" . 'sp-down-sexp)
+  ("s-a k" .   'sp-up-sexp)
+  ("s-a s-j" . 'sp-backward-down-sexp)
+  ("s-a s-k" . 'sp-backward-up-sexp)
+  ("s-a s-f" . 'sp-forward-sexp)
+  ("s-a s-b" . 'sp-backward-sexp)
+  ("s-a s-n" . 'sp-next-sexp)
+  ("s-a s-p" . 'sp-previous-sexp)
+  ("s-a f" . 'sp-forward-symbol)
+  ("s-a b" . 'sp-backward-symbol)
+  ("s-a l" . 'sp-forward-slurp-sexp)
+  ("s-a s-l" . 'sp-forward-barf-sexp)
+  ("s-a h" .  'sp-backward-slurp-sexp)
+  ("s-a s-h" .  'sp-backward-barf-sexp)
+  ("s-a s-t" . 'sp-transpose-sexp)
+  ("s-a s-x" . 'sp-kill-sexp)
+  ("s-a x" .   'sp-kill-hybrid-sexp)
+  ("s-a s-d" .   'sp-backward-kill-sexp)
+  ("s-a s-c" . 'sp-copy-sexp)
+  ("s-a d" . 'delete-sexp)
+  ("s-a M-d" . 'backward-kill-word)
+  ("s-a C-d" . 'sp-backward-kill-word)
+  ("s-a u" . 'sp-backward-unwrap-sexp)
+  ("s-a s-u" . 'sp-unwrap-sexp)
+  ("s-a (" .  'wrap-with-parens)
+  ("s-a [" .  'wrap-with-brackets)
+  ("s-a {" .  'wrap-with-braces)
+  ("s-a '" .  'wrap-with-single-quotes)
+  ("s-a \"" . 'wrap-with-double-quotes)
+  ("s-a _" .  'wrap-with-underscores)
+  ("s-a `" .  'wrap-with-back-quotes)
+  )
 
 ;; (provide 'init-smartparens)
 ;; (require 'init-snippets)
@@ -4016,7 +3780,8 @@ With arg N, insert N newlines."
                "~/.emacs.d/plugins/yasnippet")
   (require 'yasnippet)
   (yas-global-mode 1)
-  )
+  :diminish yas-minor-mode)
+
 ;; (provide 'init-snippets)
 ;; (require 'init-lisp)
 (use-package elisp-slime-nav)
@@ -4672,56 +4437,41 @@ With arg N, insert N newlines."
 ;; (provide 'init-proof)
 ;; (require 'init-language)
 (use-package synosaurus
-  :after general
-  :config
-  (general-define-key
-   "s-x l" 'synosaurus-lookup
-   "s-x r" 'synosaurus-choose-and-replace
-   "s-x i" 'synosaurus-choose-and-insert
-   )
-  )
+  :bind
+  ("s-x l" . 'synosaurus-lookup)
+  ("s-x r" . 'synosaurus-choose-and-replace)
+  ("s-x i" . 'synosaurus-choose-and-insert))
 
 (use-package langtool
-  :after general
+  :bind
+  ("s-x K" . 'langtool-check)
+  ("s-x D" . 'langtool-check-done)
+  ("s-x L" . 'langtool-switch-default-language)
+  ("s-x s-m" . 'langtool-show-message-at-point)
+  ("s-x s-l" . 'langtool-correct-buffer)
   :config
   (setq langtool-default-language "en-US")
   (let ((server (executable-find "languagetool-commandline")))
-    (if server (setq langtool-bin server))
-    )
-
-  (general-define-key
-   "s-x K" 'langtool-check
-   "s-x D" 'langtool-check-done
-   "s-x L" 'langtool-switch-default-language
-   "s-x s-m" 'langtool-show-message-at-point
-   "s-x s-l" 'langtool-correct-buffer
-   )
+    (if server (setq langtool-bin server)))
   )
 
 (use-package flyspell
-  :after general
   :hook (prog-mode . flyspell-prog-mode)
+  :bind
+  ("s-x s" . 'flyspell-mode)
+  ("s-x n" . 'flyspell-correct-next)
+  ("s-x p" . 'flyspell-correct-previous)
+  ("s-x s-n" . 'flyspell-goto-next-error)
+  ("s-x s-p" . 'flyspell-correct-previous)
+  ("s-x s-x" . 'flyspell-auto-correct-word)
+  ("s-x x" . 'flyspell-correct-at-point)
+  ("s-x b" . 'flyspell-correct-word-before-point)
+  ("s-x c" . 'flyspell-do-correct)
+  ("s-x d" . 'ispell-change-dictionary)
+  ("s-x s-b" . 'flyspell-buffer)
   :init
-  (add-hook 'prog-mode-hook 'flyspell-prog-mode)
-  (general-define-key
-   ;; "s-x a" 'flyspell-auto-correct-word
-   "s-x s" 'flyspell-mode
-   "s-x n" 'flyspell-correct-next
-   "s-x p" 'flyspell-correct-previous
-   "s-x s-n" 'flyspell-goto-next-error
-   "s-x s-p" 'flyspell-correct-previous
-   "s-x s-x" 'flyspell-auto-correct-word
-   "s-x x" 'flyspell-correct-at-point
-   "s-x b" 'flyspell-correct-word-before-point
-   "s-x c" 'flyspell-do-correct
-   "s-x d" 'ispell-change-dictionary
-   "s-x s-b" 'flyspell-buffer
-   )
-
   (setq ispell-dictionary "english")
-  (with-eval-after-load 'flyspell
-    ;; (define-key flyspell-mode-map (kbd "C-;") nil)
-    (add-to-list 'flyspell-prog-text-faces 'nxml-text-face))
+  ;; (define-key flyspell-mode-map (kbd "C-;") nil)
   ;; if (aspell installed) { use aspell}
   ;; else if (hunspell installed) { use hunspell }
   ;; whatever spell checker I use, I always use English dictionary
@@ -4788,12 +4538,12 @@ With arg N, insert N newlines."
       (setq-local ispell-extra-args (flyspell-detect-ispell-args)))
     (add-hook 'text-mode-hook 'text-mode-hook-setup)
     )
-
   )
 
-(use-package chinese-yasdcv)
+;; (use-package chinese-yasdcv)
 
 (use-package google-this
+  :diminish google-this-mode
   :init
   (google-this-mode 1)
   (global-set-key (kbd "s-/") 'google-this-mode-submap))
@@ -4801,12 +4551,9 @@ With arg N, insert N newlines."
 (use-package github-search)
 
 (use-package sdcv
-  :after general
-  :init
-  (general-define-key
-   "s-x s-d" 'sdcv-search-input
-   "s-x s-c" 'sdcv-search-pointer
-   )
+  :bind
+  ("s-x s-d" . 'sdcv-search-input)
+  ("s-x s-c" . 'sdcv-search-pointer)
   )
 
 ;; (provide 'init-language)
@@ -5392,3 +5139,159 @@ With arg N, insert N newlines."
     (if (f-exists? (expand-file-name my/just-format-it-root-marker (projectile-project-root)))
         (format-all-mode 1)
       (format-all-mode -1))))
+
+(use-package my/convenient-functions
+  :ensure nil
+  :init
+  ;;----------------------------------------------------------------------------
+  ;; Delete the current file
+  ;;----------------------------------------------------------------------------
+  (defun delete-this-file ()
+    "Delete the current file, and kill the buffer."
+    (interactive)
+    (unless (buffer-file-name)
+      (error "No file is currently being edited"))
+    (when (yes-or-no-p (format "Really delete '%s'?"
+                               (file-name-nondirectory buffer-file-name)))
+      (delete-file (buffer-file-name))
+      (kill-this-buffer)))
+
+
+  ;;----------------------------------------------------------------------------
+  ;; Rename the current file
+  ;;----------------------------------------------------------------------------
+  ;; Originally from stevey, adapted to support moving to a new directory.
+  (defun rename-file-and-buffer (new-name)
+    "Renames both current buffer and file it's visiting to NEW-NAME."
+    (interactive
+     (progn
+       (if (not (buffer-file-name))
+           (error "Buffer '%s' is not visiting a file!" (buffer-name)))
+       ;; Disable ido auto merge since it too frequently jumps back to the original
+       ;; file name if you pause while typing. Reenable with C-z C-z in the prompt.
+       (let ((ido-auto-merge-work-directories-length -1))
+         (list (read-file-name (format "Rename %s to: " (file-name-nondirectory
+                                                         (buffer-file-name))))))))
+    (if (equal new-name "")
+        (error "Aborted rename"))
+    (setq new-name (if (file-directory-p new-name)
+                       (expand-file-name (file-name-nondirectory
+                                          (buffer-file-name))
+                                         new-name)
+                     (expand-file-name new-name)))
+    ;; Only rename if the file was saved before. Update the
+    ;; buffer name and visited file in all cases.
+    (if (file-exists-p (buffer-file-name))
+        (rename-file (buffer-file-name) new-name 1))
+    (let ((was-modified (buffer-modified-p)))
+      ;; This also renames the buffer, and works with uniquify
+      (set-visited-file-name new-name)
+      (if was-modified
+          (save-buffer)
+        ;; Clear buffer-modified flag caused by set-visited-file-name
+        (set-buffer-modified-p nil)))
+
+    (setq default-directory (file-name-directory new-name))
+
+    (message "Renamed to %s." new-name))
+
+  ;;----------------------------------------------------------------------------
+  ;; Browse current HTML file
+  ;;----------------------------------------------------------------------------
+  (defun browse-current-file ()
+    "Open the current file as a URL using `browse-url'."
+    (interactive)
+    (let ((file-name (buffer-file-name)))
+      (if (and (fboundp 'tramp-tramp-file-p)
+               (tramp-tramp-file-p file-name))
+          (error "Cannot open tramp file")
+        (browse-url (concat "file://" file-name)))))
+
+  (defun my-toggle-var (var)
+    "..."
+    (interactive
+     (let* ((def  (variable-at-point))
+            (def  (and def
+                       (not (numberp def))
+                       (memq (symbol-value def) '(nil t))
+                       (symbol-name def))))
+       (list
+        (completing-read
+         "Toggle value of variable: "
+         obarray (lambda (c)
+                   (unless (symbolp c) (setq c  (intern c)))
+                   (and (boundp c)  (memq (symbol-value c) '(nil t))))
+         'must-confirm nil 'variable-name-history def))))
+    (let ((sym  (intern var)))
+      (set sym (not (symbol-value sym)))
+      (message "`%s' is now `%s'" var (symbol-value sym))))
+
+  (defmacro my-save-excursion (&rest forms)
+    (let ((old-point (gensym "old-point"))
+          (old-buff (gensym "old-buff")))
+      `(let ((,old-point (point))
+             (,old-buff (current-buffer)))
+         (prog1
+             (progn ,@forms)
+           (unless (eq (current-buffer) ,old-buff)
+             (switch-to-buffer ,old-buff))
+           (goto-char ,old-point)))))
+
+  ;; https://emacs.stackexchange.com/questions/80/how-can-i-quickly-toggle-between-a-file-and-a-scratch-buffer-having-the-same-m
+  (defun modi/switch-to-scratch-and-back (&optional arg)
+    "Toggle between *scratch-MODE* buffer and the current buffer.
+If a scratch buffer does not exist, create it with the major mode set to that
+of the buffer from where this function is called.
+
+        COMMAND -> Open/switch to a scratch buffer in the current buffer's major mode
+    C-0 COMMAND -> Open/switch to a scratch buffer in `fundamental-mode'
+    C-u COMMAND -> Open/switch to a scratch buffer in `org-mode'
+C-u C-u COMMAND -> Open/switch to a scratch buffer in `emacs-elisp-mode'
+
+Even if the current major mode is a read-only mode (derived from `special-mode'
+or `dired-mode'), we would want to be able to write in the scratch buffer. So
+the scratch major mode is set to `org-mode' for such cases.
+
+Return the scratch buffer opened."
+    (interactive "p")
+    (if (and (or (null arg)               ; no prefix
+                 (= arg 1))
+             (string-match-p "\\*scratch" (buffer-name)))
+        (switch-to-buffer (other-buffer))
+      (let* ((mode-str (cl-case arg
+                         (0  "fundamental-mode") ; C-0
+                         (4  "org-mode") ; C-u
+                         (16 "emacs-lisp-mode") ; C-u C-u
+                         ;; If the major mode turns out to be a `special-mode'
+                         ;; derived mode, a read-only mode like `help-mode', open
+                         ;; an `org-mode' scratch buffer instead.
+                         (t (if (or (derived-mode-p 'special-mode) ; no prefix
+                                    (derived-mode-p 'dired-mode))
+                                "org-mode"
+                              (format "%s" major-mode)))))
+             (buf (get-buffer-create (concat "*scratch-" mode-str "*"))))
+        (switch-to-buffer buf)
+        (funcall (intern mode-str))   ; http://stackoverflow.com/a/7539787/1219634
+        buf)))
+
+  (defun switch-to-scratch-and-back ()
+    "Toggle between *scratch* buffer and the current buffer.
+     If the *scratch* buffer does not exist, create it."
+    (interactive)
+    (let ((scratch-buffer-name (get-buffer-create "*scratch*")))
+      (if (equal (current-buffer) scratch-buffer-name)
+          (switch-to-buffer (other-buffer))
+        (switch-to-buffer scratch-buffer-name (lisp-interaction-mode)))))
+
+  (defun copy-file-name-to-clipboard ()
+    "Copy the current buffer file name to the clipboard."
+    (interactive)
+    (let ((filename (if (equal major-mode 'dired-mode)
+                        default-directory
+                      (buffer-file-name))))
+      (when filename
+        (kill-new filename)
+        (message "Copied buffer file name '%s' to the clipboard." filename))))
+
+
+  )
