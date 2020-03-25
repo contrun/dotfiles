@@ -958,9 +958,24 @@ Selectively runs either `after-make-console-frame-hooks' or
 
 (use-package eww
   :ensure nil
+  :bind
+  (:map eww-mode-map
+        ("s" . my/eww-split-right)
+        ("Q" . my/eww-quit))
+  :hook
+  (eww-after-render . my/set-eww-buffer-title)
   :init
   (defvar eww-previous-window-configuration nil
     "Window configuration before switching to eww buffer.")
+
+  (defun my/set-eww-buffer-title ()
+    (let* ((title  (plist-get eww-data :title))
+           (url    (plist-get eww-data :url))
+           (result (concat "*eww-" (or title
+                                       (if (string-match "://" url)
+                                           (substring url (match-beginning 0))
+                                         url)) "*")))
+      (rename-buffer result t)))
 
   (defun my/eww-quit ()
     "Bury eww buffer and restore the previous window configuration."
@@ -994,6 +1009,23 @@ Selectively runs either `after-make-console-frame-hooks' or
           (select-window window))
         (add-hook 'eww-mode-hook (local-set-key (kbd "q") 'my/eww-quit))
         (eww url)))
+    )
+
+  (defun my/open-in-right-window ()
+    "Open the selected link on the right window plane"
+    (interactive)
+    (delete-other-windows nil)
+    (split-window-right nil)
+    (other-window 1)
+    (org-return nil)
+    )
+
+  (defun my/eww-split-right ()
+    "Splits the Window. Moves eww to the right and underlying content on the left."
+    (interactive)
+    (split-window-right nil)
+    (quit-window nil)
+    (other-window 1)
     )
   )
 
@@ -5192,8 +5224,12 @@ This command currently blocks the UI, sorry."
 (use-package elfeed
   :bind
   (:map elfeed-search-mode-map
+        ("*" . my/elfeed-toggle-star)
         ("R" . my/elfeed-mark-above-as-read)
-        )
+        ("B" . my/elfeed-open-with-eww))
+  (:map elfeed-show-mode-map
+        ("*" . my/elfeed-toggle-star)
+        ("B" . my/elfeed-open-with-eww))
   :config
   (setq elfeed-use-curl t)
   (defun ap/elfeed-search-mark-group-as-read (predicate)
@@ -5234,6 +5270,33 @@ This command currently blocks the UI, sorry."
       (set-mark-command nil)
       (goto-char (point-max))
       (elfeed-search-untag-all-unread)))
+
+  (defun my/elfeed-open-with (browse-function)
+    "Open the current entry with `browse-function'."
+    (let ((browse-url-browser-function browse-function))
+      (if (eq browse-function 'eww-browse-url)
+          (add-hook 'eww-after-render-hook 'eww-readable nil t))
+      (cond ((eq major-mode 'elfeed-search-mode) (elfeed-search-browse-url))
+            ((eq major-mode 'elfeed-show-mode) (elfeed-show-visit))
+            (t (message "Not calling from elfeed")))))
+
+  (defun my/elfeed-open-with-eww ()
+    "Open the current entry with eww."
+    (interactive)
+    (my/elfeed-open-with 'eww-browse-url))
+
+  (defun my/elfeed-toggle-tag (tag)
+    "Toggle tag to all selected entries."
+    (cond ((eq major-mode 'elfeed-search-mode) (elfeed-search-toggle-all tag))
+          ((eq major-mode 'elfeed-show-mode) (if (elfeed-tagged-p tag elfeed-show-entry)
+                                                 (elfeed-show-untag tag)
+                                               (elfeed-show-tag tag)))
+          (t (message "Not calling from elfeed"))))
+
+  (defun my/elfeed-toggle-star ()
+    "Toggle starred to all selected entries."
+    (interactive)
+    (my/elfeed-toggle-tag 'star))
   )
 
 (use-package elfeed-protocol
