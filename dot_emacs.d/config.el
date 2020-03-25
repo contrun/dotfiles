@@ -1,4 +1,5 @@
 ;; -*- lexical-binding: t; coding: utf-8; no-byte-compile: t; -*-
+;;; Main configuration file
 
 (add-to-list 'load-path (expand-file-name "lisp" my/emacs-d))
 
@@ -15,15 +16,6 @@
   (add-hook 'emacs-startup-hook
             (lambda () (setq gc-cons-threshold normal-gc-cons-threshold))))
 (setq read-process-output-max (* 1024 1024))
-
-;;----------------------------------------------------------------------------
-;; Handier way to add modes to auto-mode-alist
-;;----------------------------------------------------------------------------
-(defun add-auto-mode (mode &rest patterns)
-  "Add entries to `auto-mode-alist' to use `MODE' for all given file `PATTERNS'."
-  (dolist (pattern patterns)
-    (add-to-list 'auto-mode-alist (cons pattern mode))))
-
 
 ;;----------------------------------------------------------------------------
 ;; String utilities missing from core emacs
@@ -2554,21 +2546,18 @@ With arg N, insert N newlines."
 ;; (provide 'init-textile)
 ;; (require 'init-markdown)
 (use-package markdown-mode
+  :mode "\\.md\\.html\\'"
   :init
-  (add-auto-mode 'markdown-mode "\\.md\\.html\\'")
   (with-eval-after-load 'whitespace-cleanup-mode
     (push 'markdown-mode whitespace-cleanup-mode-ignore-modes)))
 
 
-;; (provide 'init-markdown)
-;; (require 'init-csv)
-(use-package csv-mode)
+(use-package csv-mode
+  :mode "\\.[Cc][Ss][Vv]\\'"
+  :custom
+  (csv-separators '("," ";" "|" " ")))
 
-(add-auto-mode 'csv-mode "\\.[Cc][Ss][Vv]\\'")
 
-(setq csv-separators '("," ";" "|" " "))
-
-;; (provide 'init-csv)
 ;; (require 'init-erlang)
 (use-package erlang
   :init
@@ -3466,14 +3455,13 @@ With arg N, insert N newlines."
   )
 
 ;; (require 'init-nxml)
-(add-auto-mode
- 'nxml-mode
- (concat "\\."
-         (regexp-opt
-          '("xml" "xsd" "sch" "rng" "xslt" "svg" "rss"
-            "gpx" "tcx" "plist"))
-         "\\'"))
-(setq magic-mode-alist (cons '("<\\?xml " . nxml-mode) magic-mode-alist))
+(use-package nxml-mode
+  :ensure nil
+  :mode
+  "\\.xml\\'" "\\.xsd\\'" "\\.sch\\'" "\\.rng\\'" "\\.xslt\\'"
+  "\\.svg\\'" "\\.rss\\'" "\\.gpx\\'" "\\.tcx\\'" "\\.plist\\'"
+  :magic "<\\?xml ")
+
 (fset 'xml-mode 'nxml-mode)
 (setq nxml-slash-auto-complete-flag t)
 
@@ -3513,13 +3501,15 @@ With arg N, insert N newlines."
 
 ;; (provide 'init-nxml)
 ;; (require 'init-html)
+(use-package my/html
+  :ensure nil
+  :mode ("\\.\\(jsp\\|tmpl\\)\\'". html-mode))
+
 (use-package tagedit)
 (with-eval-after-load 'sgml-mode
   (tagedit-add-paredit-like-keybindings)
   (define-key tagedit-mode-map (kbd "M-?") nil)
   (add-hook 'sgml-mode-hook (lambda () (tagedit-mode 1))))
-
-(add-auto-mode 'html-mode "\\.\\(jsp\\|tmpl\\)\\'")
 
 ;; Note: ERB is configured in init-ruby
 
@@ -3603,9 +3593,8 @@ With arg N, insert N newlines."
 ;; (require 'init-http)
 (use-package httprepl)
 (use-package restclient
+  :mode ("\\.rest\\'" . restclient-mode)
   :init
-  (add-auto-mode 'restclient-mode "\\.rest\\'")
-
   (defun sanityinc/restclient ()
     (interactive)
     (with-current-buffer (get-buffer-create "*restclient*")
@@ -3656,39 +3645,25 @@ With arg N, insert N newlines."
 ;; (provide 'init-purescript)
 ;; (require 'init-ruby)
 ;;; Basic ruby setup
-(use-package ruby-mode)
+(use-package ruby-mode
+  :mode
+  "Rakefile\\'" "\\.rake\\'" "\\.rxml\\'" "\\.rjs\\'"
+  "\\.irbrc\\'" "\\.pryrc\\'" "\\.builder\\'" "\\.ru\\'"
+  "\\.gemspec\\'" "Gemfile\\'" "Kirkfile\\'" "Brewfile\\'"
+  :mode ("Gemfile\\.lock\\'" . conf-mode )
+  :hook (ruby-mode . subword-mode)
+  :init
+  (setq-default
+   ruby-use-encoding-map nil
+   ruby-insert-encoding-magic-comment nil)
+  )
+
 (use-package ruby-hash-syntax)
-
-(add-auto-mode 'ruby-mode
-               "Rakefile\\'" "\\.rake\\'" "\\.rxml\\'"
-               "\\.rjs\\'" "\\.irbrc\\'" "\\.pryrc\\'" "\\.builder\\'" "\\.ru\\'"
-               "\\.gemspec\\'" "Gemfile\\'" "Kirkfile\\'")
-(add-auto-mode 'conf-mode "Gemfile\\.lock\\'")
-
-(setq-default
- ruby-use-encoding-map nil
- ruby-insert-encoding-magic-comment nil)
-
-(with-eval-after-load 'ruby-mode
-  ;; Stupidly the non-bundled ruby-mode isn't a derived mode of
-  ;; prog-mode: we run the latter's hooks anyway in that case.
-  (add-hook 'ruby-mode-hook
-            (lambda ()
-              (unless (derived-mode-p 'prog-mode)
-                (run-hooks 'prog-mode-hook)))))
-
-(add-hook 'ruby-mode-hook 'subword-mode)
 
 (with-eval-after-load 'page-break-lines
   (push 'ruby-mode page-break-lines-modes))
 
 (use-package rspec-mode)
-
-
-(define-derived-mode brewfile-mode ruby-mode "Brewfile"
-  "A major mode for Brewfiles, used by homebrew-bundle on MacOS.")
-
-(add-auto-mode 'brewfile-mode "Brewfile\\'")
 
 
 ;;; Inferior ruby
@@ -3757,7 +3732,6 @@ With arg N, insert N newlines."
 
 (mmm-add-mode-ext-class 'html-erb-mode "\\.jst\\.ejs\\'" 'ejs)
 
-(add-auto-mode 'html-erb-mode "\\.rhtml\\'" "\\.html\\.erb\\'")
 (add-to-list 'auto-mode-alist '("\\.jst\\.ejs\\'"  . html-erb-mode))
 
 (mmm-add-mode-ext-class 'yaml-mode "\\.yaml\\(\\.erb\\)?\\'" 'erb)
@@ -3904,7 +3878,7 @@ With arg N, insert N newlines."
                          "-E"
                          "-c" (concat "EXPLAIN (ANALYZE, COSTS, VERBOSE, BUFFERS, FORMAT JSON) " query ";")
   ))
-             (err-file (make-temp-file "sql-explain-json")))
+  (err-file (make-temp-file "sql-explain-json")))
         (with-current-buffer (get-buffer-create "*sql-explain-json*")
           (setq buffer-read-only nil)
           (delete-region (point-min) (point-max))
@@ -3944,8 +3918,6 @@ With arg N, insert N newlines."
 ;; (provide 'init-toml)
 ;; (require 'init-yaml)
 (use-package yaml-mode
-  :init
-  (add-auto-mode 'yaml-mode "\\.yml\\.erb\\'")
   :hook
   (yaml-mode . goto-address-prog-mode)
   )
@@ -4442,15 +4414,16 @@ With arg N, insert N newlines."
 
 
 ;; (provide 'init-clojure-cider)
-;; (require 'init-common-lisp)
-;; See http://bc.tech.coop/blog/070927.html
-(add-auto-mode 'lisp-mode "\\.cl\\'")
-(add-hook 'lisp-mode-hook (lambda ()
-                            (unless (featurep 'slime)
-                              (require 'slime)
-                              (normal-mode))))
 
-(with-eval-after-load 'slime
+(use-package slime
+  :hook (lisp-mode . (lambda ()
+                       (unless (featurep 'slime)
+                         (require 'slime)
+                         (normal-mode))))
+  :bind
+  (:map lisp-mode-map
+        ("C-c l" . lispdoc))
+  :init
   (when (executable-find "sbcl")
     (add-to-list 'slime-lisp-implementations
                  '(sbcl ("sbcl") :coding-system utf-8-unix)))
@@ -4459,37 +4432,33 @@ With arg N, insert N newlines."
                  '(cmucl ("lisp") :coding-system iso-latin-1-unix)))
   (when (executable-find "ccl")
     (add-to-list 'slime-lisp-implementations
-                 '(ccl ("ccl") :coding-system utf-8-unix))))
+                 '(ccl ("ccl") :coding-system utf-8-unix)))
 
-;; From http://bc.tech.coop/blog/070515.html
-(defun lispdoc ()
-  "Searches lispdoc.com for SYMBOL, which is by default the symbol currently under the curser"
-  (interactive)
-  (let* ((word-at-point (word-at-point))
-         (symbol-at-point (symbol-at-point))
-         (default (symbol-name symbol-at-point))
-         (inp (read-from-minibuffer
-               (if (or word-at-point symbol-at-point)
-                   (concat "Symbol (default " default "): ")
-                 "Symbol (no default): "))))
-    (if (and (string= inp "") (not word-at-point) (not
-                                                   symbol-at-point))
-        (message "you didn't enter a symbol!")
-      (let ((search-type (read-from-minibuffer
-                          "full-text (f) or basic (b) search (default b)? ")))
-        (browse-url (concat "http://lispdoc.com?q="
-                            (if (string= inp "")
-                                default
-                              inp)
-                            "&search="
-                            (if (string-equal search-type "f")
-                                "full+text+search"
-                              "basic+search")))))))
-
-(define-key lisp-mode-map (kbd "C-c l") 'lispdoc)
-
-
-;; (provide 'init-common-lisp)
+  ;; From http://bc.tech.coop/blog/070515.html
+  (defun lispdoc ()
+    "Searches lispdoc.com for SYMBOL, which is by default the symbol currently under the curser"
+    (interactive)
+    (let* ((word-at-point (word-at-point))
+           (symbol-at-point (symbol-at-point))
+           (default (symbol-name symbol-at-point))
+           (inp (read-from-minibuffer
+                 (if (or word-at-point symbol-at-point)
+                     (concat "Symbol (default " default "): ")
+                   "Symbol (no default): "))))
+      (if (and (string= inp "") (not word-at-point) (not
+                                                     symbol-at-point))
+          (message "you didn't enter a symbol!")
+        (let ((search-type (read-from-minibuffer
+                            "full-text (f) or basic (b) search (default b)? ")))
+          (browse-url (concat "http://lispdoc.com?q="
+                              (if (string= inp "")
+                                  default
+                                inp)
+                              "&search="
+                              (if (string-equal search-type "f")
+                                  "full+text+search"
+                                "basic+search")))))))
+  )
 
 ;; (require 'init-tex)
 (use-package auctex
@@ -4860,7 +4829,6 @@ With arg N, insert N newlines."
 
 (toggle-truncate-lines t)
 (setq tab-width 4)
-(add-auto-mode 'tcl-mode "^Portfile\\'")
 (fset 'yes-or-no-p 'y-or-n-p)
 
 (add-hook 'prog-mode-hook 'goto-address-prog-mode)
@@ -4951,8 +4919,6 @@ With arg N, insert N newlines."
 (with-eval-after-load 're-builder
   ;; Support a slightly more idiomatic quit binding in re-builder
   (define-key reb-mode-map (kbd "C-c C-k") 'reb-quit))
-
-(add-auto-mode 'conf-mode "^Procfile\\'")
 
 ;; turn off auto revert messages
 (setq auto-revert-verbose nil)
