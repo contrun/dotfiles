@@ -381,6 +381,7 @@ myAddtionalKeys =
              (launcherMode2 "d", spawn "noDisturb.sh"),
              (launcherMode2 "a", spawn "randomArt.sh"),
              (launcherMode2 "b", spawn "chromium"),
+             (launcherMode2 "t", spawn "telegram-desktop"),
              (launcherMode2 "k", spawn "keymap.sh"),
              (launcherMode2 "m", spawn "mpv"),
              (launcherMode2 "f", spawn "pcmanfm")

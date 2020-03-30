@@ -125,6 +125,32 @@ locate PACKAGE."
 (use-package my/functions
   :ensure nil
   :init
+  (defun my/shell-command-to-string (command)
+    "Just `shell-command-to-string' COMMAND without the trailing newline."
+    (substring (shell-command-to-string command) 0 -1))
+
+  (defun my/secrets (&rest args)
+    "Obtain secrets from secret-tool."
+    (my/shell-command-to-string
+     (mapconcat
+      'shell-quote-argument
+      (cons "secretTool.py" args)
+      " ")))
+
+  (defun my/slugify (str)
+    "Slugify STR."
+    (replace-regexp-in-string
+     "-+" "-"
+     (replace-regexp-in-string
+      " " "-"
+      (replace-regexp-in-string
+       "[^[:alnum:]()]" " "
+       (replace-regexp-in-string
+        "\\." ""
+        (replace-regexp-in-string
+         "&" " and "
+         (downcase str)))))))
+
   ;;----------------------------------------------------------------------------
   ;; String utilities missing from core emacs
   ;;----------------------------------------------------------------------------
@@ -152,8 +178,8 @@ locate PACKAGE."
   (defvar my-major-mode-leader-key ","
     "Major mode leader key is a shortcut key which is the equivalent of
 pressing `<leader> m`. Set it to `nil` to disable it.")
-  (setq my-leader1 "s-,")
-  (general-define-key :prefix my-leader1
+  (setq my/leader1 "s-,")
+  (general-define-key :prefix my/leader1
                       "g" 'counsel-git
                       "s" 'counsel-git-grep
                       "k" 'counsel-ag
@@ -162,7 +188,7 @@ pressing `<leader> m`. Set it to `nil` to disable it.")
                       "l" 'link-hint-copy-link
                       "a" 'org-agenda
                       "p" 'prodigy
-                      "x" 'my-expand-file-name-at-point
+                      "x" 'my/expand-file-name-at-point
                       "m" 'mu4e
                       "o" 'crux-open-with
                       "f" 'dired
@@ -171,6 +197,7 @@ pressing `<leader> m`. Set it to `nil` to disable it.")
                       "r" 'ivy-resume
                       "i" 'counsel-info-lookup-symbol
                       "u" 'counsel-unicode-char
+                      "n" 'simplenote2-list
                       "d" 'helm-dash-at-point
                       "D" 'helm-dash
                       "r" 'revert-buffer-no-confirm
@@ -178,9 +205,9 @@ pressing `<leader> m`. Set it to `nil` to disable it.")
                       "e" 'elfeed
                       )
 
-  (global-set-key (kbd (format "%s %s" my-leader1 "[")) (kbd "C-x 3 C-u 30 C-x {"))
-  (global-set-key (kbd (format "%s %s" my-leader1 "]")) (kbd "C-x 3 C-u 30 C-x }"))
-  (global-set-key (kbd (format "%s %s" my-leader1 "^")) (kbd "C-x 2 C-u 5 C-x ^"))
+  (global-set-key (kbd (format "%s %s" my/leader1 "[")) (kbd "C-x 3 C-u 30 C-x {"))
+  (global-set-key (kbd (format "%s %s" my/leader1 "]")) (kbd "C-x 3 C-u 30 C-x }"))
+  (global-set-key (kbd (format "%s %s" my/leader1 "^")) (kbd "C-x 2 C-u 5 C-x ^"))
 
   (setq persp-keymap-prefix (kbd "s-q"))
   ;; (setq wg-prefix-key (kbd "s-d"))
@@ -194,7 +221,6 @@ pressing `<leader> m`. Set it to `nil` to disable it.")
    "C-x C-r" 'ivy-resume
    ;;  "s-/"  'wg-switch-to-previous-workgroup
    "s-w" 'bjm/kill-this-buffer
-   ;; "s-v" 'my-lookup-word-at-point
    "s-g" 'keyboard-quit
    "S-s-w" 'delete-window
    ;; "s-r" 'recentf-open-files
@@ -213,6 +239,7 @@ pressing `<leader> m`. Set it to `nil` to disable it.")
    ;; "s-j" 'other-window
    "s-k" 'delete-window
    ;; "s-y" 'browse-kill-ring
+   "s-t" 'taskwarrior
    "s-T" 'theme-looper-enable-random-theme
    "s-y" 'aya-expand
    "s-v" 'aya-create
@@ -222,7 +249,7 @@ pressing `<leader> m`. Set it to `nil` to disable it.")
    "s-." 'ace-window
    ;; "s-q" 'save-buffers-kill-terminal
    "s-0" 'delete-window
-   "s-1" 'delete-other-windows
+   "s-1" 'my/toggle-delete-other-windows
    "s-2" 'split-window-below
    "s-3" 'split-window-right
    "C-:" 'avy-goto-char
@@ -251,7 +278,11 @@ pressing `<leader> m`. Set it to `nil` to disable it.")
    "C-S-<pause>" 'wg-save-session
 
    "<f23>" 'set-mark-command)
+  )
 
+(use-package my/keymaps
+  :ensure nil
+  :init
   (define-key read-expression-map (kbd "C-r") 'counsel-expression-history)
 
   ;; set up my own map
@@ -259,7 +290,7 @@ pressing `<leader> m`. Set it to `nil` to disable it.")
   (global-set-key (kbd "<f2>") 'customized-map)
 
   ;; https://yoo2080.wordpress.com/2014/03/26/using-emacs-with-windows-8-touch-keyboard/
-  (defun my-read-function-mapped-event ()
+  (defun my/read-function-mapped-event ()
     "Read an event or function key.
   Like `read-event', but input is first translated according to
   `function-key-map' and `key-translation-map', so that a function key
@@ -285,45 +316,45 @@ pressing `<leader> m`. Set it to `nil` to disable it.")
   ;; These functions -- which are not commands -- each add one modifier
   ;; to the following event.
 
-  (defun my-event-apply-alt-modifier (_ignore-prompt)
+  (defun my/event-apply-alt-modifier (_ignore-prompt)
     "Add the Alt modifier to the following event.
-  For example, type \\[my-event-apply-alt-modifier] & to enter Alt-&."
-    `[,(my-event-apply-modifier (my-read-function-mapped-event) 'alt)])
-  (defun my-event-apply-super-modifier (_ignore-prompt)
+  For example, type \\[my/event-apply-alt-modifier] & to enter Alt-&."
+    `[,(my/event-apply-modifier (my/read-function-mapped-event) 'alt)])
+  (defun my/event-apply-super-modifier (_ignore-prompt)
     "Add the Super modifier to the following event.
-  For example, type \\[my-event-apply-super-modifier] & to enter Super-&."
-    `[,(my-event-apply-modifier (my-read-function-mapped-event) 'super)])
-  (defun my-event-apply-hyper-modifier (_ignore-prompt)
+  For example, type \\[my/event-apply-super-modifier] & to enter Super-&."
+    `[,(my/event-apply-modifier (my/read-function-mapped-event) 'super)])
+  (defun my/event-apply-hyper-modifier (_ignore-prompt)
     "Add the Hyper modifier to the following event.
-  For example, type \\[my-event-apply-hyper-modifier] & to enter Hyper-&."
-    `[,(my-event-apply-modifier (my-read-function-mapped-event) 'hyper)])
-  (defun my-event-apply-shift-modifier (_ignore-prompt)
+  For example, type \\[my/event-apply-hyper-modifier] & to enter Hyper-&."
+    `[,(my/event-apply-modifier (my/read-function-mapped-event) 'hyper)])
+  (defun my/event-apply-shift-modifier (_ignore-prompt)
     "Add the Shift modifier to the following event.
-  For example, type \\[my-event-apply-shift-modifier] & to enter Shift-&."
-    `[,(my-event-apply-modifier (my-read-function-mapped-event) 'shift)])
-  (defun my-event-apply-control-modifier (_ignore-prompt)
+  For example, type \\[my/event-apply-shift-modifier] & to enter Shift-&."
+    `[,(my/event-apply-modifier (my/read-function-mapped-event) 'shift)])
+  (defun my/event-apply-control-modifier (_ignore-prompt)
     "Add the Control modifier to the following event.
-  For example, type \\[my-event-apply-control-modifier] & to enter Control-&."
-    `[,(my-event-apply-modifier (my-read-function-mapped-event) 'control)])
-  (defun my-event-apply-meta-modifier (_ignore-prompt)
+  For example, type \\[my/event-apply-control-modifier] & to enter Control-&."
+    `[,(my/event-apply-modifier (my/read-function-mapped-event) 'control)])
+  (defun my/event-apply-meta-modifier (_ignore-prompt)
     "Add the Meta modifier to the following event.
-  For example, type \\[my-event-apply-meta-modifier] & to enter Meta-&."
-    `[,(my-event-apply-modifier (my-read-function-mapped-event) 'meta)])
+  For example, type \\[my/event-apply-meta-modifier] & to enter Meta-&."
+    `[,(my/event-apply-modifier (my/read-function-mapped-event) 'meta)])
 
-  (defun my-event-apply-meta-super-modifier (_ignore-prompt)
-    `[,(my-event-apply-modifier (my-event-apply-modifier (my-read-function-mapped-event) 'meta) 'super)])
-  (defun my-event-apply-control-super-modifier (_ignore-prompt)
-    `[,(my-event-apply-modifier (my-event-apply-modifier (my-read-function-mapped-event) 'control) 'super)])
-  (defun my-event-apply-shift-super-modifier (_ignore-prompt)
-    `[,(my-event-apply-modifier (my-event-apply-modifier (my-read-function-mapped-event) 'shift) 'super)])
-  (defun my-event-apply-control-meta-modifier (_ignore-prompt)
-    `[,(my-event-apply-modifier (my-event-apply-modifier (my-read-function-mapped-event) 'control) 'meta)])
-  (defun my-event-apply-control-shift-modifier (_ignore-prompt)
-    `[,(my-event-apply-modifier (my-event-apply-modifier (my-read-function-mapped-event) 'control) 'shift)])
-  (defun my-event-apply-meta-shift-modifier (_ignore-prompt)
-    `[,(my-event-apply-modifier (my-event-apply-modifier (my-read-function-mapped-event) 'meta) 'shift)])
+  (defun my/event-apply-meta-super-modifier (_ignore-prompt)
+    `[,(my/event-apply-modifier (my/event-apply-modifier (my/read-function-mapped-event) 'meta) 'super)])
+  (defun my/event-apply-control-super-modifier (_ignore-prompt)
+    `[,(my/event-apply-modifier (my/event-apply-modifier (my/read-function-mapped-event) 'control) 'super)])
+  (defun my/event-apply-shift-super-modifier (_ignore-prompt)
+    `[,(my/event-apply-modifier (my/event-apply-modifier (my/read-function-mapped-event) 'shift) 'super)])
+  (defun my/event-apply-control-meta-modifier (_ignore-prompt)
+    `[,(my/event-apply-modifier (my/event-apply-modifier (my/read-function-mapped-event) 'control) 'meta)])
+  (defun my/event-apply-control-shift-modifier (_ignore-prompt)
+    `[,(my/event-apply-modifier (my/event-apply-modifier (my/read-function-mapped-event) 'control) 'shift)])
+  (defun my/event-apply-meta-shift-modifier (_ignore-prompt)
+    `[,(my/event-apply-modifier (my/event-apply-modifier (my/read-function-mapped-event) 'meta) 'shift)])
 
-  (defun my-event-apply-modifier (event modifier)
+  (defun my/event-apply-modifier (event modifier)
     "Apply a modifier flag to event EVENT.
   MODIFIER is the name of the modifier, as a symbol."
     (let ((modified (event-convert-list `(,modifier
@@ -335,24 +366,24 @@ pressing `<leader> m`. Set it to `nil` to disable it.")
 
   (require 'cl-lib)
   (cl-loop for (ks def ok) in (list
-                               (list "œ" 'my-event-apply-meta-modifier t)
-                               (list "ō" 'my-event-apply-control-meta-modifier t)
-                               (list "õ" 'my-event-apply-control-modifier t)
-                               (list "ó" 'my-event-apply-control-shift-modifier t)
-                               (list "ö" 'my-event-apply-shift-modifier t)
-                               (list "ò" 'my-event-apply-meta-shift-modifier t)
-                               (list "<f2>" 'my-event-apply-super-modifier t)
-                               (list "<f5>" 'my-event-apply-meta-super-modifier t)
-                               (list "<f8>" 'my-event-apply-super-modifier t)
-                               (list "<f29>" (kbd my-leader1) t)
-                               (list "<f31>" 'my-event-apply-super-modifier t)
+                               (list "œ" 'my/event-apply-meta-modifier t)
+                               (list "ō" 'my/event-apply-control-meta-modifier t)
+                               (list "õ" 'my/event-apply-control-modifier t)
+                               (list "ó" 'my/event-apply-control-shift-modifier t)
+                               (list "ö" 'my/event-apply-shift-modifier t)
+                               (list "ò" 'my/event-apply-meta-shift-modifier t)
+                               (list "<f2>" 'my/event-apply-super-modifier t)
+                               (list "<f5>" 'my/event-apply-meta-super-modifier t)
+                               (list "<f8>" 'my/event-apply-super-modifier t)
+                               (list "<f29>" (kbd my/leader1) t)
+                               (list "<f31>" 'my/event-apply-super-modifier t)
                                (list "<f33>" (kbd "C-g") t)
-                               (list "<kp-1>" 'my-event-apply-control-modifier t)
-                               (list "<kp-2>" 'my-event-apply-meta-modifier t)
-                               (list "<kp-3>" 'my-event-apply-super-modifier t)
-                               (list "<kp-4>" 'my-event-apply-shift-modifier t)
-                               (list "<kp-5>" 'my-event-apply-hyper-modifier t)
-                               (list "<kp-6>" 'my-event-apply-alt-modifier t)
+                               (list "<kp-1>" 'my/event-apply-control-modifier t)
+                               (list "<kp-2>" 'my/event-apply-meta-modifier t)
+                               (list "<kp-3>" 'my/event-apply-super-modifier t)
+                               (list "<kp-4>" 'my/event-apply-shift-modifier t)
+                               (list "<kp-5>" 'my/event-apply-hyper-modifier t)
+                               (list "<kp-6>" 'my/event-apply-alt-modifier t)
 
                                ;; for up and down
                                (list "ĝ" (kbd "<up>") t)
@@ -1049,10 +1080,13 @@ instead."
 
 
 ;; Make "C-x o" prompt for a target window when there are more than 2
-(use-package switch-window)
-(setq-default switch-window-shortcut-style 'alphabet)
-(setq-default switch-window-timeout nil)
-(global-set-key (kbd "C-x o") 'switch-window)
+(use-package switch-window
+  :bind
+  ("C-x o" . switch-window)
+  :init
+  (setq-default switch-window-shortcut-style 'alphabet)
+  (setq-default switch-window-timeout nil)
+  )
 
 
 ;;----------------------------------------------------------------------------
@@ -1071,15 +1105,13 @@ instead."
 (global-set-key (kbd "C-x 2") (split-window-func-with-other-buffer 'split-window-vertically))
 (global-set-key (kbd "C-x 3") (split-window-func-with-other-buffer 'split-window-horizontally))
 
-(defun sanityinc/toggle-delete-other-windows ()
+(defun my/toggle-delete-other-windows ()
   "Delete other windows in frame if any, or restore previous window config."
   (interactive)
   (if (and winner-mode
            (equal (selected-window) (next-window)))
       (winner-undo)
     (delete-other-windows)))
-
-(global-set-key (kbd "C-x 1") 'sanityinc/toggle-delete-other-windows)
 
 (defun my/write-copy-to-file ()
   "Write a copy of the current buffer or region to a file."
@@ -1226,39 +1258,12 @@ Call a second time to restore the original window configuration."
 ;;                 tags-file-name
 ;;                 tags-table-list)))
 
-
-;; (provide 'init-sessions)
-;; (require 'init-fonts)
-
-(use-package prettify-symbols
-  :ensure nil
-  :when (fboundp 'global-prettify-symbols-mode)
-  :hook
-  (after-init . global-prettify-symbols-mode))
-
 (use-package session
   :demand t
   :config
   (setq session-jump-undo-threshold 80))
 
-(use-package default-text-scale
-  :hook
-  (after-init . default-text-scale-mode)
-  )
-
-
-(defun sanityinc/maybe-adjust-visual-fill-column ()
-  "Readjust visual fill column when the global font size is modified.
-This is helpful for writeroom-mode, in particular."
-  ;; TODO: submit as patch
-  (if visual-fill-column-mode
-      (add-hook 'after-setting-font-hook 'visual-fill-column--adjust-window nil t)
-    (remove-hook 'after-setting-font-hook 'visual-fill-column--adjust-window t)))
-
-(add-hook 'visual-fill-column-mode-hook
-          'sanityinc/maybe-adjust-visual-fill-column)
-
-;; (provide 'init-fonts)
+;; (provide 'init-sessions)
 ;; (require 'init-mmm)
 ;;----------------------------------------------------------------------------
 ;; Multiple major modes
@@ -1369,15 +1374,11 @@ This is helpful for writeroom-mode, in particular."
 
 
 
-(with-eval-after-load 'subword
-  (diminish 'subword-mode))
+(use-package subword
+  :diminish)
 
 
 
-(unless (fboundp 'display-line-numbers-mode)
-  (use-package nlinum))
-
-
 (use-package rainbow-delimiters
   :hook
   (prog-mode . rainbow-delimiters-mode)
@@ -1505,12 +1506,13 @@ This is helpful for writeroom-mode, in particular."
 ;;----------------------------------------------------------------------------
 ;; Handy key bindings
 ;;----------------------------------------------------------------------------
-(global-set-key (kbd "C-.") 'set-mark-command)
-(global-set-key (kbd "C-x C-.") 'pop-global-mark)
+
+(global-set-key (kbd "M-g M-m") 'set-mark-command)
+(global-set-key (kbd "M-g m") 'pop-global-mark)
 
 (use-package avy
-  :init
-  (global-set-key (kbd "C-;") 'avy-goto-char-timer)
+  :bind
+  ("M-g c" . 'avy-goto-char-timer)
   )
 
 (use-package multiple-cursors
@@ -1808,15 +1810,12 @@ With arg N, insert N newlines."
 
 (use-package kubernetes-tramp)
 
-;; (require 'init-projectile)
 (use-package projectile
+  :bind-keymap
+  ("s-p" . projectile-command-map)
+  ("C-c C-p" . projectile-command-map)
   :hook
-  (after-init . (lambda ()
-                  (projectile-mode)
-                  (define-key projectile-mode-map (kbd "C-c C-p") 'projectile-command-map)
-                  (define-key projectile-mode-map (kbd "s-p") 'projectile-command-map)
-                  )
-              )
+  (after-init . projectile-mode)
   :config
   (setq-default
    projectile-mode-line
@@ -1844,9 +1843,6 @@ With arg N, insert N newlines."
 (use-package helm-projectile
   :after projectile)
 
-;; (provide 'init-projectile)
-
-;; (require 'init-prog)
 (use-package prog-mode
   :ensure nil
   :hook (prog-mode . my-prog-mode-hook)
@@ -1854,13 +1850,8 @@ With arg N, insert N newlines."
   (defun my-prog-mode-hook ()
     (linum-mode 1)))
 
-;; (add-hook 'prog-mode-hook 'my-prog-mode-hook)
-
 
 (use-package helm-gitignore)
-
-;; (provide 'init-prog)
-;; (require 'init-lsp)
 
 (use-package ccls
   :hook ((c-mode c++-mode objc-mode) .
@@ -2222,8 +2213,11 @@ With arg N, insert N newlines."
 
 
 
+(use-package taskwarrior
+  :after quelpa-use-package
+  :quelpa ((taskwarrior :fetcher github :repo "winpat/taskwarrior.el")))
 
-(el-get-bundle winpat/taskwarrior.el)
+(require 'org-protocol)
 
 (use-package add-node-modules-path
   :init
@@ -2320,24 +2314,6 @@ With arg N, insert N newlines."
 (defvar my-org-capture-quick-notes-directory
   (expand-file-name "quick" my-org-capture-directory)
   "Where all the org mode capture files are saved.")
-
-(defun my/shell-command-to-string (command)
-  "Just `shell-command-to-string' COMMAND without the trailing newline."
-  (substring (shell-command-to-string command) 0 -1))
-
-(defun my/slugify (str)
-  "Slugify STR."
-  (replace-regexp-in-string
-   "-+" "-"
-   (replace-regexp-in-string
-    " " "-"
-    (replace-regexp-in-string
-     "[^[:alnum:]()]" " "
-     (replace-regexp-in-string
-      "\\." ""
-      (replace-regexp-in-string
-       "&" " and "
-       (downcase str)))))))
 
 (defun my/generate-org-quick-note-name ()
   "Generate hakyll file name."
@@ -2668,18 +2644,6 @@ With arg N, insert N newlines."
 
 
 (setq org-support-shift-select t)
-
-;;; Capturing
-
-;; (global-set-key (kbd "C-c c") 'org-capture)
-
-;; (setq org-capture-templates
-;;       `(("t" "todo" entry (file "")  ; "" => `org-default-notes-file'
-;;          "* NEXT %?\n%U\n" :clock-resume t)
-;;         ("n" "note" entry (file "")
-;;          "* %? :NOTE:\n%U\n%a\n" :clock-resume t)
-;;         ))
-
 
 
 ;;; Refiling
@@ -2865,19 +2829,11 @@ With arg N, insert N newlines."
   (define-key org-clock-mode-line-map [header-line mouse-2] 'org-clock-goto)
   (define-key org-clock-mode-line-map [header-line mouse-1] 'org-clock-menu))
 
-
-
-;; TODO: warn about inconsistent items, e.g. TODO inside non-PROJECT
-;; TODO: nested projects!
-
-
 
 ;;; Archiving
 
 (setq org-archive-mark-done nil)
 (setq org-archive-location "%s_archive::* Archive")
-
-
 
 
 
@@ -2918,8 +2874,6 @@ With arg N, insert N newlines."
           (org-caldav-sync-calendar calendar))))
     (message "Finished org-caldav-sync."))
   )
-
-(require 'org-protocol)
 
 (use-package org-ref
   :init
@@ -2965,8 +2919,20 @@ With arg N, insert N newlines."
 
 ;; (provide 'init-org)
 
+(defun my/simplenote-setup ()
+  "Setup simplenote credentials."
+  (interactive)
+  (setq simplenote2-email (my/secrets "simplenote" "username"))
+  (setq simplenote2-password (my/secrets "simplenote" "password"))
+  )
+
 (use-package simplenote2
   :commands simplenote2-list simplenote2-browse simplenote2-create-note-from-buffer
+  :init
+  (require 'simplenote2)
+  (simplenote2-setup)
+  :config
+  (my/simplenote-setup)
   )
 
 ;; (require 'init-nxml)
@@ -3148,12 +3114,9 @@ With arg N, insert N newlines."
   :init
   (use-package psc-ide
     :hook
-    (purescript-mode-hook .
-                          (lambda ()
-                            (psc-ide-mode)
-                            (company-mode)
-                            (flycheck-mode)
-                            (turn-on-purescript-indentation)))
+    (purescript-mode . (lambda ()
+                         (psc-ide-mode)
+                         (turn-on-purescript-indentation)))
     )
   )
 
@@ -4711,6 +4674,9 @@ With arg N, insert N newlines."
   )
 
 (use-package elfeed-protocol
+  :after elfeed
+  :init
+  (elfeed-protocol-enable)
   :config
   (setq elfeed-curl-extra-arguments '("-c" "/tmp/newsblur-cookie"
                                       "-b" "/tmp/newsblur-cookie"))
@@ -4720,9 +4686,8 @@ With arg N, insert N newlines."
                              (password-file (if (file-exists-p file)
                                                 (list :password-file file)))
                              (password (unless (file-exists-p file)
-                                         (list :password (my/shell-command-to-string "secretTool.py newsblur password")))))
+                                         (list :password (my/secrets "newsblur" "password")))))
                         (append '("newsblur+https://vvv@newsblur.com") password-file password))))
-  (elfeed-protocol-enable)
   )
 
 ;; (require 'init-ledger)
@@ -4768,20 +4733,13 @@ With arg N, insert N newlines."
   )
 
 
-;;----------------------------------------------------------------------------
-;; Allow access from emacsclient
-;;----------------------------------------------------------------------------
 (require 'server)
 (unless (server-running-p)
   (server-start))
 
-;;----------------------------------------------------------------------------
-;; Variables configured via the interactive 'customize' interface
-;;----------------------------------------------------------------------------
 (setq custom-file (expand-file-name "custom.el" my/emacs-d))
 (when (file-exists-p custom-file)
   (load custom-file))
-
 
 (use-package my/locales
   :ensure nil
@@ -4819,6 +4777,19 @@ With arg N, insert N newlines."
       (unless (custom-theme-p theme)
         (load-theme theme t)))
     (custom-set-variables `(custom-enabled-themes (quote ,custom-enabled-themes))))
+
+  (use-package prettify-symbols
+    :ensure nil
+    :when (fboundp 'global-prettify-symbols-mode)
+    :hook
+    (after-init . global-prettify-symbols-mode))
+
+  (use-package default-text-scale
+    :hook
+    (after-init . default-text-scale-mode)
+    )
+
+  (use-package visual-fill-column)
 
   (use-package dimmer
     :hook
