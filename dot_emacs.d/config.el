@@ -26,32 +26,6 @@
 (dolist (dir '("lisp" "site-lisp" "secret"))
   (my/add-subdirs-to-load-path (my/path-under-emacs-d dir)))
 
-(defun site-lisp-dir-for (name)
-  (expand-file-name (format "site-lisp/%s" name) my/emacs-d))
-
-(defun site-lisp-library-el-path (name)
-  (expand-file-name (format "%s.el" name) (site-lisp-dir-for name)))
-
-(defun download-site-lisp-module (name url)
-  (let ((dir (site-lisp-dir-for name)))
-    (message "Downloading %s from %s" name url)
-    (unless (file-directory-p dir)
-      (make-directory dir t))
-    (add-to-list 'load-path dir)
-    (let ((el-file (site-lisp-library-el-path name)))
-      (url-copy-file url el-file t nil)
-      el-file)))
-
-(defun ensure-lib-from-url (name url)
-  (unless (site-lisp-library-loadable-p name)
-    (byte-compile-file (download-site-lisp-module name url))))
-
-(defun site-lisp-library-loadable-p (name)
-  "Return whether or not the library `name' can be loaded from a
-source file under ~/.emacs.d/site-lisp/name/"
-  (let ((f (locate-library (symbol-name name))))
-    (and f (string-prefix-p (file-name-as-directory (site-lisp-dir-for name)) f))))
-
 
 (require 'package)
 ;;; Install into separate package dirs for each Emacs version, to prevent bytecode incompatibility
@@ -407,9 +381,10 @@ pressing `<leader> m`. Set it to `nil` to disable it.")
 (use-package my/bootstrap-straight
   :ensure nil
   :init
+  (defvar bootstrap-version)
   (defun my/bootstrap-straight ()
     (let ((bootstrap-file (concat my/emacs-d "straight/repos/straight.el/bootstrap.el"))
-          (bootstrap-version 3))
+          (bootstrap-version 5))
       (unless (file-exists-p bootstrap-file)
         (with-current-buffer
             (url-retrieve-synchronously
@@ -418,7 +393,7 @@ pressing `<leader> m`. Set it to `nil` to disable it.")
           (goto-char (point-max))
           (eval-print-last-sexp)))
       (load bootstrap-file nil 'nomessage)))
-  ;; (my/bootstrap-straight)
+  (my/bootstrap-straight)
   )
 
 (use-package el-get
@@ -436,13 +411,9 @@ pressing `<leader> m`. Set it to `nil` to disable it.")
 
 (use-package req-package)
 
-(use-package quelpa
-  :demand t
-  )
+(use-package quelpa)
 
-(use-package quelpa-use-package
-  :demand t
-  )
+(use-package quelpa-use-package)
 
 (use-package auto-package-update
   :init
@@ -611,6 +582,9 @@ Selectively runs either `after-make-console-frame-hooks' or
     )
   )
 
+(straight-use-package
+ '(dired+ :type git :host github :repo "emacsmirror/dired-plus"))
+
 (use-package diredfl
   :after dired
   :config
@@ -657,12 +631,9 @@ Selectively runs either `after-make-console-frame-hooks' or
 
 (use-package fzf)
 
-(use-package sunrise-commander
-  :ensure nil
-  :after quelpa-use-package
-  :quelpa (sunrise-commander :fetcher github :repo "escherdragon/sunrise-commander"))
+(straight-use-package
+ '(sunrise-commander :type git :host github :repo "escherdragon/sunrise-commander"))
 
-;; (require 'init-isearch)
 ;; Show number of matches while searching
 (use-package anzu
   :hook
@@ -713,6 +684,11 @@ This is useful when followed by an immediate kill."
 ;; (provide 'init-isearch)
 (setq-default grep-highlight-matches t
               grep-scroll-output t)
+
+(use-package woman)
+
+(straight-use-package
+ '(info+ :type git :host github :repo "emacsmirror/info-plus"))
 
 (use-package helm-dash
   :hook
@@ -2211,11 +2187,12 @@ With arg N, insert N newlines."
   (skewer-mode . (lambda () (inferior-js-keys-mode -1)))
   )
 
+
+
+(straight-use-package
+ '(taskwarrior :type git :host github :repo "winpat/taskwarrior.el"))
 
 
-(use-package taskwarrior
-  :after quelpa-use-package
-  :quelpa ((taskwarrior :fetcher github :repo "winpat/taskwarrior.el")))
 
 (require 'org-protocol)
 
@@ -4123,6 +4100,9 @@ With arg N, insert N newlines."
   ("s-x r" . 'synosaurus-choose-and-replace)
   ("s-x i" . 'synosaurus-choose-and-insert))
 
+(straight-use-package
+ '(auto-capitalize :type git :host github :repo "emacsmirror/auto-capitalize"))
+
 (use-package langtool
   :bind
   ("s-x K" . 'langtool-check)
@@ -4437,15 +4417,12 @@ With arg N, insert N newlines."
 ;; (provide 'init-folding)
 ;;(require 'init-twitter)
 
-(use-package matrix-client
-  :ensure nil
-  :after quelpa-use-package
-  :quelpa ((matrix-client :fetcher github :repo "alphapapa/matrix-client.el"
-                          :files (:defaults "logo.png" "matrix-client-standalone.el.sh"))))
+(straight-use-package
+ '(matrix-client :type git :host github :repo "alphapapa/matrix-client.el"))
 
 (use-package nov
   :init
-  (add-to-list 'auto-mode-alist '("\\.epub\\'" . nov-mode))
+  :mode ("\\.epub\\'" . nov-mode )
   )
 
 ;; (require 'init-mu4e)
