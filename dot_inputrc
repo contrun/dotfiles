@@ -39,3 +39,8 @@ set mark-symlinked-directories On
 set show-all-if-ambiguous On
 set show-all-if-unmodified On
 set visible-stats On
+
+$if ocaml
+"\C-q": "()\C-b"
+"\C-o": ";;\n"
+$endif

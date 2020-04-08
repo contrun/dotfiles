@@ -91,6 +91,8 @@ locate PACKAGE."
 (use-package my/constants
   :ensure nil
   :init
+  (defconst my/initial-frame (selected-frame)
+    "The frame (if any) active during Emacs initialization.")
   (defconst my/is-mac (eq system-type 'darwin))
   (defconst my/emacs-tmp-d (my/path-under-emacs-d "tmp")))
 
@@ -397,7 +399,6 @@ pressing `<leader> m`. Set it to `nil` to disable it.")
   )
 
 (use-package el-get
-  :demand t
   :init
   (defvar my/el-get-d
     (expand-file-name "el-get/el-get" my/emacs-d))
@@ -406,8 +407,7 @@ pressing `<leader> m`. Set it to `nil` to disable it.")
         (list (expand-file-name "recipes" my/el-get-d)
               (expand-file-name "el-get/user/recipes" my/emacs-d)))
   (setq el-get-user-package-directory
-        (expand-file-name "el-get/user/init-files" my/emacs-d))
-  )
+        (expand-file-name "el-get/user/init-files" my/emacs-d)))
 
 (use-package req-package)
 
@@ -430,8 +430,7 @@ pressing `<leader> m`. Set it to `nil` to disable it.")
   (paradox-github-token           nil)
   :commands (paradox-enable
              paradox-upgrade-packages
-             paradox-list-packages)
-  )
+             paradox-list-packages))
 
 
 
@@ -475,9 +474,6 @@ Selectively runs either `after-make-console-frame-hooks' or
                    'after-make-console-frame-hooks))))
 
   (add-hook 'after-make-frame-functions 'run-after-make-frame-hooks)
-
-  (defconst my/initial-frame (selected-frame)
-    "The frame (if any) active during Emacs initialization.")
 
   (global-set-key [mouse-4] (lambda () (interactive) (scroll-down 1)))
   (global-set-key [mouse-5] (lambda () (interactive) (scroll-up 1)))
@@ -1779,6 +1775,8 @@ With arg N, insert N newlines."
   (setq k8s-search-documentation-browser-function 'browse-url-firefox)
   :hook (k8s-mode . yas-minor-mode))
 
+(use-package kubel)
+
 (use-package kubernetes
   :commands (kubernetes-overview))
 
@@ -1891,12 +1889,16 @@ With arg N, insert N newlines."
 
 (use-package merlin
   :init
+  (setq merlin-use-auto-complete-mode t)
+  (setq merlin-error-after-save nil)
   (let ((opam-share (ignore-errors (car (process-lines "opam" "config" "var" "share")))))
     (when (and opam-share (file-directory-p opam-share))
       (add-to-list 'load-path (expand-file-name "emacs/site-lisp" opam-share))
       (autoload 'merlin-mode "merlin" nil t nil)
       (add-hook 'tuareg-mode-hook 'merlin-mode t)
-      (add-hook 'caml-mode-hook 'merlin-mode t)))
+      (add-hook 'caml-mode-hook 'merlin-mode t)
+      (autoload 'utop-setup-ocaml-buffer "utop" "Toplevel for OCaml" t)
+      (add-hook 'tuareg-mode-hook 'utop-setup-ocaml-buffer)))
   )
 (use-package merlin-eldoc)
 
@@ -1950,6 +1952,7 @@ With arg N, insert N newlines."
     (require 'lsp-python-ms)
     )
   :custom
+  (lsp-ui-doc-enable nil)
   (lsp-rust-racer-completion nil)
   (lsp-rust-server 'rust-analyzer)
   (lsp-haskell-process-path-hie "hie-wrapper")
@@ -2091,24 +2094,6 @@ With arg N, insert N newlines."
 (use-package typescript-mode)
 (use-package prettier-js)
 
-(defcustom preferred-javascript-mode
-  (first (cl-remove-if-not #'fboundp '(js2-mode js-mode)))
-  "Javascript mode to use for .js files."
-  :type 'symbol
-  :group 'programming
-  :options '(js2-mode js-mode))
-
-(defconst preferred-javascript-indent-level 2)
-
-;; Need to first remove from list if present, since elpa adds entries too, which
-;; may be in an arbitrary order
-;; (eval-when-compile (require 'cl-lib))
-(setq auto-mode-alist (cons `("\\.\\(js\\|es6\\)\\(\\.erb\\)?\\'" . ,preferred-javascript-mode)
-                            (loop for entry in auto-mode-alist
-                                  unless (eq preferred-javascript-mode (cdr entry))
-                                  collect entry)))
-
-
 ;; js2-mode
 
 ;; Change some defaults: customize them to override
@@ -2129,11 +2114,6 @@ With arg N, insert N newlines."
 
   (js2-imenu-extras-setup))
 
-;; js-mode
-(setq-default js-indent-level preferred-javascript-indent-level)
-
-
-(add-to-list 'interpreter-mode-alist (cons "node" preferred-javascript-mode))
 
 
 
@@ -2146,14 +2126,6 @@ With arg N, insert N newlines."
 
 
 
-;;; Coffeescript
-
-(with-eval-after-load 'coffee-mode
-  (setq coffee-js-mode preferred-javascript-mode
-        coffee-tab-width preferred-javascript-indent-level))
-
-(when (fboundp 'coffee-mode)
-  (add-to-list 'auto-mode-alist '("\\.coffee\\.erb\\'" . coffee-mode)))
 
 ;; ---------------------------------------------------------------------------
 ;; Run and interact with an inferior JS via js-comint.el
