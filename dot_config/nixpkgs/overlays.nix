@@ -152,6 +152,8 @@ let
           # dhall.prelude
           # dhall-bash
           # dhall-json
+          rlwrap
+          git-revise
           git-crypt
           gitAndTools.hub
           gitAndTools.lab
@@ -163,7 +165,7 @@ let
           # vscode
           jetbrains.idea-community
           # jetbrains.pycharm-community
-          # bhaskellIdeEngine
+          # haskellIdeEngine
           # haskellPackages.ihaskell
           # haskellPackages.ihaskell-widgets
           # spyder
@@ -244,7 +246,8 @@ let
           nodePackages.bash-language-server
           nodePackages.typescript-language-server
           nodePackages.ocaml-language-server
-          ocamlPackages_latest.merlin
+          # ocamlPackages_latest.merlin
+          # ocamlPackages_latest.utop
           opam
           ocaml
           sqlint
@@ -787,6 +790,7 @@ let
         binaries = [
           # stylish-haskell
           hindent
+          hlint
           # floskell
           # hfmt
           # brittany
@@ -1245,4 +1249,73 @@ let
         mozOverlay = mozOverlay;
       };
   };
-in [ mozOverlay emacsOverlay myOverlay shellsOverlay ]
+
+  isInList = a: list: builtins.foldl' (acc: x: x == a || acc) false list;
+
+  uniqueList = list:
+    if list == [ ] then
+      [ ]
+    else
+      let x = builtins.head list;
+      in [ x ] ++ uniqueList (builtins.filter (e: e != x) list);
+
+  recursivelyOverrideOutputsToInstall = attr:
+    if builtins.isAttrs attr && attr ? meta && attr ? overrideAttrs then
+      overrideOutputsToInstall attr [ "dev" ]
+    else if builtins.isAttrs attr then
+      builtins.mapAttrs (name: drv: recursivelyOverrideOutputsToInstall drv)
+      attr
+    else
+      attr;
+
+  overrideOutputsToInstall = attr: outputs:
+    if !(builtins.isAttrs attr && attr ? meta && attr ? overrideAttrs && attr
+      ? outputs) then
+      attr
+    else
+      let
+        myOutputsToInstall =
+          builtins.filter (x: isInList x attr.outputs) outputs;
+        oldOutputsToInstall = if attr.meta ? outputsToInstall then
+          attr.meta.outputsToInstall
+        else
+          [ ];
+        newOutputsToInstall =
+          uniqueList (oldOutputsToInstall ++ myOutputsToInstall);
+        newMeta = attr.meta // { outputsToInstall = newOutputsToInstall; };
+      in attr.overrideAttrs (oldAttrs: { meta = newMeta; });
+
+  # TODO: Below does not work.
+  # additionalOutputsOverlay = self: super: recursivelyOverrideOutputsToInstall super;
+  # TODO: This also does not work. I can not rebuild nixos with this
+  # additionalOutputsOverlay = self: super:
+  # builtins.mapAttrs (name: drv: overrideOutputsToInstall drv) super;
+
+  additionalOutputsOverlay = self: super:
+    let
+      defaultOutputs = [ "doc" "dev" "lib" ];
+      mkDefault = list:
+        builtins.foldl' (acc: x: acc // { ${x} = defaultOutputs; }) { } list;
+      merge = a1: a2:
+        builtins.mapAttrs (name: outputs:
+          if a2 ? name then uniqueList (outputs ++ a2.name) else outputs)
+        (a2 // a1);
+      mergeList = list: builtins.foldl' (acc: a: merge acc a) { } list;
+      mkDrv = attrs:
+        builtins.mapAttrs
+        (name: outputs: overrideOutputsToInstall super.${name} outputs) attrs;
+      mkDrvs = list: mkDrv (mergeList list);
+    in mkDrvs [
+      (mkDefault [ "zlib" "openssl" "libffi" ])
+      {
+        zlib = [ "static" ];
+      }
+    ];
+
+in [
+  mozOverlay
+  emacsOverlay
+  myOverlay
+  shellsOverlay
+  # additionalOutputsOverlay
+]
