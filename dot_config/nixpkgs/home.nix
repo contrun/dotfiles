@@ -1,18 +1,22 @@
 { config, pkgs, ... }:
 let
-  overridePriority = pkg: priority:
-    pkg.overrideAttrs (oldAttrs: { meta = { priority = priority; }; });
+  # To avoid clash within the buildEnv of home-manager
+  overridePkg = pkg: priority:
+    pkg.overrideAttrs (oldAttrs: {
+      meta = { priority = priority; };
+    });
   getAttr = attrset: path:
     builtins.foldl' (acc: x:
       if acc ? ${x} then
         acc.${x}
       else
         pkgs.lib.warn "${path} does not exists" null) attrset
-    (builtins.splitVersion path);
+    (pkgs.lib.splitString "." path);
   getPackages = list:
     (builtins.filter (x: x != null) (builtins.map (x: getAttr pkgs x) list));
+  # To report an error when package does not exist, instead of quit immediately
   allPackages = builtins.foldl' (acc: collection:
-    acc ++ (builtins.map (pkg: overridePriority pkg collection.priority)
+    acc ++ (builtins.map (pkg: overridePkg pkg collection.priority)
       collection.packages)) [ ] packageCollection;
   packageCollection = [
     {
@@ -102,7 +106,7 @@ let
         # rls
         "astyle"
         "postgresql"
-        "myIdrisEnv"
+        "myPackages.idris"
         "myPackages.elba"
         "pydb"
         "protobuf"
@@ -125,7 +129,7 @@ let
         "sqlite"
         "mitscheme"
         "guile"
-        "myEmacs"
+        "myPackages.emacs"
         "mu"
         "tsung"
         "wrk"
@@ -193,7 +197,7 @@ let
         "universal-ctags"
         "binutils"
         "bison"
-        "stable.tldr-hs"
+        "tldr-hs"
         "cht-sh"
         "autokey"
         "automake"
@@ -242,7 +246,7 @@ let
         "scala"
         "scalafmt"
         "metals"
-        "almond"
+        "myPackages.almond"
         # ihaskell
         "shfmt"
         "erlang"
@@ -254,8 +258,8 @@ let
         "libpng"
         "openssl"
         "glib-networking"
-        "myPythonEnv"
-        "myHaskellEnv"
+        "myPackages.python"
+        "myPackages.haskell"
         "perlPackages.Appcpanminus"
         "perlPackages.locallib"
         "perlPackages.Appperlbrew"
@@ -288,7 +292,7 @@ let
         "feh"
         "sxiv"
         "arandr"
-        "# virtualbox"
+        # "virtualbox"
         "vlc"
         "exiv2"
         "imagemagick7"
@@ -443,8 +447,8 @@ let
         "proselint"
         "sigil"
         "wordnet"
-        "myHunspell"
-        "myAspell"
+        "myPackages.hunspell"
+        "myPackages.aspell"
         "pdfgrep"
         "pdfpc"
         "djview"
@@ -452,7 +456,7 @@ let
         # qpdfview
         "plantuml"
         "texmacs"
-        "myTexLive"
+        "myPackages.texLive"
         "texlab"
         "auctex"
         "mupdf"
@@ -618,7 +622,7 @@ let
         # lolcat
         "copyq"
         "kpcli"
-        "bitwarden-cli"
+        # "bitwarden-cli"
         "keepassxc"
         "scrot"
         # lynx
@@ -702,7 +706,7 @@ let
         "taskwarrior"
         # # tcllib
         "termite"
-        "stable.termonad-with-packages"
+        # "stable.termonad-with-packages"
         # # tesseract
         # # texinfo
         "thefuck"
@@ -725,7 +729,7 @@ let
   ];
 in {
   # Let Home Manager install and manage itself.
-  programs.home-manager.enable = true;
+  # programs.home-manager.enable = true;
   home = {
     extraOutputsToInstall = [ "dev" "lib" "doc" "info" "devdoc" ];
     packages = allPackages;

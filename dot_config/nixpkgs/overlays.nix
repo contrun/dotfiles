@@ -11,114 +11,112 @@ let
   emacsOverlay = import mySources.emacs-overlay;
 
   myOverlay = self: super: {
-    myAspell = with super;
-      aspellWithDicts (ps: with ps; [ en fr de en-science en-computers ]);
+    myPackages = let
+      getHaskellPackages = pkgs:
+        pkgs.haskellPackages.ghcWithPackages (haskellPackages:
+          let allPackages = allHaskellPackages haskellPackages;
+          in pkgs.lib.flatten (pkgs.lib.attrValues allPackages));
+      allHaskellPackages = haskellPackages:
+        with haskellPackages; rec {
+          binaries = [
+            # stylish-haskell
+            # hindent
+            hlint
+            # floskell
+            # hfmt
+            # brittany
+            hoogle
+            # stack2nix
+            cabal2nix
+            cabal-install
+            stack
+            git-annex
+            # hie
+            # leksah
+          ];
+          libraries = [
+            zlib
+            classy-prelude
+            lens
+            aeson
+            servant
+            yesod
+            yesod-form
+            yesod-auth
+            # mighttpd2
+            warp-tls
+            # postgrest
+            optparse-applicative
+            optparse-simple
+            optparse-generic
+            # hw-prim
+            QuickCheck
+            attoparsec
+            # bloodhound
+            texmath
+            sbv
+            vty
+            pandoc-types
+            proto-lens
+            proto-lens-optparse
+            pipes
+            network
+            http-client
+            text
+            # propellor
+            # esqueleto
+            postgresql-simple
+            persistent
+            # persistent-postgresql
+            persistent-sqlite
+            microlens
+            dhall
+            monad-logger
+            mtl
+            semigroups
+            comonad
+            vector
+            massiv
+            profunctors
+            hashable
+            unordered-containers
+            HUnit
+            hspec
+            diagrams
+            conduit
+            conduit-extra
+            # arbtt
+          ];
+        };
 
-    myHunspell = with super;
-      hunspellWithDicts (with hunspellDicts; [ en-us fr-any de-de ]);
+    in {
+      aspell = with super;
+        aspellWithDicts (ps: with ps; [ en fr de en-science en-computers ]);
 
-    myXmonad = self.xmonad-with-packages.override {
-      packages = haskellPackages:
-        with haskellPackages; [
-          xmobar
-          taffybar
-          xmonad-contrib
-          xmonad-extras
-          xmonad-utils
-          # xmonad-windownames
-          xmonad-entryhelper
-          yeganesh
-          libmpd
-          dbus
-        ];
-    };
+      hunspell = with super;
+        hunspellWithDicts (with hunspellDicts; [ en-us fr-any de-de ]);
 
-    myAllHaskellPackages = haskellPackages:
-      with haskellPackages; rec {
-        binaries = [
-          # stylish-haskell
-          hindent
-          hlint
-          # floskell
-          # hfmt
-          # brittany
-          hoogle
-          # stack2nix
-          cabal2nix
-          cabal-install
-          stack
-          git-annex
-          # hie
-          # leksah
-        ];
-        libraries = [
-          zlib
-          classy-prelude
-          lens
-          aeson
-          servant
-          yesod
-          yesod-form
-          yesod-auth
-          # mighttpd2
-          warp-tls
-          # postgrest
-          optparse-applicative
-          optparse-simple
-          optparse-generic
-          # hw-prim
-          QuickCheck
-          attoparsec
-          # bloodhound
-          texmath
-          sbv
-          vty
-          pandoc-types
-          proto-lens
-          proto-lens-optparse
-          pipes
-          network
-          http-client
-          text
-          propellor
-          # esqueleto
-          postgresql-simple
-          persistent
-          persistent-postgresql
-          persistent-sqlite
-          microlens
-          dhall
-          monad-logger
-          mtl
-          semigroups
-          comonad
-          vector
-          massiv
-          profunctors
-          hashable
-          unordered-containers
-          HUnit
-          hspec
-          diagrams
-          conduit
-          conduit-extra
-          arbtt
-        ];
+      xmonad = super.xmonad-with-packages.override {
+        packages = haskellPackages:
+          with haskellPackages; [
+            xmobar
+            taffybar
+            xmonad-contrib
+            xmonad-extras
+            xmonad-utils
+            # xmonad-windownames
+            xmonad-entryhelper
+            yeganesh
+            libmpd
+            dbus
+          ];
       };
 
-    myHaskellCompilers = import mySources.old-ghc-nix { pkgs = self; };
+      haskellStable = getHaskellPackages stable;
 
-    getMyHaskellEnv = pkgs:
-      pkgs.haskellPackages.ghcWithPackages (haskellPackages:
-        let allPackages = self.myAllHaskellPackages haskellPackages;
-        in stable.lib.flatten (stable.lib.attrValues allPackages));
+      haskell = getHaskellPackages super;
 
-    myStableHaskellEnv = self.getMyHaskellEnv stable;
-
-    myHaskellEnv = self.getMyHaskellEnv super;
-
-    myIdrisEnv = stable.idrisPackages.with-packages
-      (with stable.idrisPackages; [
+      idris = stable.idrisPackages.with-packages (with stable.idrisPackages; [
         base
         effects
         contrib
@@ -127,83 +125,82 @@ let
         protobuf
       ]);
 
-    myPythonEnv = with super;
-      python3Full.withPackages (ps:
-        with ps; [
-          pip
-          chardet
-          setuptools
-          virtualenvwrapper
-          yapf
-          pycparser
-          python-language-server
-          pynvim
-          pyparsing
-          black
-          requests
-          jupyter
-          ipykernel
-          ipywidgets
-          jupyter_client
-          jupyter_console
-          jupyter_core
-          jupyterhub
-          jupyterlab
-          jupyterlab_launcher
-          jupyterlab_server
-          jupyterhub-ldapauthenticator
-          jupytext
-          nbconvert
-          nbformat
-          nbsphinx
-          nbstripout
-          matplotlib
-          bokeh
-          plotly
-          altair
-          bokeh
-          vega.override
-          ({ doCheckt = false; })
-          vega_datasets
-          numpy
-          pandas
-          scipy
-          subliminal
-          lxml
-          django
-          cookiecutter
-          pillow
-          elasticsearch-dsl
-          pyyaml
-        ]);
+      python = with super;
+        python3Full.withPackages (ps:
+          with ps; [
+            pip
+            chardet
+            setuptools
+            virtualenvwrapper
+            yapf
+            pycparser
+            python-language-server
+            pynvim
+            pyparsing
+            black
+            requests
+            jupyter
+            ipykernel
+            ipywidgets
+            jupyter_client
+            jupyter_console
+            jupyter_core
+            jupyterhub
+            jupyterlab
+            jupyterlab_launcher
+            jupyterlab_server
+            jupyterhub-ldapauthenticator
+            jupytext
+            nbconvert
+            nbformat
+            nbsphinx
+            nbstripout
+            matplotlib
+            bokeh
+            plotly
+            altair
+            bokeh
+            vega.override
+            ({ doCheckt = false; })
+            vega_datasets
+            numpy
+            pandas
+            scipy
+            subliminal
+            lxml
+            django
+            cookiecutter
+            pillow
+            elasticsearch-dsl
+            pyyaml
+          ]);
 
-    python-rocksdb = with self;
-      python2Packages.buildPythonPackage rec {
-        pname = "python-rocksdb";
-        version = "0.7.0";
-        src = python2Packages.fetchPypi {
-          inherit pname version;
-          sha256 =
-            "17d3335863e8cf8392eea71add33dab3f96d060666fe68ab7382469d307f4490";
+      python-rocksdb = with self;
+        python2Packages.buildPythonPackage rec {
+          pname = "python-rocksdb";
+          version = "0.7.0";
+          src = python2Packages.fetchPypi {
+            inherit pname version;
+            sha256 =
+              "17d3335863e8cf8392eea71add33dab3f96d060666fe68ab7382469d307f4490";
+          };
+          buildInputs = [ sqlite rocksdb snappy zlib lz4 bzip2 ];
+          meta = with stdenv.lib; {
+            homepage = "https://github.com/twmht/python-rocksdb";
+            description = "Python bindings for RocksDB";
+          };
         };
-        buildInputs = [ sqlite rocksdb snappy zlib lz4 bzip2 ];
-        meta = with stdenv.lib; {
-          homepage = "https://github.com/twmht/python-rocksdb";
-          description = "Python bindings for RocksDB";
-        };
-      };
 
-    myPython2Env = with super;
-      python2Full.withPackages
-      (ps: with ps; [ pip setuptools sortedcontainers pycparser ]);
-    # (ps: with ps; [ pip setuptools pynvim jmespath pylint flake8 ]);
+      python2 = with super;
+        python2Full.withPackages
+        (ps: with ps; [ pip setuptools sortedcontainers pycparser ]);
+      # (ps: with ps; [ pip setuptools pynvim jmespath pylint flake8 ]);
 
-    myTexLive = self.texlive.combine { inherit (self.texlive) scheme-full; };
+      texLive = self.texlive.combine { inherit (self.texlive) scheme-full; };
 
-    myEmacs = (super.emacsPackagesGen super.emacsGit).emacsWithPackages
-      (epkgs: [ self.mu self.notmuch ]);
+      emacs = (super.emacsPackagesGen super.emacsGit).emacsWithPackages
+        (epkgs: [ self.mu self.notmuch ]);
 
-    myPackages = {
       almond = let
         scalaVersion = "2.12.8";
         almondVersion = "0.6.0";
