@@ -363,7 +363,7 @@ myAddtionalKeys =
         ++ [ (launcherMode1 "e", spawn "emacsclientmod"),
              (launcherMode1 "d", spawn "zeal"),
              (launcherMode1 "g", spawn "goldendict"),
-             (launcherMode1 "b", spawn "firefox"),
+             (launcherMode1 "b", spawn "firefox-devedition"),
              (launcherMode1 "r", spawn "koreader"),
              (launcherMode1 "f", spawn "doublecmd"),
              (launcherMode1 "z", spawn "zotero"),

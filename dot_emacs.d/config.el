@@ -24,7 +24,9 @@
     (normal-top-level-add-subdirs-to-load-path)))
 
 (dolist (dir '("lisp" "site-lisp" "secret"))
-  (my/add-subdirs-to-load-path (my/path-under-emacs-d dir)))
+  (let ((dir (my/path-under-emacs-d dir)))
+    (make-directory dir t)
+    (my/add-subdirs-to-load-path dir)))
 
 
 (require 'package)
