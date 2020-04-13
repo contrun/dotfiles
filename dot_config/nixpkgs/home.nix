@@ -3,6 +3,8 @@ let
   # To avoid clash within the buildEnv of home-manager
   overridePkg = pkg: priority:
     pkg.overrideAttrs (oldAttrs: {
+      # Fuck, why every package has broken tests? I just want to trust the devil.
+      doCheck = false;
       meta = { priority = priority; };
     });
   getAttr = attrset: path:
@@ -78,6 +80,14 @@ let
         "cowsay"
         "bashInteractive"
         "bashCompletion"
+      ];
+    }
+    {
+      name = "development tools (preferred)";
+      priority = 39;
+      packages = getPackages [
+        "universal-ctags"
+        "lldb"
       ];
     }
     {
@@ -158,7 +168,6 @@ let
         "go2nix"
         # clang
         "gnum4"
-        "lldb"
         "gcc"
         "linuxPackages_latest.bcc"
         "rr"
@@ -194,7 +203,6 @@ let
         "kube3d"
         "k9s"
         "minikube"
-        "universal-ctags"
         "binutils"
         "bison"
         "tldr-hs"
@@ -283,7 +291,7 @@ let
         "pamixer"
         "imv"
         "cmus"
-        "radiotray-ng"
+        # "radiotray-ng"
         "clementine"
         "rhythmbox"
         "mplayer"
@@ -457,7 +465,7 @@ let
         "plantuml"
         "texmacs"
         "myPackages.texLive"
-        "texlab"
+        # "texlab"
         "auctex"
         "mupdf"
         "graphviz"

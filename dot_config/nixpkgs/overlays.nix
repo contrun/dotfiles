@@ -6,9 +6,24 @@ let
   mySources = import ./nix/pkgs.nix { pkgs = originalNixpkgs; };
   # mySources = import ./nix/sources.nix;
 
-  mozOverlay = import mySources.nixpkgs-mozilla;
+  sourcesOverlay = self: super: {
+    inherit mySources;
+  };
+
+  mozillaOverlay = import mySources.nixpkgs-mozilla;
 
   emacsOverlay = import mySources.emacs-overlay;
+
+  haskellOverlay = self: super:
+    let
+      originalCompiler = super.haskell.compiler;
+      newCompiler = super.callPackages mySources.old-ghc-nix { pkgs = super; };
+    in {
+      haskell = super.haskell // {
+        inherit originalCompiler newCompiler;
+        compiler = newCompiler // originalCompiler;
+      };
+    };
 
   myOverlay = self: super: {
     myPackages = let
@@ -160,8 +175,7 @@ let
             plotly
             altair
             bokeh
-            vega.override
-            ({ doCheckt = false; })
+            vega
             vega_datasets
             numpy
             pandas
@@ -198,7 +212,7 @@ let
 
       texLive = self.texlive.combine { inherit (self.texlive) scheme-full; };
 
-      emacs = (super.emacsPackagesGen super.emacsGit).emacsWithPackages
+      emacs = (super.emacsPackagesGen super.emacsUnstable).emacsWithPackages
         (epkgs: [ self.mu self.notmuch ]);
 
       almond = let
@@ -425,14 +439,14 @@ let
     };
 
     myRustDevEnvFn = let
-      defaultMozOverlay = import (builtins.fetchTarball
+      defaultMozillaOverlay = import (builtins.fetchTarball
         "https://github.com/mozilla/nixpkgs-mozilla/archive/master.tar.gz");
-    in { pkgsPath ? <nixpkgs>, mozOverlay ? defaultMozOverlay
+    in { pkgsPath ? <nixpkgs>, mozillaOverlay ? defaultMozillaOverlay
     , crossSystem ? null, channel ? "nightly" }:
     let
       pkgs = import pkgsPath {
         inherit crossSystem;
-        overlays = [ mozOverlay ];
+        overlays = [ mozillaOverlay ];
       };
       targets = [ pkgs.stdenv.targetPlatform.config "wasm32-unknown-unknown" ];
       myBuildPackageRust =
@@ -476,7 +490,7 @@ let
 
     myRustDevEnv = { ... }@args:
       self.myRustDevEnvFn args // {
-        mozOverlay = mozOverlay;
+        mozillaOverlay = mozillaOverlay;
       };
   };
 
@@ -541,8 +555,10 @@ let
     ];
 
 in [
-  mozOverlay
+  sourcesOverlay
+  mozillaOverlay
   emacsOverlay
+  haskellOverlay
   myOverlay
   shellsOverlay
   # additionalOutputsOverlay
