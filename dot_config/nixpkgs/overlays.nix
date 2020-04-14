@@ -6,8 +6,8 @@ let
   mySources = import ./nix/pkgs.nix { pkgs = originalNixpkgs; };
   # mySources = import ./nix/sources.nix;
 
-  sourcesOverlay = self: super: {
-    inherit mySources;
+  aliasOverlay = self: super: {
+    inherit mySources stable unstable;
   };
 
   mozillaOverlay = import mySources.nixpkgs-mozilla;
@@ -555,7 +555,7 @@ let
     ];
 
 in [
-  sourcesOverlay
+  aliasOverlay
   mozillaOverlay
   emacsOverlay
   haskellOverlay

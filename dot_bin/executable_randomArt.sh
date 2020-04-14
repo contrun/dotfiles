@@ -18,7 +18,8 @@ artpip() {
 }
 
 artfulmac() {
-    curl -s 'http://artfulmac.com/random-art' | jq -r .file_location | parallel curl -sOJL
+    local url="$(curl -s 'http://artfulmac.com/random-art' | jq -r .file_location)"
+    curl -sOJL "$url"
 }
 
 get_wallpaper() {

@@ -1,4 +1,4 @@
-resolver: lts-15.01
+resolver: lts-15.03
 packages:
 - .
 extra-deps: []

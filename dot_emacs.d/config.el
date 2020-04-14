@@ -458,40 +458,6 @@ pressing `<leader> m`. Set it to `nil` to disable it.")
 (use-package scratch)
 (use-package command-log-mode)
 
-(use-package my/frame-hooks
-  :ensure nil
-  :init
-  (defvar after-make-console-frame-hooks '()
-    "Hooks to run after creating a new TTY frame")
-  (defvar after-make-window-system-frame-hooks '()
-    "Hooks to run after creating a new window-system frame")
-
-  (defun run-after-make-frame-hooks (frame)
-    "Run configured hooks in response to the newly-created FRAME.
-Selectively runs either `after-make-console-frame-hooks' or
-`after-make-window-system-frame-hooks'"
-    (with-selected-frame frame
-      (run-hooks (if window-system
-                     'after-make-window-system-frame-hooks
-                   'after-make-console-frame-hooks))))
-
-  (add-hook 'after-make-frame-functions 'run-after-make-frame-hooks)
-
-  (global-set-key [mouse-4] (lambda () (interactive) (scroll-down 1)))
-  (global-set-key [mouse-5] (lambda () (interactive) (scroll-up 1)))
-
-  (autoload 'mwheel-install "mwheel")
-
-  (defun my/console-frame-setup ()
-    (xterm-mouse-mode 1) ; Mouse in a terminal (Use shift to paste with middle button)
-    (mwheel-install))
-
-  :hook
-  (after-make-console-frame . my/console-frame-setup)
-  (after-init . (lambda () (when my/initial-frame
-                        (run-after-make-frame-hooks my/initial-frame))))
-  )
-
 (use-package term-mode
   :ensure nil
   :hook
@@ -1954,7 +1920,7 @@ With arg N, insert N newlines."
     (require 'lsp-python-ms)
     )
   :custom
-  (lsp-ui-doc-enable nil)
+  ;; (lsp-ui-doc-enable nil)
   (lsp-rust-racer-completion nil)
   (lsp-rust-server 'rust-analyzer)
   (lsp-haskell-process-path-hie "hie-wrapper")
@@ -4777,6 +4743,44 @@ With arg N, insert N newlines."
   (global-set-key (kbd "M-C-8") (lambda () (interactive) (my/adjust-opacity nil -2)))
   (global-set-key (kbd "M-C-9") (lambda () (interactive) (my/adjust-opacity nil 2)))
   (global-set-key (kbd "M-C-7") (lambda () (interactive) (modify-frame-parameters nil `((alpha . 100)))))
+
+  (use-package my/frame-hooks
+    :ensure nil
+    :init
+    (defvar after-make-console-frame-hook '()
+      "Hooks to run after creating a new TTY frame")
+    (defvar after-make-window-system-frame-hook '()
+      "Hooks to run after creating a new window-system frame")
+
+    (defun run-after-make-frame-hooks (frame)
+      "Run configured hooks in response to the newly-created FRAME.
+Selectively runs either `after-make-console-frame-hooks' or
+`after-make-window-system-frame-hooks'"
+      (with-selected-frame frame
+        (run-hooks (if window-system
+                       'after-make-window-system-frame-hook
+                     'after-make-console-frame-hook))))
+
+    (add-hook 'after-make-frame-functions 'run-after-make-frame-hooks)
+
+    (global-set-key [mouse-4] (lambda () (interactive) (scroll-down 1)))
+    (global-set-key [mouse-5] (lambda () (interactive) (scroll-up 1)))
+
+    (autoload 'mwheel-install "mwheel")
+
+    (defun my/console-frame-setup ()
+      (xterm-mouse-mode 1) ; Mouse in a terminal (Use shift to paste with middle button)
+      (mwheel-install))
+
+    (defun my/window-system-frame-setup ()
+      (modify-frame-parameters nil (list (cons 'alpha 80))))
+
+    :hook
+    (after-make-console-frame . my/console-frame-setup)
+    (after-make-window-system-frame . my/window-system-frame-setup)
+    (after-init . (lambda () (when my/initial-frame
+                          (run-after-make-frame-hooks my/initial-frame))))
+    )
   )
 
 (use-package theme-looper)
