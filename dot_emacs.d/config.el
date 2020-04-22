@@ -1819,6 +1819,8 @@ With arg N, insert N newlines."
         )
   )
 
+(use-package cmm-mode)
+
 (use-package nix-haskell-mode
   :hook (haskell-mode . nix-haskell-mode)
   )
@@ -2039,6 +2041,11 @@ With arg N, insert N newlines."
   (use-package whitespace-cleanup-mode
     :config
     (push 'markdown-mode whitespace-cleanup-mode-ignore-modes))
+  )
+
+(use-package adoc-mode
+  :mode
+  "\\.adoc\\'" "\\.asciidoc\\'"
   )
 
 (use-package csv-mode

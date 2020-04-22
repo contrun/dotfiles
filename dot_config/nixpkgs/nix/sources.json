@@ -29,10 +29,10 @@
         "homepage": "",
         "owner": "xzfc",
         "repo": "cached-nix-shell",
-        "rev": "94e4eb97aa84e1e9c4ecb5ebe2b08b9da22df2a2",
-        "sha256": "0pzwknpc4qrh9pv5z0xvldql2dkj9ddksvaci86a4f8cnd86p2l6",
+        "rev": "0e73944dc31132d2aa9a769f4cc677eea6984bec",
+        "sha256": "1hzrjvxk9rpqdxw0v27ngn5k3andm1xfkak4ly75x6gxwgb5mdw5",
         "type": "tarball",
-        "url": "https://github.com/xzfc/cached-nix-shell/archive/94e4eb97aa84e1e9c4ecb5ebe2b08b9da22df2a2.tar.gz",
+        "url": "https://github.com/xzfc/cached-nix-shell/archive/0e73944dc31132d2aa9a769f4cc677eea6984bec.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "emacs-overlay": {
@@ -41,10 +41,10 @@
         "homepage": "",
         "owner": "nix-community",
         "repo": "emacs-overlay",
-        "rev": "825d23bcb89b709f6bf7e414e873c008c424c420",
-        "sha256": "1pzldvaap6vqnvq2a6av8vsz782yyxgnsvh3mflfnsbglyd74dv2",
+        "rev": "d609e647ea3851c438bc0a6b71a756df51a4e381",
+        "sha256": "1wycq46am7jd2jv0zdglmgv2ccsys5pmh3cz5p7kqqyd0rwxf0a6",
         "type": "tarball",
-        "url": "https://github.com/nix-community/emacs-overlay/archive/825d23bcb89b709f6bf7e414e873c008c424c420.tar.gz",
+        "url": "https://github.com/nix-community/emacs-overlay/archive/d609e647ea3851c438bc0a6b71a756df51a4e381.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "ghcide-nix": {
@@ -65,10 +65,10 @@
         "homepage": null,
         "owner": "gibiansky",
         "repo": "ihaskell",
-        "rev": "7a7d5c8f5e853237af5a5cacbf4a8242f9f740b0",
-        "sha256": "16qzb8afgiz1ihp56q4v0nvrd4pvavzilk3v2xinvhn54bcqwajw",
+        "rev": "091c934aa458f805716b653d1e3413570a2e0262",
+        "sha256": "1c4fi6w9ylgjp924asxfkcjzw2qj5r5f4hgqwp7gmfmlis0v5i6h",
         "type": "tarball",
-        "url": "https://github.com/gibiansky/ihaskell/archive/7a7d5c8f5e853237af5a5cacbf4a8242f9f740b0.tar.gz",
+        "url": "https://github.com/gibiansky/ihaskell/archive/091c934aa458f805716b653d1e3413570a2e0262.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "niv": {
@@ -89,10 +89,10 @@
         "homepage": "https://github.com/NixOS/nixpkgs",
         "owner": "NixOS",
         "repo": "nixpkgs-channels",
-        "rev": "5fa2612ca277c6b4fabaf206594e0596a9d8a1b4",
-        "sha256": "0i80h7dv9hx2db0zndzh1vflwyz9qds8ijfvnp2rir00lvkcsn3j",
+        "rev": "9237a09d8edbae9951a67e9a3434a07ef94035b7",
+        "sha256": "05bizymljzzd665bpsjbhxamcgzq7bkjjzjfapkl2nicy774ak4x",
         "type": "tarball",
-        "url": "https://github.com/NixOS/nixpkgs-channels/archive/5fa2612ca277c6b4fabaf206594e0596a9d8a1b4.tar.gz",
+        "url": "https://github.com/NixOS/nixpkgs-channels/archive/9237a09d8edbae9951a67e9a3434a07ef94035b7.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "nixpkgs-mozilla": {
@@ -113,10 +113,10 @@
         "homepage": "https://github.com/nix-community/NUR",
         "owner": "nix-community",
         "repo": "nur-combined",
-        "rev": "4ecd05c73423a59facb1942b9ae79f21bc30389a",
-        "sha256": "1ysmprj8a98nssyxamj621hn9zdg2mxw8bjr310azlhc8pvwig9r",
+        "rev": "c39046038358a98fc635e54e80204b7211569313",
+        "sha256": "1p4l6idin7dgfqbjrd45h4mlwcl6kvfr38j15jwrr3z28hiwlx3b",
         "type": "tarball",
-        "url": "https://github.com/nix-community/nur-combined/archive/4ecd05c73423a59facb1942b9ae79f21bc30389a.tar.gz",
+        "url": "https://github.com/nix-community/nur-combined/archive/c39046038358a98fc635e54e80204b7211569313.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "old-ghc-nix": {

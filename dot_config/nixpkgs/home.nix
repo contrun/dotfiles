@@ -64,7 +64,7 @@ let
         "lynx"
         "elinks"
         "wget"
-        "w3m"
+        "w3m-full"
         "ueberzug"
         "autorandr"
         # "xournal"
@@ -89,6 +89,7 @@ let
       packages = getPackages [
         "universal-ctags"
         "lldb"
+        "clang"
       ];
     }
     {
@@ -111,6 +112,7 @@ let
         "zeal"
         "vagrant"
         "shellcheck"
+        "zig"
         # stdman
         # stdmanpages
         "ccls"
@@ -157,6 +159,7 @@ let
         "gitAndTools.git-extras"
         "gitAndTools.git-hub"
         "gitAndTools.git-annex"
+        "gitAndTools.git-subrepo"
         "gitAndTools.diff-so-fancy"
         "vscodium"
         # vscode
@@ -167,7 +170,6 @@ let
         # haskellPackages.ihaskell-widgets
         # spyder
         "go2nix"
-        # clang
         "gnum4"
         "gcc"
         "linuxPackages_latest.bcc"
@@ -517,6 +519,7 @@ let
         "sshlatex"
         "tectonic"
         "patchelf"
+        "libelf"
         # cachix
         # barcode
         # # bfg
