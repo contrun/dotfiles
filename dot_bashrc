@@ -23,5 +23,3 @@ if [ -z "$TMUX" ] && command -v tmux.sh && [ -z "$NO_TMUX" ]; then
         # MYSHELL=bash tmux.sh
         # tmux attach -t TMUX || tmux new -s TMUX
 fi
-
-source ~/.config/broot/launcher/bash/br

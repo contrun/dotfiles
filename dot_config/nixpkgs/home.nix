@@ -130,6 +130,7 @@ let
         "yarn"
         "redis"
         "meld"
+        "ccache"
         "clang-tools"
         "html-tidy"
         "radare2"
@@ -206,6 +207,8 @@ let
         "kube3d"
         "k9s"
         "minikube"
+        "libguestfs-with-appliance"
+        "python3Packages.binwalk"
         "binutils"
         "bison"
         "tldr-hs"
@@ -365,7 +368,7 @@ let
         "mu"
         "midori"
         # palemoon
-        "luakit"
+        # "luakit"
         "firefox-devedition-bin"
         "sshuttle"
         # youtube-dl
@@ -422,10 +425,11 @@ let
         "lsof"
         "hardinfo"
         "dmenu"
+        "dpkg"
+        "debootstrap"
         "dmidecode"
         # dnstracer
         # # doublecmd-gtk2
-        # dpkg
         # dropbox
         # dropbox-cli
         # dstat
@@ -637,6 +641,7 @@ let
         "kpcli"
         # "bitwarden-cli"
         "keepassxc"
+        "mkpasswd"
         "scrot"
         # lynx
         # mcabber
@@ -703,12 +708,14 @@ let
         "rsync"
         "rclone"
         "gnutar"
+        "zstd"
         "gzip"
         "gnugrep"
         "gnused"
         "gawk"
         "subdl"
         "subtitleeditor"
+        "espeak"
         # # surf
         # # sxiv
         # # synapse
