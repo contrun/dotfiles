@@ -2174,6 +2174,8 @@ With arg N, insert N newlines."
 
 (use-package org-cliplink)
 
+(use-package org-msg)
+
 (define-key global-map (kbd "C-c l") 'org-store-link)
 (define-key global-map (kbd "C-c a") 'org-agenda)
 

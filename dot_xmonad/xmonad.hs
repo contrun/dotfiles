@@ -20,6 +20,7 @@ import XMonad.Actions.CopyWindow (copy)
 import XMonad.Actions.CycleRecentWS
 import XMonad.Actions.CycleWS
 import XMonad.Actions.DynamicWorkspaces
+import XMonad.Actions.GroupNavigation
 import qualified XMonad.Actions.Search as S
 import XMonad.Actions.WindowGo
 import XMonad.Hooks.DynamicLog
@@ -28,6 +29,7 @@ import XMonad.Hooks.SetWMName (setWMName)
 import XMonad.Layout.AutoMaster
 import XMonad.Layout.Column
 import XMonad.Prompt
+import XMonad.Prompt.Workspace
 import qualified XMonad.StackSet as W
 import XMonad.Util.EZConfig
 import XMonad.Util.NamedScratchpad
@@ -114,6 +116,10 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) =
       -- Resize viewed windows to the correct size
       ((modm, xK_n), refresh),
       -- Move focus to the next window
+      ((modm, xK_Tab), nextMatch Backward (return True)),
+      ((modm .|. controlMask, xK_Tab), nextMatch Forward (return True)),
+      ((mod1Mask, xK_Tab), moveTo Next NonEmptyWS),
+      ((mod1Mask .|. shiftMask, xK_Tab), moveTo Prev NonEmptyWS),
       -- ((modm, xK_Tab), windows W.focusDown),
       -- Move focus to the next window
       ((modm, xK_j), windows W.focusDown),
@@ -145,7 +151,8 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) =
       -- Quit xmonad
       ((modm .|. shiftMask .|. controlMask, xK_q), io (exitWith ExitSuccess)),
       ((modm .|. controlMask, xK_BackSpace), removeWorkspace),
-      ((modm, xK_m), withWorkspace def (windows . W.shift)),
+      ((modm, xK_v), workspacePrompt def (windows . W.view)),
+      ((modm .|. controlMask, xK_v), workspacePrompt def (windows . W.shift)),
       ((modm .|. controlMask, xK_c), withWorkspace def (windows . copy)),
       ((modm .|. controlMask, xK_r), spawn "noti --title xmonad --message recompiling; xmonad --recompile; xmonad --restart")
       -- Run xmessage with a summary of the default keybindings (useful for beginners)
@@ -361,7 +368,8 @@ myAddtionalKeys =
              (myMod "q", raiseMaybeInHiddenWorkspace "terminal" (spawn "alacritty -t 'quick terminal' -e tmux new 'exec zsh'") (title =? "quick terminal")),
              (myMod "i", runOrRaiseInHiddenWorkspace "idea" "idea-community" (className =? "jetbrains-idea-ce")),
              (myMod "p", runOrRaiseInHiddenWorkspace "keepassxc" "keepassxc" (className =? "keepassxc")),
-             (myMod "z", toggleOrViewHiddenWorkspace' "zstash")
+             (myMod "z", toggleOrViewHiddenWorkspace' "zstash"),
+             (myMod "C-z", (windows . W.shift) "zstash")
            ]
         ++ [ ("<XF86MonBrightnessUp>", spawn "xbacklight -inc 10"),
              ("<XF86MonBrightnessDown>", spawn "xbacklight -dec 10"),
@@ -583,7 +591,7 @@ myPP =
       ppUrgent = xmobarColor "red" "yellow"
     }
   where
-    ignoredWorkspaces = ["NSP", "telegram", "firefox", "chromium", "keepassxc", "idea", "terminal", "emacs"]
+    ignoredWorkspaces = ["NSP", "telegram", "firefox", "chromium", "keepassxc", "idea", "terminal", "emacs", "zstash"]
     ignoreWorkspaces = \x -> if elem x ignoredWorkspaces then "" else x
     justAcronym = \x -> if elem x ignoredWorkspaces then map toUpper (take 1 x) else x
 

@@ -89,6 +89,7 @@ let
       packages = getPackages [
         "universal-ctags"
         "lldb"
+        "lld"
         "clang"
       ];
     }
@@ -383,6 +384,7 @@ let
         "udiskie"
         "acpi"
         "wine"
+        "winetricks"
         "usbutils"
         "powertop"
         "fail2ban"
