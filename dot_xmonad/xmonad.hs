@@ -6,15 +6,22 @@
 --
 -- Normally, you'd only override those defaults you care about.
 --
+
+import Data.Char
 import qualified Data.Map as M
 import Data.Maybe
 import Data.Monoid
 import Data.Tuple.Curry
+import Debug.Trace
 import System.Exit
 import System.Process (showCommandForUser)
 import XMonad
+import XMonad.Actions.CopyWindow (copy)
+import XMonad.Actions.CycleRecentWS
 import XMonad.Actions.CycleWS
+import XMonad.Actions.DynamicWorkspaces
 import qualified XMonad.Actions.Search as S
+import XMonad.Actions.WindowGo
 import XMonad.Hooks.DynamicLog
 import XMonad.Hooks.ManageDocks (ToggleStruts (ToggleStruts))
 import XMonad.Hooks.SetWMName (setWMName)
@@ -84,7 +91,7 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) =
       ((modm, xK_Return), spawn $ XMonad.terminal conf),
       ((modm .|. shiftMask, xK_Return), spawn "urxvt"),
       -- launch dmenu
-      ( (modm, xK_p),
+      ( (modm, xK_s),
         spawn
           "rofi -show combi -combi-modi window,drun,run -modi combi"
       ),
@@ -107,7 +114,7 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) =
       -- Resize viewed windows to the correct size
       ((modm, xK_n), refresh),
       -- Move focus to the next window
-      ((modm, xK_Tab), windows W.focusDown),
+      -- ((modm, xK_Tab), windows W.focusDown),
       -- Move focus to the next window
       ((modm, xK_j), windows W.focusDown),
       -- Move focus to the previous window
@@ -136,33 +143,34 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) =
       --
       ((modm, xK_b), sendMessage ToggleStruts),
       -- Quit xmonad
-      ((modm .|. mod1Mask, xK_q), io (exitWith ExitSuccess)),
-      -- Restart xmonad
-      ((modm .|. controlMask, xK_r), spawn "xmonad --recompile; xmonad --restart"),
-      ((modm, xK_q), spawn "xmonad --recompile; xmonad --restart")
+      ((modm .|. shiftMask .|. controlMask, xK_q), io (exitWith ExitSuccess)),
+      ((modm .|. controlMask, xK_BackSpace), removeWorkspace),
+      ((modm, xK_m), withWorkspace def (windows . W.shift)),
+      ((modm .|. controlMask, xK_c), withWorkspace def (windows . copy)),
+      ((modm .|. controlMask, xK_r), spawn "noti --title xmonad --message recompiling; xmonad --recompile; xmonad --restart")
       -- Run xmessage with a summary of the default keybindings (useful for beginners)
       -- , ((modm .|. controlMask, xK_slash ), spawn ("echo \"" ++ help ++ "\" | xmessage -file -"))
     ]
       ++ [ ((m .|. modm, k), windows $ f i) --
                -- mod-[1..9], Switch to workspace N
-               -- mod-shift-[1..9], Move client to workspace N
+               -- mod-ctrl-[1..9], Move client to workspace N
                --
            | (i, k) <- zip (XMonad.workspaces conf) [xK_1 .. xK_9],
              (f, m) <- [(W.greedyView, 0), (W.shift, controlMask)]
          ]
-      ++ [ ( (m .|. modm, key),
+      ++ [ ( (m .|. shiftMask .|. modm, key),
              --
-             -- mod-{w,e,r}, Switch to physical/Xinerama screens 1, 2, or 3
-             -- mod-shift-{w,e,r}, Move client to screen 1, 2, or 3
+             -- mod-shift-{1,2,3}, Switch to physical/Xinerama screens 1, 2, or 3
+             -- mod-shift-ctrl-{1,2,3}, Move client to screen 1, 2, or 3
              --
              screenWorkspace sc >>= flip whenJust (windows . f)
            )
-           | (key, sc) <- zip [xK_w, xK_e, xK_r] [0 ..],
+           | (key, sc) <- zip [xK_1 .. xK_9] [0 ..],
              (f, m) <- [(W.view, 0), (W.shift, controlMask)]
          ]
 
 -- toggleOrView for people who prefer view to greedyView
-toggleOrView' = toggleOrDoSkip [] W.view
+toggleOrView' = toggleOrDoSkip ["NSP"] W.view
 
 -- toggleOrView ignoring scratchpad and named scratchpad workspace
 toggleOrViewNoSP = toggleOrDoSkip ["NSP"] W.greedyView
@@ -348,6 +356,13 @@ myAddtionalKeys =
       powerMode key action = map (\k -> (unwords [myMod k, key], action)) ["<Delete>", "Pause", "XF86PowerOff"]
       myScratchpadSpawnAction = scratchpadSpawnAction defaults
    in searchBindings
+        ++ [ (myMod "w", runOrRaiseInHiddenWorkspace "firefox" "firefox-devedition" (className =? "Firefox Developer Edition")),
+             (myMod "e", raiseMaybeInHiddenWorkspace "emacs" (spawn "emacsclient --alternate-editor='' --no-wait --create-frame --frame-parameters='(quote (name . \"quick emacs frame\"))'") (title =? "quick emacs frame")),
+             (myMod "q", raiseMaybeInHiddenWorkspace "terminal" (spawn "alacritty -t 'quick terminal' -e tmux new 'exec zsh'") (title =? "quick terminal")),
+             (myMod "i", runOrRaiseInHiddenWorkspace "idea" "idea-community" (className =? "jetbrains-idea-ce")),
+             (myMod "p", runOrRaiseInHiddenWorkspace "keepassxc" "keepassxc" (className =? "keepassxc")),
+             (myMod "z", toggleOrViewHiddenWorkspace' "zstash")
+           ]
         ++ [ ("<XF86MonBrightnessUp>", spawn "xbacklight -inc 10"),
              ("<XF86MonBrightnessDown>", spawn "xbacklight -dec 10"),
              ("<XF86AudioNext>", spawn "cmus-remote -n"),
@@ -363,25 +378,25 @@ myAddtionalKeys =
         ++ [ (launcherMode1 "e", spawn "emacsclientmod"),
              (launcherMode1 "d", spawn "zeal"),
              (launcherMode1 "g", spawn "goldendict"),
-             (launcherMode1 "b", spawn "firefox-devedition"),
+             (launcherMode1 "b", runOrRaiseInHiddenWorkspace "firefox" "firefox-devedition" (className =? "Firefox Developer Edition")),
              (launcherMode1 "r", spawn "koreader"),
              (launcherMode1 "f", spawn "doublecmd"),
              (launcherMode1 "z", spawn "zotero"),
              (launcherMode1 "i", spawn "idea-community"),
              (launcherMode1 "v", spawn "codium"),
              (launcherMode1 "p", spawn "zathura"),
-             (launcherMode1 "k", spawn "keepassxc"),
              (launcherMode1 "l", spawn "calibre"),
              (launcherMode1 "w", spawn "wireshark"),
              (launcherMode1 "s", safeSpawn "emacsclient" ["-c", "-e", "(sunrise)"]),
              (launcherMode1 "m", safeSpawn "emacsclient" ["-c", "-e", "(mu4e)"]),
+             (launcherMode1 "k", runOrRaiseInHiddenWorkspace "keepassxc" "keepassxc" (className =? "keepassxc")),
              (launcherMode1 "c", uncurryN safeSpawn $ myGetTerminalCommand Nothing Nothing ["mc"])
            ]
         ++ [ (launcherMode2 "e", safeSpawn "emacsclient" ["-c", "-e", "(elfeed)"]),
              (launcherMode2 "d", spawn "noDisturb.sh"),
              (launcherMode2 "a", spawn "randomArt.sh"),
-             (launcherMode2 "b", spawn "chromium"),
-             (launcherMode2 "t", spawn "telegram-desktop"),
+             (launcherMode2 "b", runOrRaiseInHiddenWorkspace "chromium" "chromium" (className =? "Chromium-browser")),
+             (launcherMode2 "t", runOrRaiseInHiddenWorkspace "telegram" "telegram-desktop" (className =? "telegram-desktop")),
              (launcherMode2 "k", spawn "keymap.sh"),
              (launcherMode2 "m", spawn "mpv"),
              (launcherMode2 "f", spawn "pcmanfm")
@@ -419,6 +434,26 @@ myLayout = tiled ||| Mirror tiled ||| Full ||| Column 1.6
     ratio = 1 / 2
     -- Percent of screen to increment by when resizing panes
     delta = 3 / 100
+
+myFilterOutWorkspace :: String -> [WindowSpace] -> [WindowSpace]
+myFilterOutWorkspace wsname = filter (\(W.Workspace tag _ _) -> tag /= wsname)
+
+toggleOrViewHiddenWorkspace :: String -> X Bool
+toggleOrViewHiddenWorkspace tag = do
+  addHiddenWorkspace tag
+  toggleOrView' tag
+  withWindowSet $ return . (tag ==) . W.currentTag
+
+toggleOrViewHiddenWorkspace' :: String -> X ()
+toggleOrViewHiddenWorkspace' tag = toggleOrViewHiddenWorkspace tag >> return ()
+
+raiseMaybeInHiddenWorkspace :: String -> X () -> Query Bool -> X ()
+raiseMaybeInHiddenWorkspace tag action query =
+  whenX (toggleOrViewHiddenWorkspace tag) (raiseMaybe action query)
+
+runOrRaiseInHiddenWorkspace :: String -> String -> Query Bool -> X ()
+runOrRaiseInHiddenWorkspace tag command query =
+  whenX (toggleOrViewHiddenWorkspace tag) (runOrRaise command query)
 
 myGetTerminalCommand :: Maybe String -> Maybe String -> [String] -> (String, [String])
 myGetTerminalCommand title cls command = ("alacritty", (maybe [] (\x -> ["--title", x]) title) ++ (maybe [] (\x -> ["--class", x]) cls) ++ (if null command then [] else ["-e"] ++ command))
@@ -470,12 +505,16 @@ myManageHook =
     . concat
     $ [ [title =? t --> doFloat | t <- myTitleFloats],
         [className =? c --> doFloat | c <- myClassFloats],
-        [className =? c <&&> (not <$> stringProperty "WM_WINDOW_ROLE" =? "GtkFileChooserDialog") <&&> (not <$> stringProperty "WM_WINDOW_ROLE" =? "confirmEx") <&&> (not <$> stringProperty "WM_WINDOW_ROLE" =? "Dialog") <&&> (not <$> appName =? "Popup") --> doShift "3" | c <- myBrowserClasses],
-        [className =? c <&&> (not <$> stringProperty "WM_WINDOW_ROLE" =? "GtkFileChooserDialog") <&&> (not <$> stringProperty "WM_WINDOW_ROLE" =? "confirmEx") <&&> (not <$> stringProperty "WM_WINDOW_ROLE" =? "Dialog") <&&> (not <$> appName =? "Popup") --> doShift "9" | c <- myBrowserClasses2],
-        -- [className =? "keepassxc" --> doShift "7"],
+        [className =? c <&&> (not <$> stringProperty "WM_WINDOW_ROLE" =? "GtkFileChooserDialog") <&&> (not <$> stringProperty "WM_WINDOW_ROLE" =? "confirmEx") <&&> (not <$> stringProperty "WM_WINDOW_ROLE" =? "Dialog") <&&> (not <$> appName =? "Popup") --> doShift "firefox" | c <- myBrowserClasses],
+        [className =? c <&&> (not <$> stringProperty "WM_WINDOW_ROLE" =? "GtkFileChooserDialog") <&&> (not <$> stringProperty "WM_WINDOW_ROLE" =? "confirmEx") <&&> (not <$> stringProperty "WM_WINDOW_ROLE" =? "Dialog") <&&> (not <$> appName =? "Popup") --> doShift "chromium" | c <- myBrowserClasses2],
+        [className =? "keepassxc" --> doShift "keepass"],
         [title =? t --> doIgnore | t <- myTitleIgnores],
         [className =? c --> doIgnore | c <- myClassIgnores],
-        [namedScratchpadManageHook myScratchpads]
+        [namedScratchpadManageHook myScratchpads],
+        [ (className =? "jetbrains-idea-ce") --> doShift "idea",
+          (title =? "quick emacs frame") --> doShift "emacs",
+          (title =? "quick terminal") --> doShift "terminal"
+        ]
       ]
   where
     myTitleFloats = ["Transferring"] -- for the KDE "open link" popup from konsole
@@ -536,14 +575,17 @@ myStatusBar = "xmobar"
 
 myPP =
   xmobarPP
-    { ppTitle = myPPTitle
+    { ppTitle = xmobarColor "green" "",
+      ppHiddenNoWindows = const "",
+      ppHidden = ignoreWorkspaces,
+      ppCurrent = xmobarColor "yellow" "" . justAcronym,
+      ppVisible = wrap "(" ")",
+      ppUrgent = xmobarColor "red" "yellow"
     }
-
-myPPTitle = xmobarColor "#87AFAF" ""
-
-myPPTitleSanitize title = wrap (wrap "<raw=" ":" $ show (length shortTitle)) "/>" $ shortTitle
   where
-    shortTitle = shorten 40 title
+    ignoredWorkspaces = ["NSP", "telegram", "firefox", "chromium", "keepassxc", "idea", "terminal", "emacs"]
+    ignoreWorkspaces = \x -> if elem x ignoredWorkspaces then "" else x
+    justAcronym = \x -> if elem x ignoredWorkspaces then map toUpper (take 1 x) else x
 
 -- The main function.
 main = xmonad =<< statusBar myStatusBar myPP myToggleStruts defaults
