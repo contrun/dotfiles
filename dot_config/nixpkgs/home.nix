@@ -180,6 +180,7 @@ let
         "gdbgui"
         "valgrind"
         "wabt"
+        "emscripten"
         # "wasm-pack"
         # wasm-strip
         # "wasm-bindgen-cli"
@@ -250,6 +251,7 @@ let
         # ocamlPackages_latest.merlin
         # ocamlPackages_latest.utop
         "opam"
+        "dune"
         "ocaml"
         "sqlint"
         "dotty"
@@ -512,6 +514,7 @@ let
         "mtpaint"
         "unison"
         "p7zip"
+        "lz4"
         "zip"
         "xclip"
         "adbfs-rootless"

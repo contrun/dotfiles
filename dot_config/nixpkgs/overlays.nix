@@ -326,12 +326,12 @@ let
       koreader = with super;
         stdenv.mkDerivation rec {
           pname = "koreader";
-          version = "2020.02";
+          version = "2020.04.1";
 
           src = fetchurl {
             url =
               "https://github.com/koreader/koreader/releases/download/v${version}/koreader-${version}-amd64.deb";
-            sha256 = "14cag2b8bhgvnx4f1sjrsw51l13c3c5v5ha60i85sffgslh9fjxz";
+            sha256 = "1bhn33bd3pv9yfspckjbx8p89jvi009rlx2gpisd1n1psarzrafj";
           };
           sourceRoot = ".";
           nativeBuildInputs = [ makeWrapper dpkg ];
