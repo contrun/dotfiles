@@ -23,6 +23,7 @@ import XMonad.Actions.CycleRecentWS
 import XMonad.Actions.CycleWS
 import XMonad.Actions.DynamicWorkspaces
 import XMonad.Actions.GroupNavigation
+import XMonad.Actions.PerWorkspaceKeys
 import qualified XMonad.Actions.Search as S
 import XMonad.Actions.WindowGo
 import XMonad.Hooks.DynamicLog
@@ -35,8 +36,10 @@ import XMonad.Prompt.Workspace
 import qualified XMonad.StackSet as W
 import XMonad.Util.EZConfig
 import XMonad.Util.NamedScratchpad
+import XMonad.Util.Paste
 import XMonad.Util.Run
 import XMonad.Util.Scratchpad
+import XMonad.Util.WindowProperties
 
 -- The preferred terminal program, which is used in a binding below and by
 -- certain contrib modules.
@@ -156,6 +159,12 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) =
       ((modm, xK_g), workspacePrompt def (windows . W.view)),
       ((modm .|. controlMask, xK_g), workspacePrompt def (windows . W.shift)),
       ((modm .|. controlMask, xK_c), withWorkspace def (windows . copy)),
+      -- What the fuck. Firefox just does not allow me to disable control-q, control-b. Below is to slow.
+      -- (keyPassThrough (controlMask, xK_q) (focusedHasProperty $ foldr1 Or $ map ClassName firefoxClasses, return ())),
+      -- (keyPassThrough (controlMask, xK_b) (focusedHasProperty $ foldr1 Or $ map ClassName firefoxClasses, return ())),
+      (keyPassThrough (controlMask, xK_q) (focusedHasProperty $ ClassName "Firefox Developer Edition", return ())),
+      -- Tow slow for emacs
+      -- (keyPassThrough (controlMask, xK_b) (focusedHasProperty $ ClassName "Firefox Developer Edition", return ())),
       ((modm .|. shiftMask, xK_r), spawn "noti --title xmonad --message recompiling; chezmoi apply; xmonad --recompile; xmonad --restart")
       -- Run xmessage with a summary of the default keybindings (useful for beginners)
       -- , ((modm .|. controlMask, xK_slash ), spawn ("echo \"" ++ help ++ "\" | xmessage -file -"))
@@ -240,6 +249,9 @@ myXPConfig =
       historyFilter = deleteConsecutive,
       promptKeymap = myPromptKeymap
     }
+
+keyPassThrough :: (KeyMask, KeySym) -> (X Bool, X ()) -> ((KeyMask, KeySym), X ())
+keyPassThrough (keyMask, keySym) (condition, action) = ((keyMask, keySym), condition >>= \x -> if x then action else (sendKey keyMask keySym))
 
 myAddtionalKeys =
   let searchEngineList =
@@ -365,12 +377,12 @@ myAddtionalKeys =
       powerMode key action = map (\k -> (unwords [myMod k, key], action)) ["<Delete>", "Pause", "XF86PowerOff"]
       myScratchpadSpawnAction = scratchpadSpawnAction defaults
    in searchBindings
-        ++ [ (myMod "w", runOrRaiseInHiddenWorkspace "firefox" "firefox-devedition" (className =? "Firefox Developer Edition")),
-             (myMod "C-w", runOrRaiseInHiddenWorkspace "chromium" "chromium" (className =? "Chromium-browser")),
-             (myMod "e", raiseMaybeInHiddenWorkspace "emacs" (spawn "emacsclient --alternate-editor='' --no-wait --create-frame --frame-parameters='(quote (name . \"quick emacs frame\"))'") (title =? "quick emacs frame")),
-             (myMod "q", raiseMaybeInHiddenWorkspace "terminal" (spawn "alacritty --class 'QuickTerminal' -e tmux new 'exec zsh'") (appName =? "QuickTerminal")),
-             (myMod "i", runOrRaiseInHiddenWorkspace "idea" "idea-community" (className =? "jetbrains-idea-ce")),
-             (myMod "p", runOrRaiseInHiddenWorkspace "keepassxc" "keepassxc" (className =? "KeePassXC")),
+        ++ [ (myMod "w", runOrRaiseInHiddenWorkspace "web" "firefox-devedition" (className =? "Firefox Developer Edition")),
+             (myMod "C-w", runOrRaiseInHiddenWorkspace "web" "chromium" (className =? "Chromium-browser")),
+             (myMod "e", raiseMaybeInHiddenWorkspace "editor" (spawn "emacsclient --alternate-editor='' --no-wait --create-frame --frame-parameters='(quote (name . \"quick emacs frame\"))'") (title =? "quick emacs frame")),
+             (myMod "q", raiseMaybeInHiddenWorkspace "quickTerminal" (spawn "alacritty --class 'QuickTerminal' -e tmux new 'exec zsh'") (appName =? "QuickTerminal")),
+             (myMod "i", runOrRaiseInHiddenWorkspace "ide" "idea-community" (className =? "jetbrains-idea-ce")),
+             (myMod "p", runOrRaiseInHiddenWorkspace "password" "keepassxc" (className =? "KeePassXC")),
              (myMod "z", toggleOrViewHiddenWorkspace' "zstash"),
              (myMod "C-z", (windows . W.shift) "zstash"),
              (myMod "c", toggleOrViewHiddenWorkspace' "chat"),
@@ -395,7 +407,7 @@ myAddtionalKeys =
         ++ [ (launcherMode1 "e", spawn "emacsclientmod"),
              (launcherMode1 "d", spawn "zeal"),
              (launcherMode1 "g", spawn "goldendict"),
-             (launcherMode1 "b", runOrRaiseInHiddenWorkspace "firefox" "firefox-devedition" (className =? "Firefox Developer Edition")),
+             (launcherMode1 "b", runOrRaiseInHiddenWorkspace "web" "firefox-devedition" (className =? "Firefox Developer Edition")),
              (launcherMode1 "r", runOrRaiseInHiddenWorkspace "reading" "koreader" (fmap (=~ ".*KOReader$") title)),
              (launcherMode1 "f", spawn "doublecmd"),
              (launcherMode1 "z", spawn "zotero"),
@@ -404,15 +416,16 @@ myAddtionalKeys =
              (launcherMode1 "p", runOrRaiseInHiddenWorkspace "reading" "zathura" (className =? "Zathura")),
              (launcherMode1 "l", spawn "calibre"),
              (launcherMode1 "w", spawn "wireshark"),
-             (launcherMode1 "s", safeSpawn "emacsclient" ["-c", "-e", "(sunrise)"]),
+             (launcherMode1 "s", spawn "screenshot.sh"),
              (launcherMode1 "m", safeSpawn "emacsclient" ["-c", "-e", "(mu4e)"]),
-             (launcherMode1 "k", runOrRaiseInHiddenWorkspace "keepassxc" "keepassxc" (className =? "KeePassXC")),
+             (launcherMode1 "k", runOrRaiseInHiddenWorkspace "password" "keepassxc" (className =? "KeePassXC")),
              (launcherMode1 "c", uncurryN safeSpawn $ myGetTerminalCommand Nothing Nothing ["mc"])
            ]
         ++ [ (launcherMode2 "e", safeSpawn "emacsclient" ["-c", "-e", "(elfeed)"]),
              (launcherMode2 "d", spawn "noDisturb.sh"),
              (launcherMode2 "a", spawn "randomArt.sh"),
-             (launcherMode2 "b", runOrRaiseInHiddenWorkspace "chromium" "chromium" (className =? "Chromium-browser")),
+             (launcherMode1 "s", safeSpawn "emacsclient" ["-c", "-e", "(sunrise)"]),
+             (launcherMode2 "b", runOrRaiseInHiddenWorkspace "web" "chromium" (className =? "Chromium-browser")),
              (launcherMode2 "m", runOrRaiseInHiddenWorkspace "chat" "nheko" (appName =? "nheko")),
              (launcherMode2 "t", runOrRaiseInHiddenWorkspace "chat" "telegram-desktop" (className =? "telegram-desktop")),
              (launcherMode2 "w", runOrRaiseInHiddenWorkspace "chat" "txsb" (appName =? "wechat.exe")),
@@ -519,20 +532,23 @@ myScratchpads = map (uncurryN NS) myScratchpadTuples
 -- To match on the WM_NAME, you can use 'title' in the same way that
 -- 'className' and 'resource' are used below.
 --
+
+firefoxClasses = ["Firefox", "Palemoon", "Navigator", "Firefox Developer Edition"]
+
 myManageHook =
   composeAll
     . concat
     $ [ [title =? t --> doFloat | t <- myTitleFloats],
         [className =? c --> doFloat | c <- myClassFloats],
-        [className =? c <&&> (not <$> stringProperty "WM_WINDOW_ROLE" =? "GtkFileChooserDialog") <&&> (not <$> stringProperty "WM_WINDOW_ROLE" =? "confirmEx") <&&> (not <$> stringProperty "WM_WINDOW_ROLE" =? "Dialog") <&&> (not <$> appName =? "Popup") --> doShiftHiddenWorkspace "firefox" | c <- myBrowserClasses],
-        [className =? c <&&> (not <$> stringProperty "WM_WINDOW_ROLE" =? "GtkFileChooserDialog") <&&> (not <$> stringProperty "WM_WINDOW_ROLE" =? "confirmEx") <&&> (not <$> stringProperty "WM_WINDOW_ROLE" =? "Dialog") <&&> (not <$> appName =? "Popup") --> doShiftHiddenWorkspace "chromium" | c <- myBrowserClasses2],
+        [className =? c <&&> (not <$> stringProperty "WM_WINDOW_ROLE" =? "GtkFileChooserDialog") <&&> (not <$> stringProperty "WM_WINDOW_ROLE" =? "confirmEx") <&&> (not <$> stringProperty "WM_WINDOW_ROLE" =? "Dialog") <&&> (not <$> appName =? "Popup") --> doShiftHiddenWorkspace "web" | c <- firefoxClasses],
+        [className =? c <&&> (not <$> stringProperty "WM_WINDOW_ROLE" =? "GtkFileChooserDialog") <&&> (not <$> stringProperty "WM_WINDOW_ROLE" =? "confirmEx") <&&> (not <$> stringProperty "WM_WINDOW_ROLE" =? "Dialog") <&&> (not <$> appName =? "Popup") --> doShiftHiddenWorkspace "web" | c <- myBrowserClasses2],
         [title =? t --> doIgnore | t <- myTitleIgnores],
         [className =? c --> doIgnore | c <- myClassIgnores],
         [namedScratchpadManageHook myScratchpads],
-        [ (className =? "jetbrains-idea-ce") --> doShiftHiddenWorkspace "idea",
-          (title =? "quick emacs frame") --> doShiftHiddenWorkspace "emacs",
-          (className =? "keepassxc") --> doShiftHiddenWorkspace "keepass",
-          (appName =? "QuickTerminal") --> doShiftHiddenWorkspace "terminal",
+        [ (className =? "jetbrains-idea-ce") --> doShiftHiddenWorkspace "ide",
+          (title =? "quick emacs frame") --> doShiftHiddenWorkspace "editor",
+          (className =? "keepassxc") --> doShiftHiddenWorkspace "password",
+          (appName =? "QuickTerminal") --> doShiftHiddenWorkspace "quickTerminal",
           (appName =? "wechat.exe") --> doShiftHiddenWorkspace "chat",
           (className =? "zoom") --> doShiftHiddenWorkspace "chat",
           (className =? "telegram-desktop") --> doShiftHiddenWorkspace "chat",
@@ -548,7 +564,6 @@ myManageHook =
     myClassFloats = ["Pinentry"] -- for gpg passphrase entry
     myClassIgnores = ["desktop_window"]
     myTitleIgnores = ["kdesktop"]
-    myBrowserClasses = ["Firefox", "Palemoon", "Navigator", "Firefox Developer Edition"]
     myBrowserClasses2 = ["Chromium-browser"]
     doShiftHiddenWorkspace ws = (liftX $ addHiddenWorkspace ws) >> doShift ws
     doShiftAndViewHiddenWorkspace ws = (liftX $ addHiddenWorkspace ws) >> doShiftAndView ws
@@ -603,7 +618,7 @@ myToggleStruts XConfig {XMonad.modMask = modm} = (modm, xK_b)
 
 myStatusBar = "xmobar"
 
-myHiddenWorkspaces = ["NSP", "chat", "reading", "firefox", "chromium", "keepassxc", "idea", "terminal", "emacs", "vscode", "zstash", "video"]
+myHiddenWorkspaces = ["NSP", "chat", "reading", "web", "password", "ide", "quickTerminal", "editor", "vscode", "zstash", "video"]
 
 myPP =
   xmobarPP
@@ -611,7 +626,7 @@ myPP =
       ppHiddenNoWindows = const "",
       ppLayout = const "",
       ppSep = "  ",
-      ppHidden = ignoreWorkspaces,
+      ppHidden = justAcronym,
       ppCurrent = xmobarColor "yellow" "" . justAcronym,
       ppVisible = wrap "(" ")",
       ppUrgent = xmobarColor "red" "yellow"

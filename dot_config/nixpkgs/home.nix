@@ -374,7 +374,7 @@ let
         # "luakit"
         "firefox-devedition-bin"
         "sshuttle"
-        # youtube-dl
+        "youtube-dl"
         "offlineimap"
       ];
     }
