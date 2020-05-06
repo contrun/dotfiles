@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 94c5e1171c68a9aae064436377f3d60936a9d2fb9359b82dfa24afe3b98d21db
+-- hash: f3724a56f55df11e906da644a683b2525023e7e8c67556d916af56960a3be8ef
 
 name:           my-xmonad
 version:        0.1.0.0
@@ -34,6 +34,7 @@ library
     , monad-loops
     , process
     , random
+    , regex-posix
     , sort
     , tuple
     , unordered-containers
@@ -55,6 +56,7 @@ executable my-xmonad
     , monad-loops
     , process
     , random
+    , regex-posix
     , sort
     , tuple
     , unordered-containers

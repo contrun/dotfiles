@@ -29,6 +29,7 @@ dependencies:
 - sort
 - unordered-containers
 - lens
+- regex-posix
 
 library:
   source-dirs: src
