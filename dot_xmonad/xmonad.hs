@@ -371,14 +371,14 @@ myAddtionalKeys =
         ]
           ++ [(unwords [myMod "/", name], S.promptSearch myXPConfig e) | e@(S.SearchEngine name _) <- searchEngines, length name == 1]
       launcherMode1 x = unwords [myMod "x", x]
-      launcherMode2 x = unwords [myMod "o", x]
+      launcherMode2 x = unwords [myMod "x", myMod "x", x]
       alternativeMode x = unwords [myMod "a", x]
       orgCapture x = (alternativeMode x, spawn $ unwords ["orgCapture.sh", x])
       powerMode key action = map (\k -> (unwords [myMod k, key], action)) ["<Delete>", "Pause", "XF86PowerOff"]
       myScratchpadSpawnAction = scratchpadSpawnAction defaults
    in searchBindings
         ++ [ (myMod "w", runOrRaiseInHiddenWorkspace "web" "firefox-devedition" (className =? "Firefox Developer Edition")),
-             (myMod "C-w", runOrRaiseInHiddenWorkspace "web" "chromium" (className =? "Chromium-browser")),
+             (myMod "S-w", runOrRaiseInHiddenWorkspace "web" "chromium" (className =? "Chromium-browser")),
              (myMod "e", raiseMaybeInHiddenWorkspace "editor" (spawn "emacsclient --alternate-editor='' --no-wait --create-frame --frame-parameters='(quote (name . \"quick emacs frame\"))'") (title =? "quick emacs frame")),
              (myMod "q", raiseMaybeInHiddenWorkspace "quickTerminal" (spawn "alacritty --class 'QuickTerminal' -e tmux new 'exec zsh'") (appName =? "QuickTerminal")),
              (myMod "i", runOrRaiseInHiddenWorkspace "ide" "idea-community" (className =? "jetbrains-idea-ce")),
@@ -429,6 +429,7 @@ myAddtionalKeys =
              (launcherMode2 "m", runOrRaiseInHiddenWorkspace "chat" "nheko" (appName =? "nheko")),
              (launcherMode2 "t", runOrRaiseInHiddenWorkspace "chat" "telegram-desktop" (className =? "telegram-desktop")),
              (launcherMode2 "w", runOrRaiseInHiddenWorkspace "chat" "txsb" (appName =? "wechat.exe")),
+             (launcherMode2 "u", spawn "noti --title home-manager --message updating; chezmoi apply; noti home-manager switch"),
              (launcherMode2 "k", spawn "keymap.sh"),
              (launcherMode2 "v", runOrRaiseInHiddenWorkspace "video" "vlc" (className =? "vlc")),
              (launcherMode2 "f", spawn "pcmanfm")
@@ -626,13 +627,13 @@ myPP =
       ppHiddenNoWindows = const "",
       ppLayout = const "",
       ppSep = "  ",
-      ppHidden = justAcronym,
-      ppCurrent = xmobarColor "yellow" "" . justAcronym,
+      ppHidden = justAcronym . ignoreWorkspaces,
+      ppCurrent = xmobarColor "violet" "" . justAcronym,
       ppVisible = wrap "(" ")",
       ppUrgent = xmobarColor "red" "yellow"
     }
   where
-    ignoreWorkspaces = \x -> if elem x myHiddenWorkspaces then "" else x
+    ignoreWorkspaces = \x -> if elem x ["NSP"] then "" else x
     justAcronym = \x -> if elem x myHiddenWorkspaces then map toUpper (take 1 x) else x
 
 -- The main function.

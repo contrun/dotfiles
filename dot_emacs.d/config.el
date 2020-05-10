@@ -2176,6 +2176,8 @@ With arg N, insert N newlines."
 
 (use-package org-msg)
 
+(use-package ox-clip)
+
 (define-key global-map (kbd "C-c l") 'org-store-link)
 (define-key global-map (kbd "C-c a") 'org-agenda)
 
@@ -3370,7 +3372,9 @@ With arg N, insert N newlines."
 
 (use-package nix-mode
   :hook
-  (nix-mode . (lambda () (format-all-mode 1)))
+  (nix-mode . (lambda ()
+                (format-all-mode 1)
+                (smartparens-mode -1)))
   )
 
 (use-package nix-sandbox)
@@ -3876,6 +3880,32 @@ With arg N, insert N newlines."
     ;;    (local-set-key (kbd "C-c C-a") (my-TeX-command-run-all))
     (smartparens-mode 1)
     ;;(setq tex-auto-compile-timer (run-with-timer 10 100 'LaTeX-auto-compile))
+    (add-to-list 'TeX-expand-list
+                 '("%(tex-file-name)"
+                   (lambda ()
+                     (concat
+                      "\"" (car (split-string (buffer-file-name) "\\.Rnw"))
+                      ".tex" "\""))))
+    (push
+     '("LaTeXmk" "latexmk -synctex=1 -pdf %s" TeX-run-TeX nil t
+       :help "Run latexmk on file") TeX-command-list)
+    (push
+     '("knitr" "R -e 'knitr::knit(\"%s\")'" TeX-run-TeX nil t
+       :help "Run knitr on file") TeX-command-list)
+    (push
+     '("klatex" "R -e 'knitr::knit(\"%s\")';latexmk -pdf %(tex-file-name)"
+       TeX-run-TeX nil t
+       :help "Run knitr and latexmk on .tex") TeX-command-list)
+    (push
+     '("arara" "arara --verbose %s" TeX-run-TeX nil t
+       :help "Run arara on file") TeX-command-list)
+    (push
+     '("compileboth" "compileboth %s" TeX-run-TeX nil t
+       :help "Generate questions and answers") TeX-command-list)
+    (push
+     '("bothaspects" "bothaspects %s" TeX-run-TeX nil t
+       :help "Generate 16:9 and 4:3 slides") TeX-command-list)
+    (setq TeX-command-default "arara")
     )
 
   (defun TeX-insert-sub-or-superscript (arg)
@@ -4051,6 +4081,8 @@ With arg N, insert N newlines."
 
 (straight-use-package
  '(auto-capitalize :type git :host github :repo "emacsmirror/auto-capitalize"))
+
+(use-package pangu-spacing)
 
 (use-package langtool
   :bind
