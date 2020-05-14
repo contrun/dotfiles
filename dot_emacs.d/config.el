@@ -128,19 +128,6 @@ locate PACKAGE."
         (replace-regexp-in-string
          "&" " and "
          (downcase str)))))))
-
-  ;;----------------------------------------------------------------------------
-  ;; String utilities missing from core emacs
-  ;;----------------------------------------------------------------------------
-  (defun sanityinc/string-all-matches (regex str &optional group)
-    "Find all matches for `REGEX' within `STR', returning the full match string or group `GROUP'."
-    (let ((result nil)
-          (pos 0)
-          (group (or group 0)))
-      (while (string-match regex str pos)
-        (push (match-string group str) result)
-        (setq pos (match-end group)))
-      result))
   )
 
 
@@ -228,8 +215,8 @@ pressing `<leader> m`. Set it to `nil` to disable it.")
    ;; "s-q" 'save-buffers-kill-terminal
    "s-0" 'delete-window
    "s-1" 'my/toggle-delete-other-windows
-   "s-2" 'split-window-below
-   "s-3" 'split-window-right
+   "s-2" 'my/split-window-below
+   "s-3" 'my/split-window-right
    "C-:" 'avy-goto-char
 
    "M-s-p" 'sp-previous-sexp
@@ -599,13 +586,7 @@ pressing `<leader> m`. Set it to `nil` to disable it.")
  '(sunrise-commander :type git :host github :repo "escherdragon/sunrise-commander"))
 
 ;; Show number of matches while searching
-(use-package anzu
-  :hook
-  (after-init . global-anzu-mode)
-  :init
-  (setq anzu-mode-lighter "")
-  (global-set-key [remap query-replace-regexp] 'anzu-query-replace-regexp)
-  (global-set-key [remap query-replace] 'anzu-query-replace))
+(use-package anzu)
 
 ;; Activate occur easily inside isearch
 (with-eval-after-load 'isearch
@@ -998,135 +979,134 @@ instead."
   (after-init . company-quickhelp-mode)
   )
 
-;; (require 'init-windows)
+
 
-;; NOTE: This is not about the "Windows" OS, but rather Emacs's
-;; "windows" concept: these are the panels within an Emacs frame which
-;; contain buffers.
-
-;;----------------------------------------------------------------------------
-;; Navigate window layouts with "C-c <left>" and "C-c <right>"
-;;----------------------------------------------------------------------------
 (use-package winner
   :ensure nil
   :hook
   (after-init . winner-mode)
   )
 
-
 (use-package ace-window)
 
 (use-package treemacs)
 
-
-;; Make "C-x o" prompt for a target window when there are more than 2
-(use-package switch-window
-  :bind
-  ("C-x o" . switch-window)
+(use-package my/window-managerment
+  :ensure nil
   :init
-  (setq-default switch-window-shortcut-style 'alphabet)
-  (setq-default switch-window-timeout nil)
+
+  ;; Make "C-x o" prompt for a target window when there are more than 2
+  (use-package switch-window
+    :bind
+    ("C-x o" . switch-window)
+    :init
+    (setq-default switch-window-shortcut-style 'alphabet)
+    (setq-default switch-window-timeout nil)
+    )
+
+
+  ;;----------------------------------------------------------------------------
+  ;; When splitting window, show (other-buffer) in the new window
+  ;;----------------------------------------------------------------------------
+  (defun split-window-func-with-other-buffer (split-function)
+    (lambda (&optional arg)
+      "Split this window and switch to the new window unless ARG is provided."
+      (interactive "P")
+      (funcall split-function)
+      (let ((target-window (next-window)))
+        (set-window-buffer target-window (other-buffer))
+        (unless arg
+          (select-window target-window)))))
+
+  (global-set-key (kbd "C-x 2") (split-window-func-with-other-buffer 'split-window-vertically))
+  (global-set-key (kbd "C-x 3") (split-window-func-with-other-buffer 'split-window-horizontally))
+
+  (defun my/toggle-delete-other-windows ()
+    "Delete other windows in frame if any, or restore previous window config."
+    (interactive)
+    (if (and winner-mode
+             (equal (selected-window) (next-window)))
+        (winner-undo)
+      (delete-other-windows)))
+
+  (defun my/write-copy-to-file ()
+    "Write a copy of the current buffer or region to a file."
+    (interactive)
+    (let* ((curr (buffer-file-name))
+           (new (read-file-name
+                 "Copy to file: " nil nil nil
+                 (and curr (file-name-nondirectory curr))))
+           (mustbenew (if (and curr (file-equal-p new curr)) 'excl t)))
+      (if (use-region-p)
+          (write-region (region-beginning) (region-end) new nil nil nil mustbenew)
+        (save-restriction
+          (widen)
+          (write-region (point-min) (point-max) new nil nil nil mustbenew)))))
+
+  ;;----------------------------------------------------------------------------
+  ;; Rearrange split windows
+  ;;----------------------------------------------------------------------------
+  (defun split-window-horizontally-instead ()
+    "Kill any other windows and re-split such that the current window is on the top half of the frame."
+    (interactive)
+    (let ((other-buffer (and (next-window) (window-buffer (next-window)))))
+      (delete-other-windows)
+      (split-window-horizontally)
+      (when other-buffer
+        (set-window-buffer (next-window) other-buffer))))
+
+  (defun split-window-vertically-instead ()
+    "Kill any other windows and re-split such that the current window is on the left half of the frame."
+    (interactive)
+    (let ((other-buffer (and (next-window) (window-buffer (next-window)))))
+      (delete-other-windows)
+      (split-window-vertically)
+      (when other-buffer
+        (set-window-buffer (next-window) other-buffer))))
+
+  (global-set-key (kbd "C-x |") 'split-window-horizontally-instead)
+  (global-set-key (kbd "C-x _") 'split-window-vertically-instead)
+
+  ;; Borrowed from http://postmomentum.ch/blog/201304/blog-on-emacs
+  (defun my/split-window-right()
+    "Split the window to see the most recent buffer in the other window.
+Call a second time to restore the original window configuration."
+    (interactive)
+    (if (eq last-command 'my/split-window-right)
+        (progn
+          (jump-to-register :my/split-window-right)
+          (setq this-command 'my/unsplit-window-right))
+      (window-configuration-to-register :my/split-window-right)
+      (switch-to-buffer-other-window nil)))
+
+  (defun my/split-window-below()
+    "Split the window to see the most recent buffer in the other window.
+Call a second time to restore the original window configuration."
+    (interactive)
+    (let ((split-width-threshold nil))
+      (if (eq last-command 'my/split-window-below)
+          (progn
+            (jump-to-register :my/split-window-below)
+            (setq this-command 'my/unsplit-window-below))
+        (window-configuration-to-register :my/split-window-below)
+        (switch-to-buffer-other-window nil))))
+
+  (defun my/toggle-current-window-dedication ()
+    "Toggle whether the current window is dedicated to its current buffer."
+    (interactive)
+    (let* ((window (selected-window))
+           (was-dedicated (window-dedicated-p window)))
+      (set-window-dedicated-p window (not was-dedicated))
+      (message "Window %sdedicated to %s"
+               (if was-dedicated "no longer " "")
+               (buffer-name))))
+
+  (unless (memq window-system '(nt w32))
+    (windmove-default-keybindings 'control))
   )
 
-
-;;----------------------------------------------------------------------------
-;; When splitting window, show (other-buffer) in the new window
-;;----------------------------------------------------------------------------
-(defun split-window-func-with-other-buffer (split-function)
-  (lambda (&optional arg)
-    "Split this window and switch to the new window unless ARG is provided."
-    (interactive "P")
-    (funcall split-function)
-    (let ((target-window (next-window)))
-      (set-window-buffer target-window (other-buffer))
-      (unless arg
-        (select-window target-window)))))
-
-(global-set-key (kbd "C-x 2") (split-window-func-with-other-buffer 'split-window-vertically))
-(global-set-key (kbd "C-x 3") (split-window-func-with-other-buffer 'split-window-horizontally))
-
-(defun my/toggle-delete-other-windows ()
-  "Delete other windows in frame if any, or restore previous window config."
-  (interactive)
-  (if (and winner-mode
-           (equal (selected-window) (next-window)))
-      (winner-undo)
-    (delete-other-windows)))
-
-(defun my/write-copy-to-file ()
-  "Write a copy of the current buffer or region to a file."
-  (interactive)
-  (let* ((curr (buffer-file-name))
-         (new (read-file-name
-               "Copy to file: " nil nil nil
-               (and curr (file-name-nondirectory curr))))
-         (mustbenew (if (and curr (file-equal-p new curr)) 'excl t)))
-    (if (use-region-p)
-        (write-region (region-beginning) (region-end) new nil nil nil mustbenew)
-      (save-restriction
-        (widen)
-        (write-region (point-min) (point-max) new nil nil nil mustbenew)))))
-
-;;----------------------------------------------------------------------------
-;; Rearrange split windows
-;;----------------------------------------------------------------------------
-(defun split-window-horizontally-instead ()
-  "Kill any other windows and re-split such that the current window is on the top half of the frame."
-  (interactive)
-  (let ((other-buffer (and (next-window) (window-buffer (next-window)))))
-    (delete-other-windows)
-    (split-window-horizontally)
-    (when other-buffer
-      (set-window-buffer (next-window) other-buffer))))
-
-(defun split-window-vertically-instead ()
-  "Kill any other windows and re-split such that the current window is on the left half of the frame."
-  (interactive)
-  (let ((other-buffer (and (next-window) (window-buffer (next-window)))))
-    (delete-other-windows)
-    (split-window-vertically)
-    (when other-buffer
-      (set-window-buffer (next-window) other-buffer))))
-
-(global-set-key (kbd "C-x |") 'split-window-horizontally-instead)
-(global-set-key (kbd "C-x _") 'split-window-vertically-instead)
-
 
-;; Borrowed from http://postmomentum.ch/blog/201304/blog-on-emacs
-(defun sanityinc/split-window()
-  "Split the window to see the most recent buffer in the other window.
-Call a second time to restore the original window configuration."
-  (interactive)
-  (if (eq last-command 'sanityinc/split-window)
-      (progn
-        (jump-to-register :sanityinc/split-window)
-        (setq this-command 'sanityinc/unsplit-window))
-    (window-configuration-to-register :sanityinc/split-window)
-    (switch-to-buffer-other-window nil)))
 
-(global-set-key (kbd "<f7>") 'sanityinc/split-window)
-
-
-
-(defun sanityinc/toggle-current-window-dedication ()
-  "Toggle whether the current window is dedicated to its current buffer."
-  (interactive)
-  (let* ((window (selected-window))
-         (was-dedicated (window-dedicated-p window)))
-    (set-window-dedicated-p window (not was-dedicated))
-    (message "Window %sdedicated to %s"
-             (if was-dedicated "no longer " "")
-             (buffer-name))))
-
-(global-set-key (kbd "C-c <down>") 'sanityinc/toggle-current-window-dedication)
-
-
-
-(unless (memq window-system '(nt w32))
-  (windmove-default-keybindings 'control))
-
-
-;; (provide 'init-windows)
 ;; (require 'init-sessions)
 ;; save a list of open files in ~/.emacs.d/.emacs.desktop
 ;; (setq desktop-path (list my/emacs-d)
@@ -1222,11 +1202,6 @@ Call a second time to restore the original window configuration."
 (use-package unfill)
 
 (put 'set-goal-column 'disabled nil)
-
-(when (fboundp 'electric-pair-mode)
-  (add-hook 'after-init-hook 'electric-pair-mode))
-(when (eval-when-compile (version< "24.4" emacs-version))
-  (add-hook 'after-init-hook 'electric-indent-mode))
 
 (use-package list-unicode-display)
 
@@ -1500,13 +1475,13 @@ Call a second time to restore the original window configuration."
 ;;----------------------------------------------------------------------------
 (use-package move-dup
   :init
-  (global-set-key [M-up] 'md/move-lines-up)
-  (global-set-key [M-down] 'md/move-lines-down)
-  (global-set-key [M-S-up] 'md/move-lines-up)
-  (global-set-key [M-S-down] 'md/move-lines-down)
+  (global-set-key [M-up] 'md-move-lines-up)
+  (global-set-key [M-down] 'md-move-lines-down)
+  (global-set-key [M-S-up] 'md-move-lines-up)
+  (global-set-key [M-S-down] 'md-move-lines-down)
 
-  (global-set-key (kbd "C-c d") 'md/duplicate-down)
-  (global-set-key (kbd "C-c u") 'md/duplicate-up)
+  (global-set-key (kbd "C-c d") 'md-duplicate-down)
+  (global-set-key (kbd "C-c u") 'md-duplicate-up)
   )
 
 
@@ -1540,7 +1515,7 @@ Call a second time to restore the original window configuration."
 
 
 
-(defun sanityinc/open-line-with-reindent (n)
+(defun my/open-line-with-reindent (n)
   "A version of `open-line' which reindents the start and end positions.
 If there is a fill prefix and/or a `left-margin', insert them
 on the new line if the line would have been blank.
@@ -1567,7 +1542,7 @@ With arg N, insert N newlines."
     (end-of-line)
     (indent-according-to-mode)))
 
-(global-set-key (kbd "C-o") 'sanityinc/open-line-with-reindent)
+(global-set-key (kbd "C-o") 'my/open-line-with-reindent)
 
 
 ;;----------------------------------------------------------------------------
@@ -1692,37 +1667,6 @@ With arg N, insert N newlines."
   :hook
   (git-commit-mode . goto-address-mode)
   )
-
-
-;; Convenient binding for vc-git-grep
-(with-eval-after-load 'vc
-  (define-key vc-prefix-map (kbd "f") 'vc-git-grep))
-
-
-
-(with-eval-after-load 'compile
-  (dolist (defn (list '(git-svn-updated "^\t[A-Z]\t\\(.*\\)$" 1 nil nil 0 1)
-                      '(git-svn-needs-update "^\\(.*\\): needs update$" 1 nil nil 2 1)))
-    (add-to-list 'compilation-error-regexp-alist-alist defn)
-    (add-to-list 'compilation-error-regexp-alist (car defn))))
-
-(defvar git-svn--available-commands nil "Cached list of git svn subcommands")
-(defun git-svn--available-commands ()
-  (or git-svn--available-commands
-      (setq git-svn--available-commands
-            (sanityinc/string-all-matches
-             "^  \\([a-z\\-]+\\) +"
-             (shell-command-to-string "git svn help") 1))))
-
-(autoload 'vc-git-root "vc-git")
-
-(defun git-svn (dir command)
-  "Run a git svn subcommand in DIR."
-  (interactive (list (read-directory-name "Directory: ")
-                     (completing-read "git-svn command: " (git-svn--available-commands) nil t nil nil (git-svn--available-commands))))
-  (let* ((default-directory (vc-git-root dir))
-         (compilation-buffer-name-function (lambda (major-mode-name) "*git-svn*")))
-    (compile (concat "git svn " command))))
 
 
 (use-package git-messenger)
@@ -1972,7 +1916,7 @@ With arg N, insert N newlines."
 
 ;; Customize `alert-default-style' to get messages after compilation
 
-(defun sanityinc/alert-after-compilation-finish (buf result)
+(defun my/alert-after-compilation-finish (buf result)
   "Use `alert' to report compilation RESULT if BUF is hidden."
   (when (buffer-live-p buf)
     (unless (catch 'is-visible
@@ -1986,23 +1930,23 @@ With arg N, insert N newlines."
 
 (with-eval-after-load 'compile
   (add-hook 'compilation-finish-functions
-            'sanityinc/alert-after-compilation-finish))
+            'my/alert-after-compilation-finish))
 
-(defvar sanityinc/last-compilation-buffer nil
+(defvar my/last-compilation-buffer nil
   "The last buffer in which compilation took place.")
 
 (with-eval-after-load 'compile
   (defadvice compilation-start (after sanityinc/save-compilation-buffer activate)
     "Save the compilation buffer to find it later."
-    (setq sanityinc/last-compilation-buffer next-error-last-buffer))
+    (setq my/last-compilation-buffer next-error-last-buffer))
 
   (defadvice recompile (around sanityinc/find-prev-compilation (&optional edit-command) activate)
     "Find the previous compilation buffer, if present, and recompile there."
     (if (and (null edit-command)
              (not (derived-mode-p 'compilation-mode))
-             sanityinc/last-compilation-buffer
-             (buffer-live-p (get-buffer sanityinc/last-compilation-buffer)))
-        (with-current-buffer sanityinc/last-compilation-buffer
+             my/last-compilation-buffer
+             (buffer-live-p (get-buffer my/last-compilation-buffer)))
+        (with-current-buffer my/last-compilation-buffer
           ad-do-it)
       ad-do-it)))
 
@@ -2020,10 +1964,10 @@ With arg N, insert N newlines."
 
 (with-eval-after-load 'compile
   (require 'ansi-color)
-  (defun sanityinc/colourise-compilation-buffer ()
+  (defun my/colourise-compilation-buffer ()
     (when (eq major-mode 'compilation-mode)
       (ansi-color-apply-on-region compilation-filter-start (point-max))))
-  (add-hook 'compilation-filter-hook 'sanityinc/colourise-compilation-buffer))
+  (add-hook 'compilation-filter-hook 'my/colourise-compilation-buffer))
 
 
 (use-package cmd-to-echo)
@@ -2069,37 +2013,6 @@ With arg N, insert N newlines."
 (use-package typescript-mode)
 (use-package prettier-js)
 
-;; js2-mode
-
-;; Change some defaults: customize them to override
-(setq-default js2-bounce-indent-p nil)
-(with-eval-after-load 'js2-mode
-  ;; Disable js2 mode's syntax error highlighting by default...
-  (setq-default js2-mode-show-parse-errors nil
-                js2-mode-show-strict-warnings nil)
-  ;; ... but enable it if flycheck can't handle javascript
-  (autoload 'flycheck-get-checker-for-buffer "flycheck")
-  (defun sanityinc/disable-js2-checks-if-flycheck-active ()
-    (unless (flycheck-get-checker-for-buffer)
-      (set (make-local-variable 'js2-mode-show-parse-errors) t)
-      (set (make-local-variable 'js2-mode-show-strict-warnings) t)))
-  (add-hook 'js2-mode-hook 'sanityinc/disable-js2-checks-if-flycheck-active)
-
-  (add-hook 'js2-mode-hook (lambda () (setq mode-name "JS2")))
-
-  (js2-imenu-extras-setup))
-
-
-
-
-(when (and (executable-find "ag")
-           (my/try-install-package 'xref-js2))
-  (with-eval-after-load 'js2-mode
-    (define-key js2-mode-map (kbd "M-.") nil)
-    (add-hook 'js2-mode-hook
-              (lambda () (add-hook 'xref-backend-functions #'xref-js2-xref-backend nil t)))))
-
-
 
 
 ;; ---------------------------------------------------------------------------
@@ -2134,15 +2047,6 @@ With arg N, insert N newlines."
   (skewer-mode . (lambda () (inferior-js-keys-mode -1)))
   )
 
-
-
-(straight-use-package
- '(taskwarrior :type git :host github :repo "winpat/taskwarrior.el"))
-
-
-
-(require 'org-protocol)
-
 (use-package add-node-modules-path
   :init
   (with-eval-after-load 'typescript-mode
@@ -2165,6 +2069,16 @@ With arg N, insert N newlines."
   )
 
 ;; (provide 'init-php)
+
+
+
+(straight-use-package
+ '(taskwarrior :type git :host github :repo "winpat/taskwarrior.el"))
+
+
+
+(require 'org-protocol)
+
 
 ;; (require 'init-org)
 
@@ -2235,12 +2149,12 @@ With arg N, insert N newlines."
 
 (use-package org-sidebar)
 
-(defvar my-org-capture-directory
+(defvar my/org-capture-directory
   (expand-file-name "~/Sync/docs/org-mode/capture")
   "Where all the org mode capture files are saved.")
 
 (defvar my-org-capture-quick-notes-directory
-  (expand-file-name "quick" my-org-capture-directory)
+  (expand-file-name "quick" my/org-capture-directory)
   "Where all the org mode capture files are saved.")
 
 (defun my/generate-org-quick-note-name ()
@@ -2274,7 +2188,7 @@ With arg N, insert N newlines."
       (doct
        `(("bookmarks"
           :keys "b"
-          :file ,(expand-file-name "bookmarks.org" my-org-capture-directory)
+          :file ,(expand-file-name "bookmarks.org" my/org-capture-directory)
           :headline "Bookmark inbox"
           :template ("** %:description"
                      "   CREATED: %U"
@@ -2293,7 +2207,7 @@ With arg N, insert N newlines."
                      "%?"))
          ("todo"
           :keys "t"
-          :file ,(expand-file-name "todo.org" my-org-capture-directory)
+          :file ,(expand-file-name "todo.org" my/org-capture-directory)
           :headline "Future tasks"
           :template ("** TODO %:description"
                      "   CREATED: %U"
@@ -2304,7 +2218,7 @@ With arg N, insert N newlines."
           :kill-buffer 1)
          ("wiki capture"
           :keys "w"
-          :file ,(expand-file-name "wiki.org"  my-org-capture-directory)
+          :file ,(expand-file-name "wiki.org"  my/org-capture-directory)
           :headline "Captured personal wiki items"
           :template ("** %:description"
                      "   CREATED: %U"
@@ -2315,7 +2229,7 @@ With arg N, insert N newlines."
           :kill-buffer 1)
          ("capture"
           :keys "c"
-          :file ,(expand-file-name "capture.org" my-org-capture-directory)
+          :file ,(expand-file-name "capture.org" my/org-capture-directory)
           :headline "captured"
           :template ("** %:description"
                      "CREATED: %U"
@@ -2326,7 +2240,7 @@ With arg N, insert N newlines."
           :kill-buffer 1)
          ("ideas"
           :keys "i"
-          :file ,(expand-file-name "ideas.org" my-org-capture-directory)
+          :file ,(expand-file-name "ideas.org" my/org-capture-directory)
           :headline "ideas"
           :template ("** %?%:description"
                      "   CREATED: %U"
@@ -2338,7 +2252,7 @@ With arg N, insert N newlines."
           :kill-buffer 1)
          ("journal"
           :keys "j"
-          :file ,(expand-file-name "journal.org" my-org-capture-directory)
+          :file ,(expand-file-name "journal.org" my/org-capture-directory)
           :datetree t
           :template ("* %?%:description"
                      "Entered on %U"
@@ -2347,7 +2261,7 @@ With arg N, insert N newlines."
           :kill-buffer 1)
          ("got stuck"
           :keys "s"
-          :file ,(expand-file-name "stuck.org" my-org-capture-directory)
+          :file ,(expand-file-name "stuck.org" my/org-capture-directory)
           :datetree t
           :template ("* %?%:description"
                      "Entered on %U"
@@ -2356,7 +2270,7 @@ With arg N, insert N newlines."
           :kill-buffer 1)
          ("disposable"
           :keys "d"
-          :file ,(expand-file-name "disposable.org" my-org-capture-directory)
+          :file ,(expand-file-name "disposable.org" my/org-capture-directory)
           :datetree t
           :template ("* %?%:description"
                      "Entered on %U"
@@ -2365,7 +2279,7 @@ With arg N, insert N newlines."
           :kill-buffer 1)
          ("unfiled"
           :keys "u"
-          :file ,(expand-file-name "unfiled.org" my-org-capture-directory)
+          :file ,(expand-file-name "unfiled.org" my/org-capture-directory)
           :datetree t
           :template ("* %?%:description"
                      "Entered on %U"
@@ -2373,7 +2287,7 @@ With arg N, insert N newlines."
                      "  %a"))
          ("vocabulary builder"
           :keys "v"
-          :file ,(expand-file-name "vocabulary.org" my-org-capture-directory)
+          :file ,(expand-file-name "vocabulary.org" my/org-capture-directory)
           :type checkitem
           :template ("[ ] %:description"
                      "%:initial")
@@ -2389,7 +2303,7 @@ With arg N, insert N newlines."
           :immediate-finish 1)
          ("cameo collector"
           :keys "m"
-          :file ,(expand-file-name "cameo.org" my-org-capture-directory)
+          :file ,(expand-file-name "cameo.org" my/org-capture-directory)
           :template ("* %:description"
                      " %:initial")
           :children (("English"
@@ -2405,7 +2319,7 @@ With arg N, insert N newlines."
           :empty-lines 1)
          ("reading"
           :keys "r"
-          :file ,(expand-file-name "reading.org" my-org-capture-directory)
+          :file ,(expand-file-name "reading.org" my/org-capture-directory)
           :function (lambda() (org-capture-template-goto-link))
           :template ("** P%:initial %? %U "
                      "%x")
@@ -2447,7 +2361,7 @@ With arg N, insert N newlines."
 
 (add-hook 'org-capture-mode-hook 'delete-other-windows)
 
-(defun my-org-capture-cleanup ()
+(defun my/org-capture-cleanup ()
   "Clean up the frame created while capturing via org-protocol."
   ;; In case we run capture from emacs itself and not an external app,
   ;; we want to restore the old window config
@@ -2459,7 +2373,7 @@ With arg N, insert N newlines."
   (if (plist-get org-capture-plist :kill-buffer)
       (save-buffers-kill-terminal)))
 
-(add-hook 'org-capture-after-finalize-hook 'my-org-capture-cleanup)
+(add-hook 'org-capture-after-finalize-hook 'my/org-capture-cleanup)
 
 ;; use ivy to insert a link to a heading in the current document
 ;; based on `worf-goto`
@@ -2469,7 +2383,6 @@ With arg N, insert N newlines."
   (let ((cands (worf--goto-candidates)))
     (ivy-read "Heading: " cands
               :action 'bjm/worf-insert-internal-link-action)))
-
 
 (defun bjm/worf-insert-internal-link-action (x)
   "Insert link for `bjm/worf-insert-internal-link'"
@@ -2632,7 +2545,6 @@ With arg N, insert N newlines."
 ;;; Agenda views
 
 (setq-default org-agenda-clockreport-parameter-plist '(:link t :maxlevel 3))
-
 
 (let ((active-project-match "-INBOX/PROJECT"))
 
@@ -2874,40 +2786,6 @@ With arg N, insert N newlines."
 (fset 'xml-mode 'nxml-mode)
 (setq nxml-slash-auto-complete-flag t)
 
-
-;; See: http://sinewalker.wordpress.com/2008/06/26/pretty-printing-xml-with-emacs-nxml-mode/
-(defun sanityinc/pp-xml-region (beg end)
-  "Pretty format XML markup in region. The function inserts
-  linebreaks to separate tags that have nothing but whitespace
-  between them.  It then indents the markup by using nxml's
-  indentation rules."
-  (interactive "r")
-  (unless (use-region-p)
-    (setq beg (point-min)
-          end (point-max)))
-  ;; Use markers because our changes will move END
-  (setq beg (set-marker (make-marker) beg)
-        end (set-marker (make-marker) end))
-  (save-excursion
-    (goto-char beg)
-    (while (search-forward-regexp "\>[ \\t]*\<" end t)
-      (backward-char) (insert "\n"))
-    (nxml-mode)
-    (indent-region beg end)))
-
-;;----------------------------------------------------------------------------
-;; Integration with tidy for html + xml
-;;----------------------------------------------------------------------------
-
-(defun sanityinc/tidy-buffer-xml (beg end)
-  "Run \"tidy -xml\" on the region from BEG to END, or whole buffer."
-  (interactive "r")
-  (unless (use-region-p)
-    (setq beg (point-min)
-          end (point-max)))
-  (shell-command-on-region beg end "tidy -xml -q -i" (current-buffer) t "*tidy-errors*" t))
-
-
 ;; (provide 'init-nxml)
 ;; (require 'init-html)
 (use-package my/html
@@ -2932,7 +2810,6 @@ With arg N, insert N newlines."
 
 
 ;;; Embedding in html
-(use-package mmm-mode)
 (with-eval-after-load 'mmm-vars
   (mmm-add-group
    'html-css
@@ -2958,8 +2835,6 @@ With arg N, insert N newlines."
   (dolist (mode (list 'html-mode 'nxml-mode))
     (mmm-add-mode-ext-class mode "\\.r?html\\(\\.erb\\)?\\'" 'html-css)))
 
-
-
 
 ;;; SASS and SCSS
 (use-package sass-mode)
@@ -2968,14 +2843,12 @@ With arg N, insert N newlines."
   (use-package scss-mode))
 (setq-default scss-compile-at-save nil)
 
-
 
 (use-package less-css-mode)
 (use-package skewer-less
   :hook
   (less-css-mode . skewer-less-mode)
   )
-
 
 
 ;; Skewer CSS
@@ -3116,37 +2989,6 @@ With arg N, insert N newlines."
   )
 
 
-;;; ERB
-(use-package mmm-mode)
-(defun sanityinc/ensure-mmm-erb-loaded ()
-  (require 'mmm-erb))
-
-(require 'derived)
-
-(defun sanityinc/set-up-mode-for-erb (mode)
-  (add-hook (derived-mode-hook-name mode) 'sanityinc/ensure-mmm-erb-loaded)
-  (mmm-add-mode-ext-class mode "\\.erb\\'" 'erb))
-
-(let ((html-erb-modes '(html-mode html-erb-mode nxml-mode)))
-  (dolist (mode html-erb-modes)
-    (sanityinc/set-up-mode-for-erb mode)
-    (mmm-add-mode-ext-class mode "\\.r?html\\(\\.erb\\)?\\'" 'html-js)
-    (mmm-add-mode-ext-class mode "\\.r?html\\(\\.erb\\)?\\'" 'html-css)))
-
-(mapc 'sanityinc/set-up-mode-for-erb
-      '(coffee-mode js-mode js2-mode js3-mode markdown-mode textile-mode))
-
-(mmm-add-mode-ext-class 'html-erb-mode "\\.jst\\.ejs\\'" 'ejs)
-
-(add-to-list 'auto-mode-alist '("\\.jst\\.ejs\\'"  . html-erb-mode))
-
-(mmm-add-mode-ext-class 'yaml-mode "\\.yaml\\(\\.erb\\)?\\'" 'erb)
-(sanityinc/set-up-mode-for-erb 'yaml-mode)
-
-(dolist (mode (list 'js-mode 'js2-mode 'js3-mode))
-  (mmm-add-mode-ext-class mode "\\.js\\.erb\\'" 'erb))
-
-
 ;;----------------------------------------------------------------------------
 ;; Ruby - my convention for heredocs containing SQL
 ;;----------------------------------------------------------------------------
