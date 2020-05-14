@@ -14,6 +14,7 @@ import Data.Maybe
 import Data.Monoid
 import Data.Tuple.Curry
 import Debug.Trace
+import System.Environment
 import System.Exit
 import System.Process (showCommandForUser)
 import Text.Regex.Posix ((=~))
@@ -31,6 +32,7 @@ import XMonad.Hooks.ManageDocks (ToggleStruts (ToggleStruts))
 import XMonad.Hooks.SetWMName (setWMName)
 import XMonad.Layout.AutoMaster
 import XMonad.Layout.Column
+import XMonad.Layout.Hidden
 import XMonad.Prompt
 import XMonad.Prompt.Workspace
 import qualified XMonad.StackSet as W
@@ -155,7 +157,9 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) =
       ((modm, xK_b), sendMessage ToggleStruts),
       -- Quit xmonad
       ((modm .|. shiftMask .|. controlMask, xK_q), io (exitWith ExitSuccess)),
-      ((modm .|. controlMask, xK_BackSpace), removeWorkspace),
+      ((modm .|. shiftMask .|. controlMask, xK_BackSpace), removeWorkspace),
+      ((modm, xK_F4), withFocused hideWindow),
+      ((modm .|. controlMask, xK_F4), popOldestHiddenWindow),
       ((modm, xK_g), workspacePrompt def (windows . W.view)),
       ((modm .|. controlMask, xK_g), workspacePrompt def (windows . W.shift)),
       ((modm .|. controlMask, xK_c), withWorkspace def (windows . copy)),
@@ -424,7 +428,7 @@ myAddtionalKeys =
         ++ [ (launcherMode2 "e", safeSpawn "emacsclient" ["-c", "-e", "(elfeed)"]),
              (launcherMode2 "d", spawn "noDisturb.sh"),
              (launcherMode2 "a", spawn "randomArt.sh"),
-             (launcherMode1 "s", safeSpawn "emacsclient" ["-c", "-e", "(sunrise)"]),
+             (launcherMode2 "s", safeSpawn "emacsclient" ["-c", "-e", "(sunrise)"]),
              (launcherMode2 "b", runOrRaiseInHiddenWorkspace "web" "chromium" (className =? "Chromium-browser")),
              (launcherMode2 "m", runOrRaiseInHiddenWorkspace "chat" "nheko" (appName =? "nheko")),
              (launcherMode2 "t", runOrRaiseInHiddenWorkspace "chat" "telegram-desktop" (className =? "telegram-desktop")),
@@ -457,7 +461,7 @@ myAddtionalKeys =
 -- The available layouts.  Note that each layout is separated by |||,
 -- which denotes layout choice.
 --
-myLayout = tiled ||| Mirror tiled ||| Full ||| Column 1.6
+myLayout = hiddenWindows (tiled ||| Mirror tiled ||| Full ||| Column 1.6)
   where
     -- default tiling algorithm partitions the screen into two panes
     tiled = Tall nmaster delta ratio
@@ -551,6 +555,7 @@ myManageHook =
           (className =? "keepassxc") --> doShiftHiddenWorkspace "password",
           (appName =? "QuickTerminal") --> doShiftHiddenWorkspace "quickTerminal",
           (appName =? "wechat.exe") --> doShiftHiddenWorkspace "chat",
+          (title =? "Wine System Tray") --> liftX (allWithProperty (Title "Wine System Tray") >>= mapM hideWindow) >> idHook,
           (className =? "zoom") --> doShiftHiddenWorkspace "chat",
           (className =? "telegram-desktop") --> doShiftHiddenWorkspace "chat",
           (className =? "mpv") --> doShiftAndView "video",
@@ -599,7 +604,8 @@ myLogHook = return ()
 --
 -- By default, do nothing.
 myStartupHook = do
-  setWMName "LG3D"
+  -- setWMName "LG3D"
+  io $ setEnv "_JAVA_AWT_WM_NONREPARENTING" "1"
   return () -- workaround for checkKeymap!
     -- workaround to integrate Java Swing/GUI apps into XMonad layouts;
     -- otherwise they just float around.

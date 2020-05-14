@@ -239,10 +239,10 @@ let
         "buildah"
         "ansible"
         "myPackages.hie"
-        "nodejs"
+        "nodejs_latest"
         "nodePackages.prettier"
         # vscode-extensions.ms-python.python
-        "hadolint"
+        "stable.hadolint"
         "haskellPackages.ormolu"
         "solargraph"
         "nodePackages.dockerfile-language-server-nodejs"
@@ -263,6 +263,7 @@ let
         "coursier"
         "scala"
         "scalafmt"
+        "graalvm8"
         "metals"
         "myPackages.almond"
         # ihaskell
@@ -275,7 +276,7 @@ let
         "libunwind"
         "gmp"
         "libpng"
-        "libjpeg"
+        # "libjpeg"
         "openssl"
         "glib-networking"
         "myPackages.python"
@@ -389,7 +390,7 @@ let
         "udiskie"
         "acpi"
         "wine"
-        "winetricks"
+        # "winetricks"
         "usbutils"
         "powertop"
         "fail2ban"
@@ -414,6 +415,7 @@ let
         "gitRepo"
         "exercism"
         "coreutils"
+        "coreutils-prefixed"
         # notify-osd
         "sxhkd"
         "mimeo"
@@ -435,6 +437,7 @@ let
         "dpkg"
         "debootstrap"
         "dmidecode"
+        "bind"
         # dnstracer
         # # doublecmd-gtk2
         # dropbox
@@ -518,7 +521,7 @@ let
         "maim"
         "mtpaint"
         "unison"
-        "p7zip"
+        # "p7zip"
         "xarchiver"
         "lz4"
         "zip"

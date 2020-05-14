@@ -145,5 +145,10 @@ autocmd DocStart ^http(s?)://www.reddit.com js tri.excmds.urlmodify("-t", "www",
 " Mosquito nets won't make themselves
 autocmd DocStart ^http(s?)://www.amazon.co.uk js tri.excmds.urlmodify("-t", "www", "smile")
 
+
+" For opening videos in mpv.
+" bind zv hint -W exclaim mpv
+bind zv composite js document.location.href | exclaim_quiet mpv
+
 " For syntax highlighting see https://github.com/tridactyl/vim-tridactyl
 " vim: set filetype=tridactyl
