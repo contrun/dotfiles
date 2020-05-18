@@ -166,9 +166,9 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) =
       -- What the fuck. Firefox just does not allow me to disable control-q, control-b. Below is to slow.
       -- (keyPassThrough (controlMask, xK_q) (focusedHasProperty $ foldr1 Or $ map ClassName firefoxClasses, return ())),
       -- (keyPassThrough (controlMask, xK_b) (focusedHasProperty $ foldr1 Or $ map ClassName firefoxClasses, return ())),
-      (keyPassThrough (controlMask, xK_q) (focusedHasProperty $ ClassName "Firefox Developer Edition", return ())),
+      (keyPassThrough (controlMask, xK_q) (focusedHasProperty $ ClassName "Nightly", return ())),
       -- Tow slow for emacs
-      -- (keyPassThrough (controlMask, xK_b) (focusedHasProperty $ ClassName "Firefox Developer Edition", return ())),
+      -- (keyPassThrough (controlMask, xK_b) (focusedHasProperty $ ClassName "Nightly", return ())),
       ((modm .|. shiftMask, xK_r), spawn "noti --title xmonad --message recompiling; chezmoi apply; xmonad --recompile; xmonad --restart")
       -- Run xmessage with a summary of the default keybindings (useful for beginners)
       -- , ((modm .|. controlMask, xK_slash ), spawn ("echo \"" ++ help ++ "\" | xmessage -file -"))
@@ -381,7 +381,7 @@ myAddtionalKeys =
       powerMode key action = map (\k -> (unwords [myMod k, key], action)) ["<Delete>", "Pause", "XF86PowerOff"]
       myScratchpadSpawnAction = scratchpadSpawnAction defaults
    in searchBindings
-        ++ [ (myMod "w", runOrRaiseInHiddenWorkspace "web" "firefox-devedition" (className =? "Firefox Developer Edition")),
+        ++ [ (myMod "w", runOrRaiseInHiddenWorkspace "web" "firefox" ((className =? "Nightly") <&&> (not <$> (title =? "Picture-in-Picture")))),
              (myMod "S-w", runOrRaiseInHiddenWorkspace "web" "chromium" (className =? "Chromium-browser")),
              (myMod "e", raiseMaybeInHiddenWorkspace "editor" (spawn "emacsclient --alternate-editor='' --no-wait --create-frame --frame-parameters='(quote (name . \"quick emacs frame\"))'") (title =? "quick emacs frame")),
              (myMod "q", raiseMaybeInHiddenWorkspace "quickTerminal" (spawn "alacritty --class 'QuickTerminal' -e tmux new 'exec zsh'") (appName =? "QuickTerminal")),
@@ -411,7 +411,7 @@ myAddtionalKeys =
         ++ [ (launcherMode1 "e", spawn "emacsclientmod"),
              (launcherMode1 "d", spawn "zeal"),
              (launcherMode1 "g", spawn "goldendict"),
-             (launcherMode1 "b", runOrRaiseInHiddenWorkspace "web" "firefox-devedition" (className =? "Firefox Developer Edition")),
+             (launcherMode1 "b", runOrRaiseInHiddenWorkspace "web" "firefox" ((className =? "Nightly") <&&> (not <$> (title =? "Picture-in-Picture")))),
              (launcherMode1 "r", runOrRaiseInHiddenWorkspace "reading" "koreader" (fmap (=~ ".*KOReader$") title)),
              (launcherMode1 "f", spawn "doublecmd"),
              (launcherMode1 "z", spawn "zotero"),
@@ -426,11 +426,12 @@ myAddtionalKeys =
              (launcherMode1 "c", uncurryN safeSpawn $ myGetTerminalCommand Nothing Nothing ["mc"])
            ]
         ++ [ (launcherMode2 "e", safeSpawn "emacsclient" ["-c", "-e", "(elfeed)"]),
-             (launcherMode2 "d", spawn "noDisturb.sh"),
+             (launcherMode2 "q", spawn "noDisturb.sh"),
              (launcherMode2 "a", spawn "randomArt.sh"),
              (launcherMode2 "s", safeSpawn "emacsclient" ["-c", "-e", "(sunrise)"]),
              (launcherMode2 "b", runOrRaiseInHiddenWorkspace "web" "chromium" (className =? "Chromium-browser")),
              (launcherMode2 "m", runOrRaiseInHiddenWorkspace "chat" "nheko" (appName =? "nheko")),
+             (launcherMode2 "d", runOrRaiseInHiddenWorkspace "chat" "discord" (className =? "discord")),
              (launcherMode2 "t", runOrRaiseInHiddenWorkspace "chat" "telegram-desktop" (className =? "telegram-desktop")),
              (launcherMode2 "w", runOrRaiseInHiddenWorkspace "chat" "txsb" (appName =? "wechat.exe")),
              (launcherMode2 "u", spawn "noti --title home-manager --message updating; chezmoi apply; noti home-manager switch"),
@@ -538,7 +539,7 @@ myScratchpads = map (uncurryN NS) myScratchpadTuples
 -- 'className' and 'resource' are used below.
 --
 
-firefoxClasses = ["Firefox", "Palemoon", "Navigator", "Firefox Developer Edition"]
+firefoxClasses = ["Firefox", "Palemoon", "Navigator", "Firefox Developer Edition", "Nightly"]
 
 myManageHook =
   composeAll
@@ -556,8 +557,10 @@ myManageHook =
           (appName =? "QuickTerminal") --> doShiftHiddenWorkspace "quickTerminal",
           (appName =? "wechat.exe") --> doShiftHiddenWorkspace "chat",
           (title =? "Wine System Tray") --> liftX (allWithProperty (Title "Wine System Tray") >>= mapM hideWindow) >> idHook,
+          (className =? "discord") --> doShiftHiddenWorkspace "chat",
           (className =? "zoom") --> doShiftHiddenWorkspace "chat",
           (className =? "telegram-desktop") --> doShiftHiddenWorkspace "chat",
+          (title =? "Picture-in-Picture") --> doShiftAndView "video",
           (className =? "mpv") --> doShiftAndView "video",
           (className =? "vlc") --> doShiftAndView "video",
           (className =? "MPlayer") --> doShiftAndView "video",

@@ -423,14 +423,14 @@ pressing `<leader> m`. Set it to `nil` to disable it.")
 
 
 
+(use-package ssh-agency)
+
 (use-package exec-path-from-shell
   :init
   (setq exec-path-from-shell-variables '("SSH_AUTH_SOCK" "SSH_AGENT_PID" "GPG_AGENT_INFO" "LANG" "LC_CTYPE" "GOPATH" "PYTHONPATH" "PATH"))
   (when (memq window-system '(mac ns x))
     (exec-path-from-shell-initialize))
   )
-
-(use-package ssh-agency)
 
 (use-package no-littering
   :config
@@ -1668,19 +1668,14 @@ With arg N, insert N newlines."
   (git-commit-mode . goto-address-mode)
   )
 
+(use-package webpaste)
+
 
 (use-package git-messenger)
 ;; Though see also vc-annotate's "n" & "p" bindings
 (with-eval-after-load 'vc
   (setq git-messenger:show-detail t)
   (define-key vc-prefix-map (kbd "p") #'git-messenger:popup-message))
-
-
-;; (provide 'init-git)
-;; (require 'init-github)
-;; (require 'init-git)
-
-;; (provide 'init-github)
 
 (use-package k8s-mode
   :config

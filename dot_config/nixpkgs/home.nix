@@ -38,7 +38,6 @@ let
         "rename"
         "ripgrep"
         "file"
-        "bind"
         "silver-searcher"
         "ack"
         "patch"
@@ -263,7 +262,7 @@ let
         "coursier"
         "scala"
         "scalafmt"
-        "graalvm8"
+        # "graalvm8"
         "metals"
         "myPackages.almond"
         # ihaskell
@@ -376,7 +375,8 @@ let
         "midori"
         # palemoon
         # "luakit"
-        "firefox-devedition-bin"
+        "latest.firefox-nightly-bin"
+        "tridactyl-native"
         "sshuttle"
         "youtube-dl"
         "offlineimap"
@@ -438,6 +438,7 @@ let
         "debootstrap"
         "dmidecode"
         "bind"
+        "bridge-utils"
         # dnstracer
         # # doublecmd-gtk2
         # dropbox
@@ -765,6 +766,13 @@ let
 in {
   # Let Home Manager install and manage itself.
   # programs.home-manager.enable = true;
+  # programs = {
+  #   firefox = {
+  #     enable = true;
+  #     package = pkgs.firefox-devedition-bin;
+  #   };
+  # };
+
   home = {
     extraOutputsToInstall = [ "dev" "lib" "doc" "info" "devdoc" ];
     packages = allPackages;
