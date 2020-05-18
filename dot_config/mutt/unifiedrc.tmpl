@@ -1,0 +1,19 @@
+source ~/.config/mutt/commonrc
+
+set ssl_starttls=yes
+set imap_user = "{{ secret "unified" "username" }}"
+set imap_pass = "{{ secret "unified" "password" }}"
+set mbox_type = Maildir
+set folder = ~/.mail/unified
+# set folder = "imaps://{{ secret "unified" "imapServer" }}:{{ secret "unified" "imapPort" }}"
+set spoolfile = "+Inbox"
+set postponed="+[hotmail]/Drafts"
+set from = "$imap_user"
+set postponed ="+Drafts"
+set smtp_url = "smtp://$imap_user@{{ secret "unified" "smtpServer" }}:{{ secret "unified" "smtpPort" }}"
+set smtp_pass = "$imap_pass"
+set realname='unified'
+
+set header_cache = ~/.cache/mutt/unified/headers
+set message_cachedir = ~/.cache/mutt/unified/bodies
+set certificate_file = ~/.cache/mutt/certificates/unified

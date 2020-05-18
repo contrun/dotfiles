@@ -23,10 +23,12 @@
     (normal-top-level-add-to-load-path '("."))
     (normal-top-level-add-subdirs-to-load-path)))
 
-(dolist (dir '("lisp" "site-lisp" "secret"))
+(dolist (dir '("lisp" "site-lisp"))
   (let ((dir (my/path-under-emacs-d dir)))
     (make-directory dir t)
     (my/add-subdirs-to-load-path dir)))
+
+(load (my/path-under-emacs-d "secrets") t)
 
 
 (require 'package)
@@ -2066,6 +2068,8 @@ With arg N, insert N newlines."
 ;; (provide 'init-php)
 
 
+
+(use-package habitica)
 
 (straight-use-package
  '(taskwarrior :type git :host github :repo "winpat/taskwarrior.el"))
@@ -4264,7 +4268,6 @@ With arg N, insert N newlines."
       )
     )
   :config
-  (require 'secret-mu4e)
   (defun my-mu4e-set-account ()
     "Set the account for composing a message."
     (let* ((account

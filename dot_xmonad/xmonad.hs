@@ -504,7 +504,7 @@ myScratchpadTuples =
     ("goldendict", "goldendict", (className =? "GoldenDict"), centerFloating),
     ("notes", "gvim --role notes ~/notes.txt", (role =? "notes"), nonFloating),
     runTerminal "terminal" ["tmux"] Nothing,
-    runTerminal "mutt" ["neomutt", "-F", "~/.mutt/unifiedrc"] Nothing,
+    runTerminal "mutt" ["neomutt"] Nothing,
     runTerminal "sdcv" ["sdcv"] Nothing,
     runTerminal "pyradio" ["pyradio"] Nothing,
     runTerminal "nnn" ["nnn"] Nothing,

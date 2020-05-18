@@ -1,0 +1,19 @@
+source ~/.config/mutt/commonrc
+
+set ssl_starttls=yes
+set imap_user = "{{ secret "push" "username" }}"
+set imap_pass = "{{ secret "push" "password" }}"
+set mbox_type = Maildir
+set folder = ~/.mail/push
+# set folder = "imaps://{{ secret "push" "imapServer" }}:{{ secret "push" "imapPort" }}"
+set spoolfile = "+Inbox"
+set postponed="+[hotmail]/Drafts"
+set from = "$imap_user"
+set postponed ="+Drafts"
+set smtp_url = "smtp://$imap_user@{{ secret "push" "smtpServer" }}:{{ secret "push" "smtpPort" }}"
+set smtp_pass = "$imap_pass"
+set realname='push'
+
+set header_cache = ~/.cache/mutt/push/headers
+set message_cachedir = ~/.cache/mutt/push/bodies
+set certificate_file = ~/.cache/mutt/certificates/push
