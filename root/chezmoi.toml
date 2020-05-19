@@ -1,0 +1,8 @@
+destDir = "/"
+sourceDir = ".local/share/chezmoi/root"
+
+[genericSecret]
+command = "secretTool.py"
+
+[gpg]
+recipient = "backup@localhost.lan"
