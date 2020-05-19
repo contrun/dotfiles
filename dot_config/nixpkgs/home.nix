@@ -160,7 +160,7 @@ let
         "gitAndTools.lab"
         "gitAndTools.git-extras"
         "gitAndTools.git-hub"
-        "gitAndTools.git-annex"
+        "stable.gitAndTools.git-annex"
         "gitAndTools.git-subrepo"
         "gitAndTools.diff-so-fancy"
         "vscodium"
@@ -319,6 +319,13 @@ let
       ];
     }
     {
+      name = "network tools (preferred)";
+      priority = 24;
+      packages = getPackages [
+        "latest.firefox-nightly-bin"
+      ];
+    }
+    {
       name = "network tools";
       priority = 25;
       packages = getPackages [
@@ -375,7 +382,7 @@ let
         "midori"
         # palemoon
         # "luakit"
-        "latest.firefox-nightly-bin"
+        "firefox"
         "tridactyl-native"
         "sshuttle"
         "youtube-dl"
@@ -400,6 +407,7 @@ let
         "smbclient"
         "cifs-utils"
         # filezilla
+        "nix-review"
         "nix-prefetch-scripts"
         "nix-prefetch-github"
         "nix-universal-prefetch"
