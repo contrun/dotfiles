@@ -230,6 +230,8 @@ let
 
       hie = (import mySources.all-hies { }).selection { selector = p: p; };
 
+      hls = (import mySources."haskell-language-server.nix" { }).ghc-8_6_5.ghcide;
+
       ihaskell = let
         compiler = "ghc865";
         releaseFile = "release.nix";

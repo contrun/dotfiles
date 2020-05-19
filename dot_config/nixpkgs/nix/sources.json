@@ -59,6 +59,18 @@
         "url": "https://github.com/hercules-ci/ghcide-nix/archive/c940edd61eedba6750671fc142c9422cced73528.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
+    "haskell-language-server.nix": {
+        "branch": "master",
+        "description": "Nix wrapper providing builds of https://github.com/haskell/ide",
+        "homepage": null,
+        "owner": "hercules-ci",
+        "repo": "haskell-language-server.nix",
+        "rev": "0cc241ba16fdea862c77cd90940245ef256b5366",
+        "sha256": "0wnss71k8cdq8j2c69a06pnhvg0wgrh8pkla8i9gayv7pyhmd30m",
+        "type": "tarball",
+        "url": "https://github.com/hercules-ci/haskell-language-server.nix/archive/0cc241ba16fdea862c77cd90940245ef256b5366.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
     "ihaskell": {
         "branch": "master",
         "description": "A Haskell kernel for IPython.",

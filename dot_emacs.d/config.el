@@ -455,7 +455,6 @@ pressing `<leader> m`. Set it to `nil` to disable it.")
 
 (use-package disable-mouse)
 
-;; (require 'init-dired)
 (setq-default dired-dwim-target t)
 
 ;; Prefer g-prefixed coreutils version of standard utilities when available
@@ -580,8 +579,6 @@ pressing `<leader> m`. Set it to `nil` to disable it.")
 (use-package fd-dired
   :after dired)
 
-;; (provide 'init-dired)
-
 (use-package fzf)
 
 (straight-use-package
@@ -618,17 +615,15 @@ pressing `<leader> m`. Set it to `nil` to disable it.")
 
 
 ;; http://www.emacswiki.org/emacs/ZapToISearch
-(defun sanityinc/isearch-exit-other-end (rbeg rend)
+(defun my/isearch-exit-other-end (rbeg rend)
   "Exit isearch, but at the other end of the search string.
 This is useful when followed by an immediate kill."
   (interactive "r")
   (isearch-exit)
   (goto-char isearch-other-end))
 
-(define-key isearch-mode-map [(control return)] 'sanityinc/isearch-exit-other-end)
+(define-key isearch-mode-map [(control return)] 'my/isearch-exit-other-end)
 
-
-;; (provide 'init-isearch)
 (setq-default grep-highlight-matches t
               grep-scroll-output t)
 
@@ -670,7 +665,7 @@ Get required params to call `dash-docs-result-url' from SEARCH-RESULT."
                      )
                    (other-window 1)
                    (eww (dash-docs-result-url docset-name filename anchor))
-                   (sanityinc/split-window)
+                   (my/split-window-right)
                    ;; (if this-is-the-only-window
                    ;;     (delete-other-windows)
                    ;;   )
@@ -715,7 +710,6 @@ Get required params to call `dash-docs-result-url' from SEARCH-RESULT."
   (setq uniquify-ignore-buffers-re "^\\*")
   )
 
-;; (require 'init-ibuffer)
 ;; TODO: enhance ibuffer-fontification-alist
 ;;   See http://www.reddit.com/r/emacs/comments/21fjpn/fontifying_buffer_list_for_emacs_243/
 
@@ -774,8 +768,6 @@ Get required params to call `dash-docs-result-url' from SEARCH-RESULT."
   )
 
 ;; Modify the default ibuffer-formats (toggle with `)
-;; (provide 'init-ibuffer)
-
 (use-package flycheck
   :hook (after-init . global-flycheck-mode)
   :custom
@@ -811,20 +803,16 @@ Get required params to call `dash-docs-result-url' from SEARCH-RESULT."
   :config
   (editorconfig-mode 1))
 
-;; (require 'init-recentf)
 ;; (add-hook 'after-init-hook 'recentf-mode)
 (setq-default
  recentf-max-saved-items 1000
  recentf-exclude '("/tmp/" "/ssh:"))
 
-
-;; (provide 'init-recentf)
 (use-package smex
   :init
   (setq-default smex-save-file (expand-file-name ".smex-items" my/emacs-d))
   (global-set-key [remap execute-extended-command] 'smex))
 
-;; (require 'init-ivy)
 (use-package ivy
   :hook (after-init . ivy-mode)
   :diminish ivy-mode
@@ -845,7 +833,7 @@ Get required params to call `dash-docs-result-url' from SEARCH-RESULT."
     (define-key ivy-minibuffer-map (kbd k) #'ivy-immediate-done))
 
   (define-key ivy-minibuffer-map (kbd "<up>") #'ivy-previous-line-or-history)
-  (defun sanityinc/enable-ivy-flx-matching ()
+  (defun my/enable-ivy-flx-matching ()
     "Make `ivy' matching work more like IDO."
     (interactive)
     (use-package flx)
@@ -874,7 +862,7 @@ Get required params to call `dash-docs-result-url' from SEARCH-RESULT."
             ((executable-find "pt") 'counsel-pt)
             ((executable-find "ack") 'counsel-ack))))
       (when search-function
-        (defun sanityinc/counsel-search-project (initial-input &optional use-current-dir)
+        (defun my/counsel-search-project (initial-input &optional use-current-dir)
           "Search using `counsel-rg' or similar from the project root for INITIAL-INPUT.
 If there is no project root, or if the prefix argument
 USE-CURRENT-DIR is set, then search from the current directory
@@ -888,18 +876,18 @@ instead."
                            (projectile-project-root)
                          (error default-directory)))))
             (funcall search-function initial-input dir)))
-        (global-set-key (kbd "M-?") 'sanityinc/counsel-search-project)))
+        (global-set-key (kbd "M-?") 'my/counsel-search-project)))
     )
   )
 
 
 (use-package swiper
   :config
-  (defun sanityinc/swiper-at-point (sym)
+  (defun my/swiper-at-point (sym)
     "Use `swiper' to search for the symbol at point."
     (interactive (list (thing-at-point 'symbol)))
     (swiper sym))
-  (define-key ivy-mode-map (kbd "M-s /") 'sanityinc/swiper-at-point)
+  (define-key ivy-mode-map (kbd "M-s /") 'my/swiper-at-point)
   )
 
 
@@ -908,9 +896,6 @@ instead."
   (xref-show-xrefs-function 'ivy-xref-show-xrefs)
   )
 
-
-;; (provide 'init-ivy)
-;;(require 'init-helm)
 
 (use-package hippie-expand
   :ensure nil
@@ -924,10 +909,6 @@ instead."
           try-expand-dabbrev-all-buffers
           try-expand-dabbrev-from-kill))
   )
-
-;; (require 'init-company)
-;; WAITING: haskell-mode sets tags-table-list globally, breaks tags-completion-at-point-function
-;; TODO Default sort order should place [a-z] before punctuation
 
 (setq tab-always-indent 'complete)
 (add-to-list 'completion-styles 'initials t)
@@ -950,20 +931,20 @@ instead."
   (setq-default company-dabbrev-other-buffers 'all
                 company-tooltip-align-annotations t)
   (with-eval-after-load 'page-break-lines
-    (defvar sanityinc/page-break-lines-on-p nil)
-    (make-variable-buffer-local 'sanityinc/page-break-lines-on-p)
+    (defvar my/page-break-lines-on-p nil)
+    (make-variable-buffer-local 'my/page-break-lines-on-p)
 
-    (defun sanityinc/page-break-lines-disable (&rest ignore)
-      (when (setq sanityinc/page-break-lines-on-p (bound-and-true-p page-break-lines-mode))
+    (defun my/page-break-lines-disable (&rest ignore)
+      (when (setq my/page-break-lines-on-p (bound-and-true-p page-break-lines-mode))
         (page-break-lines-mode -1)))
 
-    (defun sanityinc/page-break-lines-maybe-reenable (&rest ignore)
-      (when sanityinc/page-break-lines-on-p
+    (defun my/page-break-lines-maybe-reenable (&rest ignore)
+      (when my/page-break-lines-on-p
         (page-break-lines-mode 1)))
 
-    (add-hook 'company-completion-started-hook 'sanityinc/page-break-lines-disable)
-    (add-hook 'company-completion-finished-hook 'sanityinc/page-break-lines-maybe-reenable)
-    (add-hook 'company-completion-cancelled-hook 'sanityinc/page-break-lines-maybe-reenable))
+    (add-hook 'company-completion-started-hook 'my/page-break-lines-disable)
+    (add-hook 'company-completion-finished-hook 'my/page-break-lines-maybe-reenable)
+    (add-hook 'company-completion-cancelled-hook 'my/page-break-lines-maybe-reenable))
   )
 
 (use-package company-box
@@ -1109,84 +1090,11 @@ Call a second time to restore the original window configuration."
 
 
 
-;; (require 'init-sessions)
-;; save a list of open files in ~/.emacs.d/.emacs.desktop
-;; (setq desktop-path (list my/emacs-d)
-;;       desktop-auto-save-timeout 600)
-;; (desktop-save-mode 1)
-
-;; (defadvice desktop-read (around time-restore activate)
-;;   (let ((start-time (current-time)))
-;;     (prog1
-;;         ad-do-it
-;;       (message "Desktop restored in %.2fms"
-;;                (sanityinc/time-subtract-millis (current-time)
-;;                                                start-time)))))
-
-;; (defadvice desktop-create-buffer (around time-create activate)
-;;   (let ((start-time (current-time))
-;;         (filename (ad-get-arg 1)))
-;;     (prog1
-;;         ad-do-it
-;;       (message "Desktop: %.2fms to restore %s"
-;;                (sanityinc/time-subtract-millis (current-time)
-;;                                                start-time)
-;;                (when filename
-;;                  (abbreviate-file-name filename))))))
-
-;; ;;----------------------------------------------------------------------------
-;; ;; Restore histories and registers after saving
-;; ;;----------------------------------------------------------------------------
-;; (setq-default history-length 1000)
-;; (add-hook 'after-init-hook 'savehist-mode)
-
-;; (my/try-install-package 'session)
-
-;; (setq session-save-file (expand-file-name ".session" my/emacs-d))
-;; (setq session-name-disable-regexp "\\(?:\\`'/tmp\\|\\.git/[A-Z_]+\\'\\)")
-;; (setq session-save-file-coding-system 'utf-8)
-
-;; (add-hook 'after-init-hook 'session-initialize)
-
-;; ;; save a bunch of variables to the desktop file
-;; ;; for lists specify the len of the maximal saved data also
-;; (setq desktop-globals-to-save
-;;       (append '((comint-input-ring        . 50)
-;;                 (compile-history          . 30)
-;;                 desktop-missing-file-warning
-;;                 (dired-regexp-history     . 20)
-;;                 (extended-command-history . 30)
-;;                 (face-name-history        . 20)
-;;                 (file-name-history        . 100)
-;;                 (grep-find-history        . 30)
-;;                 (grep-history             . 30)
-;;                 (ido-buffer-history       . 100)
-;;                 (ido-last-directory-list  . 100)
-;;                 (ido-work-directory-list  . 100)
-;;                 (ido-work-file-list       . 100)
-;;                 (ivy-history              . 100)
-;;                 (magit-read-rev-history   . 50)
-;;                 (minibuffer-history       . 50)
-;;                 (org-clock-history        . 50)
-;;                 (org-refile-history       . 50)
-;;                 (org-tags-history         . 50)
-;;                 (query-replace-history    . 60)
-;;                 (read-expression-history  . 60)
-;;                 (regexp-history           . 60)
-;;                 (regexp-search-ring       . 20)
-;;                 register-alist
-;;                 (search-ring              . 20)
-;;                 (shell-command-history    . 50)
-;;                 tags-file-name
-;;                 tags-table-list)))
-
 (use-package session
   :demand t
   :config
   (setq session-jump-undo-threshold 80))
 
-;; (provide 'init-sessions)
-;; (require 'init-mmm)
 ;;----------------------------------------------------------------------------
 ;; Multiple major modes
 ;;----------------------------------------------------------------------------
@@ -1197,10 +1105,6 @@ Call a second time to restore the original window configuration."
   (setq mmm-submode-decoration-level 2)
   )
 
-
-;; (provide 'init-mmm)
-
-;; (require 'init-editing-utils)
 (use-package unfill)
 
 (put 'set-goal-column 'disabled nil)
@@ -1281,13 +1185,13 @@ Call a second time to restore the original window configuration."
 ;;; Newline behaviour
 
 (global-set-key (kbd "RET") 'newline-and-indent)
-(defun sanityinc/newline-at-end-of-line ()
+(defun my/newline-at-end-of-line ()
   "Move to end of line, enter a newline, and reindent."
   (interactive)
   (move-end-of-line 1)
   (newline-and-indent))
 
-(global-set-key (kbd "S-<return>") 'sanityinc/newline-at-end-of-line)
+(global-set-key (kbd "S-<return>") 'my/newline-at-end-of-line)
 
 
 
@@ -1580,8 +1484,6 @@ With arg N, insert N newlines."
   :diminish which-key-mode
   )
 
-;; (provide 'init-editing-utils)
-;; (require 'init-whitespace)
 (setq-default show-trailing-whitespace t)
 
 
@@ -1594,8 +1496,6 @@ With arg N, insert N newlines."
 
 (global-set-key [remap just-one-space] 'cycle-spacing)
 
-
-;; (require 'init-vc)
 (use-package diff-hl
   :hook
   (magit-post-refresh . diff-hl-magit-post-refresh)
@@ -1608,8 +1508,6 @@ With arg N, insert N newlines."
 
 (use-package browse-at-remote)
 
-;; (provide 'init-vc)
-;; (require 'init-darcs)
 (use-package darcsum)
 (use-package vc-darcs)
 
@@ -1621,8 +1519,6 @@ With arg N, insert N newlines."
 
 (setq darcsum-whatsnew-switches "-l")
 
-;; (provide 'init-darcs)
-;; (require 'init-git)
 ;; TODO: link commits from vc-log to magit-show-commit
 ;; TODO: smerge-mode
 (use-package git-blamed)
@@ -1904,9 +1800,6 @@ With arg N, insert N newlines."
   (setq dumb-jump-selector 'ivy)
   )
 
-;; ;; (provide 'init-lsp)
-
-;; (require 'init-compile)
 (setq-default compilation-scroll-output t)
 
 (use-package alert)
@@ -1933,11 +1826,11 @@ With arg N, insert N newlines."
   "The last buffer in which compilation took place.")
 
 (with-eval-after-load 'compile
-  (defadvice compilation-start (after sanityinc/save-compilation-buffer activate)
+  (defadvice compilation-start (after my/save-compilation-buffer activate)
     "Save the compilation buffer to find it later."
     (setq my/last-compilation-buffer next-error-last-buffer))
 
-  (defadvice recompile (around sanityinc/find-prev-compilation (&optional edit-command) activate)
+  (defadvice recompile (around my/find-prev-compilation (&optional edit-command) activate)
     "Find the previous compilation buffer, if present, and recompile there."
     (if (and (null edit-command)
              (not (derived-mode-p 'compilation-mode))
@@ -1950,7 +1843,7 @@ With arg N, insert N newlines."
 (global-set-key [f6] 'recompile)
 
 (defadvice shell-command-on-region
-    (after sanityinc/shell-command-in-view-mode
+    (after my/shell-command-in-view-mode
            (start end command &optional output-buffer replace &rest other-args)
            activate)
   "Put \"*Shell Command Output*\" buffers into view-mode."
@@ -1969,9 +1862,6 @@ With arg N, insert N newlines."
 
 (use-package cmd-to-echo)
 
-
-;; (provide 'init-compile)
-;; (require 'init-crontab)
 (use-package textile-mode
   :mode "\\.textile\\'"
   )
@@ -1994,16 +1884,11 @@ With arg N, insert N newlines."
   :custom
   (csv-separators '("," ";" "|" " ")))
 
-
-;; (require 'init-erlang)
 (use-package erlang
   :init
   (require 'erlang-start)
   )
 
-
-;; (provide 'init-erlang)
-;; (require 'init-javascript)
 (use-package json-mode)
 (use-package js2-mode)
 (use-package coffee-mode)
@@ -2052,8 +1937,6 @@ With arg N, insert N newlines."
     (add-hook 'js2-mode-hook 'add-node-modules-path))
   )
 
-;; (provide 'init-javascript)
-;; (require 'init-php)
 (use-package php-mode
   :init
   (use-package smarty-mode)
@@ -2065,8 +1948,6 @@ With arg N, insert N newlines."
     )
   )
 
-;; (provide 'init-php)
-
 
 
 (use-package habitica)
@@ -2077,9 +1958,6 @@ With arg N, insert N newlines."
 
 
 (require 'org-protocol)
-
-
-;; (require 'init-org)
 
 (use-package org-fragtog
   :hook (org-mode . org-fragtog-mode)
@@ -2401,7 +2279,7 @@ With arg N, insert N newlines."
 ;; Lots of stuff from http://doc.norang.ca/org-mode.html
 
 ;; TODO: fail gracefully
-(defun sanityinc/grab-ditaa (url jar-name)
+(defun my/grab-ditaa (url jar-name)
   "Download URL and extract JAR-NAME as `org-ditaa-jar-path'."
   ;; TODO: handle errors
   (message "Grabbing %s for org." jar-name)
@@ -2423,7 +2301,7 @@ With arg N, insert N newlines."
           (url "http://jaist.dl.sourceforge.net/project/ditaa/ditaa/0.9/ditaa0_9.zip"))
       (setq org-ditaa-jar-path (expand-file-name jar-name (file-name-directory user-init-file)))
       (unless (file-exists-p org-ditaa-jar-path)
-        (sanityinc/grab-ditaa url jar-name)))))
+        (my/grab-ditaa url jar-name)))))
 
 (with-eval-after-load 'ob-plantuml
   (let ((jar-name "plantuml.jar")
@@ -2496,23 +2374,23 @@ With arg N, insert N newlines."
 (with-eval-after-load 'org-agenda
   (add-to-list 'org-agenda-after-show-hook 'org-show-entry))
 
-(defadvice org-refile (after sanityinc/save-all-after-refile activate)
+(defadvice org-refile (after my/save-all-after-refile activate)
   "Save all org buffers after each refile operation."
   (org-save-all-org-buffers))
 
 ;; Exclude DONE state tasks from refile targets
-(defun sanityinc/verify-refile-target ()
+(defun my/verify-refile-target ()
   "Exclude todo keywords with a done state from refile targets."
   (not (member (nth 2 (org-heading-components)) org-done-keywords)))
-(setq org-refile-target-verify-function 'sanityinc/verify-refile-target)
+(setq org-refile-target-verify-function 'my/verify-refile-target)
 
-(defun sanityinc/org-refile-anywhere (&optional goto default-buffer rfloc msg)
+(defun my/org-refile-anywhere (&optional goto default-buffer rfloc msg)
   "A version of `org-refile' which allows refiling to any subtree."
   (interactive "P")
   (let ((org-refile-target-verify-function))
     (org-refile goto default-buffer rfloc msg)))
 
-(defun sanityinc/org-agenda-refile-anywhere (&optional goto rfloc no-update)
+(defun my/org-agenda-refile-anywhere (&optional goto rfloc no-update)
   "A version of `org-agenda-refile' which allows refiling to any subtree."
   (interactive "P")
   (let ((org-refile-target-verify-function))
@@ -2654,15 +2532,15 @@ With arg N, insert N newlines."
 
 
 ;;; Show the clocked-in task - if any - in the header line
-(defun sanityinc/show-org-clock-in-header-line ()
+(defun my/show-org-clock-in-header-line ()
   (setq-default header-line-format '((" " org-mode-line-string " "))))
 
-(defun sanityinc/hide-org-clock-from-header-line ()
+(defun my/hide-org-clock-from-header-line ()
   (setq-default header-line-format nil))
 
-(add-hook 'org-clock-in-hook 'sanityinc/show-org-clock-in-header-line)
-(add-hook 'org-clock-out-hook 'sanityinc/hide-org-clock-from-header-line)
-(add-hook 'org-clock-cancel-hook 'sanityinc/hide-org-clock-from-header-line)
+(add-hook 'org-clock-in-hook 'my/show-org-clock-in-header-line)
+(add-hook 'org-clock-out-hook 'my/hide-org-clock-from-header-line)
+(add-hook 'org-clock-cancel-hook 'my/hide-org-clock-from-header-line)
 
 (with-eval-after-load 'org-clock
   (define-key org-clock-mode-line-map [header-line mouse-2] 'org-clock-goto)
@@ -2756,8 +2634,6 @@ With arg N, insert N newlines."
      (sqlite . t))))
 
 
-;; (provide 'init-org)
-
 (defun my/simplenote-setup ()
   "Setup simplenote credentials."
   (interactive)
@@ -2774,7 +2650,6 @@ With arg N, insert N newlines."
   (my/simplenote-setup)
   )
 
-;; (require 'init-nxml)
 (use-package nxml-mode
   :ensure nil
   :mode
@@ -2785,8 +2660,6 @@ With arg N, insert N newlines."
 (fset 'xml-mode 'nxml-mode)
 (setq nxml-slash-auto-complete-flag t)
 
-;; (provide 'init-nxml)
-;; (require 'init-html)
 (use-package my/html
   :ensure nil
   :mode ("\\.\\(jsp\\|tmpl\\)\\'". html-mode))
@@ -2797,11 +2670,6 @@ With arg N, insert N newlines."
   (define-key tagedit-mode-map (kbd "M-?") nil)
   (add-hook 'sgml-mode-hook (lambda () (tagedit-mode 1))))
 
-;; Note: ERB is configured in init-ruby
-
-;; (provide 'init-html)
-
-;; (require 'init-css)
 ;;; Colourise CSS colour literals
 (use-package rainbow-mode
   :hook
@@ -2862,36 +2730,26 @@ With arg N, insert N newlines."
 (autoload 'turn-on-css-eldoc "css-eldoc")
 (add-hook 'css-mode-hook 'turn-on-css-eldoc)
 
-
-;; (provide 'init-css)
-;; (require 'init-haml)
 (use-package haml-mode)
 
 (with-eval-after-load 'haml-mode
   (define-key haml-mode-map (kbd "C-o") 'open-line))
 
-;; (provide 'init-haml)
-;; (require 'init-http)
 (use-package httprepl)
 (use-package restclient
   :mode ("\\.rest\\'" . restclient-mode)
   :init
-  (defun sanityinc/restclient ()
+  (defun my/restclient ()
     (interactive)
     (with-current-buffer (get-buffer-create "*restclient*")
       (restclient-mode)
       (pop-to-buffer (current-buffer)))))
 
-
-;; (provide 'init-http)
-;; (require 'init-idris)
 (use-package idris-mode
   :init
   (add-to-list 'completion-ignored-extensions ".ibc")
   )
 
-;; (provide 'init-idris)
-;; (require 'init-elm)
 (use-package elm-mode
   :init
   (setq-default elm-format-on-save t)
@@ -2908,8 +2766,6 @@ With arg N, insert N newlines."
     (setq-default elm-format-on-save t))
   )
 
-;; (provide 'init-elm)
-;; (require 'init-purescript)
 (use-package purescript-mode
   :init
   (use-package psc-ide
@@ -2920,8 +2776,6 @@ With arg N, insert N newlines."
     )
   )
 
-;; (provide 'init-purescript)
-;; (require 'init-ruby)
 ;;; Basic ruby setup
 (use-package ruby-mode
   :mode
@@ -3009,33 +2863,26 @@ With arg N, insert N newlines."
 
                                         ;(add-to-list 'mmm-set-file-name-for-modes 'ruby-mode)
 
-
-
-;; (provide 'init-ruby)
-;; (require 'init-rails)
 (use-package projectile-rails
   :hook
   (projectile-mode .
                    (lambda () (projectile-rails-global-mode projectile-mode)))
   )
 
-
-;; (provide 'init-rails)
-;; (require 'init-sql)
 (with-eval-after-load 'sql
   ;; sql-mode pretty much requires your psql to be uncustomised from stock settings
   (push "--no-psqlrc" sql-postgres-options))
 
-(defun sanityinc/fix-postgres-prompt-regexp ()
+(defun my/fix-postgres-prompt-regexp ()
   "Work around https://debbugs.gnu.org/cgi/bugreport.cgi?bug=22596.
   Fix for the above hasn't been released as of Emacs 25.2."
   (when (eq sql-product 'postgres)
     (setq-local sql-prompt-regexp "^[[:alnum:]_]*=[#>] ")
     (setq-local sql-prompt-cont-regexp "^[[:alnum:]_]*[-(][#>] ")))
 
-(add-hook 'sql-interactive-mode-hook 'sanityinc/fix-postgres-prompt-regexp)
+(add-hook 'sql-interactive-mode-hook 'my/fix-postgres-prompt-regexp)
 
-(defun sanityinc/pop-to-sqli-buffer ()
+(defun my/pop-to-sqli-buffer ()
   "Switch to the corresponding sqli buffer."
   (interactive)
   (if (and sql-buffer (buffer-live-p sql-buffer))
@@ -3044,30 +2891,30 @@ With arg N, insert N newlines."
         (goto-char (point-max)))
     (sql-set-sqli-buffer)
     (when sql-buffer
-      (sanityinc/pop-to-sqli-buffer))))
+      (my/pop-to-sqli-buffer))))
 
 (with-eval-after-load 'sql
-  (define-key sql-mode-map (kbd "C-c C-z") 'sanityinc/pop-to-sqli-buffer)
+  (define-key sql-mode-map (kbd "C-c C-z") 'my/pop-to-sqli-buffer)
   (when (package-installed-p 'dash-at-point)
-    (defun sanityinc/maybe-set-dash-db-docset ()
+    (defun my/maybe-set-dash-db-docset ()
       (when (eq sql-product 'postgres)
         (set (make-local-variable 'dash-at-point-docset) "psql")))
 
-    (add-hook 'sql-mode-hook 'sanityinc/maybe-set-dash-db-docset)
-    (add-hook 'sql-interactive-mode-hook 'sanityinc/maybe-set-dash-db-docset)
+    (add-hook 'sql-mode-hook 'my/maybe-set-dash-db-docset)
+    (add-hook 'sql-interactive-mode-hook 'my/maybe-set-dash-db-docset)
     (defadvice sql-set-product (after set-dash-docset activate)
-      (sanityinc/maybe-set-dash-db-docset))))
+      (my/maybe-set-dash-db-docset))))
 
 (setq-default sql-input-ring-file-name
               (expand-file-name ".sqli_history" my/emacs-d))
 
 ;; See my answer to https://emacs.stackexchange.com/questions/657/why-do-sql-mode-and-sql-interactive-mode-not-highlight-strings-the-same-way/673
-(defun sanityinc/font-lock-everything-in-sql-interactive-mode ()
+(defun my/font-lock-everything-in-sql-interactive-mode ()
   (unless (eq 'oracle sql-product)
     (sql-product-font-lock nil nil)))
-(add-hook 'sql-interactive-mode-hook 'sanityinc/font-lock-everything-in-sql-interactive-mode)
+(add-hook 'sql-interactive-mode-hook 'my/font-lock-everything-in-sql-interactive-mode)
 
-(defun sanityinc/sqlformat (beg end)
+(defun my/sqlformat (beg end)
   "Reformat SQL in region from BEG to END using the \"sqlformat\" program.
   If no region is active, the current statement (paragraph) is reformatted.
   Install the \"sqlparse\" (Python) package to get \"sqlformat\"."
@@ -3084,11 +2931,11 @@ With arg N, insert N newlines."
   (shell-command-on-region beg end "sqlformat -r -" nil t "*sqlformat-errors*" t))
 
 (with-eval-after-load 'sql
-  (define-key sql-mode-map (kbd "C-c C-f") 'sanityinc/sqlformat))
+  (define-key sql-mode-map (kbd "C-c C-f") 'my/sqlformat))
 
 ;; Package ideas:
 ;;   - PEV
-(defun sanityinc/sql-explain-region-as-json (beg end &optional copy)
+(defun my/sql-explain-region-as-json (beg end &optional copy)
   "Explain the SQL between BEG and END in detailed JSON format.
   This is suitable for pasting into tools such as
   http://tatiyants.com/pev/.
@@ -3154,30 +3001,21 @@ With arg N, insert N newlines."
 (with-eval-after-load 'page-break-lines
   (push 'sql-mode page-break-lines-modes))
 
-;; (provide 'init-sql)
-;; (require 'init-toml)
 (use-package toml-mode
   :hook
   (toml-mode . goto-address-prog-mode)
   )
 
-
-;; (provide 'init-toml)
-;; (require 'init-yaml)
 (use-package yaml-mode
   :hook
   (yaml-mode . goto-address-prog-mode)
   )
 
-;; (provide 'init-yaml)
-;; (require 'init-json)
 (use-package json
   :hook
   (json-mode . (lambda () (format-all-mode 1)))
   )
 
-;; (provide 'init-json)
-;; (require 'init-docker)
 (use-package docker
   :config
   (fullframe docker-images tablist-quit)
@@ -3195,10 +3033,6 @@ With arg N, insert N newlines."
 
 (use-package docker-tramp)
 
-;; (provide 'init-docker)
-;; (require 'init-terraform)
-;;; Terraform
-
 (use-package terraform-mode
   :init
   (use-package company-terraform)
@@ -3206,9 +3040,6 @@ With arg N, insert N newlines."
   (company-terraform-init)
   )
 
-;; (provide 'init-terraform)
-;;; init-terraform.el ends here
-;; (require 'init-nix)
 (use-package nix-update)
 
 (use-package nix-mode
@@ -3234,8 +3065,6 @@ With arg N, insert N newlines."
             )
   )
 
-;; (provide 'init-nix)
-;; (require 'init-direnv)
 (use-package direnv
   :init
   :hook
@@ -3244,12 +3073,6 @@ With arg N, insert N newlines."
 
 (use-package projectile-direnv
   :after projectile direnv)
-
-;; (provide 'init-direnv)
-
-;; (require 'init-paredit)
-;; (require 'init-smartparens)
-;; See also init-paredit.el
 
 (use-package smartparens
   :init
@@ -3291,8 +3114,6 @@ With arg N, insert N newlines."
   ("s-a `" .  'wrap-with-back-quotes)
   )
 
-;; (provide 'init-smartparens)
-;; (require 'init-snippets)
 (use-package yasnippet
   :init
   (add-to-list 'load-path
@@ -3301,9 +3122,12 @@ With arg N, insert N newlines."
   (yas-global-mode 1)
   :diminish yas-minor-mode)
 
-;; (provide 'init-snippets)
-;; (require 'init-lisp)
+(use-package emr)
+
+(use-package erefactor)
+
 (use-package elisp-slime-nav)
+
 (dolist (hook '(emacs-lisp-mode-hook ielm-mode-hook))
   (add-hook hook 'turn-on-elisp-slime-nav-mode))
 (add-hook 'emacs-lisp-mode-hook (lambda () (setq mode-name "ELisp")))
@@ -3322,7 +3146,7 @@ With arg N, insert N newlines."
 
 ;; Make C-x C-e run 'eval-region if the region is active
 
-(defun sanityinc/eval-last-sexp-or-region (prefix)
+(defun my/eval-last-sexp-or-region (prefix)
   "Eval region from BEG to END if active, otherwise the last sexp."
   (interactive "P")
   (if (and (mark) (use-region-p))
@@ -3332,13 +3156,13 @@ With arg N, insert N newlines."
 (global-set-key [remap eval-expression] 'pp-eval-expression)
 
 (with-eval-after-load 'lisp-mode
-  (define-key emacs-lisp-mode-map (kbd "C-x C-e") 'sanityinc/eval-last-sexp-or-region))
+  (define-key emacs-lisp-mode-map (kbd "C-x C-e") 'my/eval-last-sexp-or-region))
 
 ;; (when (my/try-install-package 'ipretty)
 ;;   (add-hook 'after-init-hook 'ipretty-mode))
 
 
-(defadvice pp-display-expression (after sanityinc/make-read-only (expression out-buffer-name) activate)
+(defadvice pp-display-expression (after my/make-read-only (expression out-buffer-name) activate)
   "Enable `view-mode' in the output buffer - if any - so it can be closed with `\"q\"."
   (when (get-buffer out-buffer-name)
     (with-current-buffer out-buffer-name
@@ -3346,44 +3170,44 @@ With arg N, insert N newlines."
 
 
 
-(defun sanityinc/maybe-set-bundled-elisp-readonly ()
+(defun my/maybe-set-bundled-elisp-readonly ()
   "If this elisp appears to be part of Emacs, then disallow editing."
   (when (and (buffer-file-name)
              (string-match-p "\\.el\\.gz\\'" (buffer-file-name)))
     (setq buffer-read-only t)
     (view-mode 1)))
 
-(add-hook 'emacs-lisp-mode-hook 'sanityinc/maybe-set-bundled-elisp-readonly)
+(add-hook 'emacs-lisp-mode-hook 'my/maybe-set-bundled-elisp-readonly)
 
 
 ;; Use C-c C-z to toggle between elisp files and an ielm session
 ;; I might generalise this to ruby etc., or even just adopt the repl-toggle package.
 
-(defvar sanityinc/repl-original-buffer nil
+(defvar my/repl-original-buffer nil
   "Buffer from which we jumped to this REPL.")
-(make-variable-buffer-local 'sanityinc/repl-original-buffer)
+(make-variable-buffer-local 'my/repl-original-buffer)
 
-(defvar sanityinc/repl-switch-function 'switch-to-buffer-other-window)
+(defvar my/repl-switch-function 'switch-to-buffer-other-window)
 
-(defun sanityinc/switch-to-ielm ()
+(defun my/switch-to-ielm ()
   (interactive)
   (let ((orig-buffer (current-buffer)))
     (if (get-buffer "*ielm*")
-        (funcall sanityinc/repl-switch-function "*ielm*")
+        (funcall my/repl-switch-function "*ielm*")
       (ielm))
-    (setq sanityinc/repl-original-buffer orig-buffer)))
+    (setq my/repl-original-buffer orig-buffer)))
 
-(defun sanityinc/repl-switch-back ()
+(defun my/repl-switch-back ()
   "Switch back to the buffer from which we reached this REPL."
   (interactive)
-  (if sanityinc/repl-original-buffer
-      (funcall sanityinc/repl-switch-function sanityinc/repl-original-buffer)
+  (if my/repl-original-buffer
+      (funcall my/repl-switch-function my/repl-original-buffer)
     (error "No original buffer")))
 
 (with-eval-after-load 'elisp-mode
-  (define-key emacs-lisp-mode-map (kbd "C-c C-z") 'sanityinc/switch-to-ielm))
+  (define-key emacs-lisp-mode-map (kbd "C-c C-z") 'my/switch-to-ielm))
 (with-eval-after-load 'ielm
-  (define-key ielm-map (kbd "C-c C-z") 'sanityinc/repl-switch-back))
+  (define-key ielm-map (kbd "C-c C-z") 'my/repl-switch-back))
 
 ;; ----------------------------------------------------------------------------
 ;; Hippie-expand
@@ -3420,9 +3244,8 @@ With arg N, insert N newlines."
 
 
 ;;; Support byte-compilation in a sub-process, as
-;;; required by highlight-cl
 
-(defun sanityinc/byte-compile-file-batch (filename)
+(defun my/byte-compile-file-batch (filename)
   "Byte-compile FILENAME in batch mode, ie. a clean sub-process."
   (interactive "fFile to byte-compile in batch mode: ")
   (let ((emacs (car command-line-args)))
@@ -3459,21 +3282,21 @@ With arg N, insert N newlines."
   "Enable features useful when working with elisp."
   (set-up-hippie-expand-for-elisp))
 
-(defconst sanityinc/elispy-modes
+(defconst my/elispy-modes
   '(emacs-lisp-mode ielm-mode)
   "Major modes relating to elisp.")
 
-(defconst sanityinc/lispy-modes
-  (append sanityinc/elispy-modes
+(defconst my/lispy-modes
+  (append my/elispy-modes
           '(lisp-mode inferior-lisp-mode lisp-interaction-mode))
   "All lispy major modes.")
 
 (require 'derived)
 
-(dolist (hook (mapcar #'derived-mode-hook-name sanityinc/lispy-modes))
+(dolist (hook (mapcar #'derived-mode-hook-name my/lispy-modes))
   (add-hook hook 'my/lisp-setup))
 
-(dolist (hook (mapcar #'derived-mode-hook-name sanityinc/elispy-modes))
+(dolist (hook (mapcar #'derived-mode-hook-name my/elispy-modes))
   (add-hook hook 'my/emacs-lisp-setup))
 
 (if (boundp 'eval-expression-minibuffer-setup-hook)
@@ -3504,12 +3327,12 @@ With arg N, insert N newlines."
 ;; their .elc counterparts removed - VC hooks would be necessary for
 ;; that.
 
-(defvar sanityinc/vc-reverting nil
+(defvar my/vc-reverting nil
   "Whether or not VC or Magit is currently reverting buffers.")
 
-(defadvice revert-buffer (after sanityinc/maybe-remove-elc activate)
+(defadvice revert-buffer (after my/maybe-remove-elc activate)
   "If reverting from VC, delete any .elc file that will now be out of sync."
-  (when sanityinc/vc-reverting
+  (when my/vc-reverting
     (when (and (eq 'emacs-lisp-mode major-mode)
                buffer-file-name
                (string= "el" (file-name-extension buffer-file-name)))
@@ -3518,11 +3341,11 @@ With arg N, insert N newlines."
           (message "Removing out-of-sync elc file %s" (file-name-nondirectory elc))
           (delete-file elc))))))
 
-(defadvice magit-revert-buffers (around sanityinc/reverting activate)
-  (let ((sanityinc/vc-reverting t))
+(defadvice magit-revert-buffers (around my/reverting activate)
+  (let ((my/vc-reverting t))
     ad-do-it))
-(defadvice vc-revert-buffer-internal (around sanityinc/reverting activate)
-  (let ((sanityinc/vc-reverting t))
+(defadvice vc-revert-buffer-internal (around my/reverting activate)
+  (let ((my/vc-reverting t))
     ad-do-it))
 
 
@@ -3559,7 +3382,7 @@ With arg N, insert N newlines."
   (define-key ert-results-mode-map (kbd "g") 'ert-results-rerun-all-tests))
 
 
-(defun sanityinc/cl-libify-next ()
+(defun my/cl-libify-next ()
   "Find next symbol from 'cl and replace it with the 'cl-lib equivalent."
   (interactive)
   (let ((case-fold-search nil))
@@ -3587,8 +3410,6 @@ With arg N, insert N newlines."
 
 (use-package cask-mode)
 
-;; (provide 'init-lisp)
-;; (require 'init-slime)
 (use-package slime
   :config
   (setq slime-protocol-version 'ignore)
@@ -3605,9 +3426,6 @@ With arg N, insert N newlines."
 (use-package slime-company)
 
 
-
-;; (require 'init-clojure)
-;; See also init-clojure-cider.el
 
 (use-package clojure-mode
   :hook
@@ -3629,8 +3447,6 @@ With arg N, insert N newlines."
   :init
   (setq nrepl-popup-stacktraces nil)
   (use-package flycheck-clojure))
-
-;; (provide 'init-clojure-cider)
 
 (use-package slime
   :hook (lisp-mode . (lambda ()
@@ -3677,7 +3493,6 @@ With arg N, insert N newlines."
                                 "basic+search")))))))
   )
 
-;; (require 'init-tex)
 (use-package auctex
   :defer t
   :hook
@@ -3868,9 +3683,6 @@ With arg N, insert N newlines."
 
 (use-package latex-unicode-math-mode)
 
-;; (provide 'init-tex)
-
-;; (require 'init-pdf)
 (defun toogle-max-screen-estate ()
   "maximize screen estate"
   (interactive)
@@ -3895,9 +3707,6 @@ With arg N, insert N newlines."
   (after-init . (lambda () (pdf-tools-install t)))
   )
 
-;; (provide 'init-pdf)
-
-;; (require 'init-proof)
 (use-package proof-general
   :init
   (setq proof-splash-enable nil)
@@ -3912,8 +3721,6 @@ With arg N, insert N newlines."
   (add-hook 'coq-mode-hook #'company-coq-mode)
   )
 
-;; (provide 'init-proof)
-;; (require 'init-language)
 (use-package synosaurus
   :bind
   ("s-x l" . 'synosaurus-lookup)
@@ -4039,8 +3846,6 @@ With arg N, insert N newlines."
   ("s-x s-c" . 'sdcv-search-pointer)
   )
 
-;; (provide 'init-language)
-;; (require 'init-misc)
 ;;----------------------------------------------------------------------------
 ;; Misc config - yet to be placed in separate files
 ;;----------------------------------------------------------------------------
@@ -4092,12 +3897,12 @@ With arg N, insert N newlines."
 
 ;; TODO: publish this as "newscript" package or similar, providing global minor mode
 (add-hook 'after-save-hook 'executable-make-buffer-file-executable-if-script-p)
-(add-hook 'after-save-hook 'sanityinc/set-mode-for-new-scripts)
+(add-hook 'after-save-hook 'my/set-mode-for-new-scripts)
 
 (save-place-mode 1)
 (setq save-place-file (expand-file-name "places" my/emacs-d))
 
-(defun sanityinc/set-mode-for-new-scripts ()
+(defun my/set-mode-for-new-scripts ()
   "Invoke `normal-mode' if this file is a script and in `fundamental-mode'."
   (and
    (eq major-mode 'fundamental-mode)
@@ -4223,10 +4028,6 @@ With arg N, insert N newlines."
   "Revert buffer without confirmation."
   (interactive) (revert-buffer t t))
 
-
-;; (provide 'init-misc)
-
-;; (require 'init-folding)
 (use-package origami
   :hook
   (prog-mode-hook . origami-mode)
@@ -4234,10 +4035,6 @@ With arg N, insert N newlines."
   (define-key origami-mode-map (kbd "C-c f") 'origami-recursively-toggle-node)
   (define-key origami-mode-map (kbd "C-c F") 'origami-toggle-all-nodes)
   )
-
-
-;; (provide 'init-folding)
-;;(require 'init-twitter)
 
 (straight-use-package
  '(matrix-client :type git :host github :repo "alphapapa/matrix-client.el"))
@@ -4247,7 +4044,6 @@ With arg N, insert N newlines."
   :mode ("\\.epub\\'" . nov-mode )
   )
 
-;; (require 'init-mu4e)
 (use-package mu4e
   :ensure nil
   :init
@@ -4330,11 +4126,11 @@ With arg N, insert N newlines."
 
   (setq mu4e-contexts
         (mapcar (lambda (accout) (make-mu4e-context
-                                  :name(car accout)
-                                  :match-func `(lambda (msg)
-                                                 (when msg (mu4e-message-contact-field-matches msg :to ,(cadr (assq 'user-mail-address accout)))))
-                                  :vars `((mu43-sent-folder . ,(cadr (assq 'mu4e-sent-folder accout)))
-                                          (mu43-drafts-folder . ,(cadr (assq 'mu4e-drafts-folder accout)))
+                             :name(car accout)
+                             :match-func `(lambda (msg)
+                                            (when msg (mu4e-message-contact-field-matches msg :to ,(cadr (assq 'user-mail-address accout)))))
+                             :vars `((mu43-sent-folder . ,(cadr (assq 'mu4e-sent-folder accout)))
+                                     (mu43-drafts-folder . ,(cadr (assq 'mu4e-drafts-folder accout)))
                                           (mu43-trash-folder . ,(cadr (assq 'mu4e-trash-folder accout)))
                                           (mu43-refle-folder . ,(cadr (assq 'mu4e-refile-folder accout)))))) my-mu4e-account-alist))
 
@@ -4390,8 +4186,6 @@ With arg N, insert N newlines."
     )
   ;; (run-with-timer 0 60 'gjstein-refresh-mu4e-alert-mode-line)
   )
-
-;; (provide 'init-mu4e)
 
 (use-package elfeed
   :bind
@@ -4488,7 +4282,6 @@ With arg N, insert N newlines."
                         (append '("newsblur+https://vvv@newsblur.com") password-file password))))
   )
 
-;; (require 'init-ledger)
 (use-package ledger-mode
   :init
   (use-package flycheck-ledger
@@ -4509,9 +4302,6 @@ With arg N, insert N newlines."
   :hook
   (ledger-mode . goto-address-prog-mode)
   )
-
-;; (provide 'init-ledger)
-;; Extra packages which don't require any configuration
 
 (use-package gnuplot)
 (use-package lua-mode)
@@ -4542,18 +4332,18 @@ With arg N, insert N newlines."
 (use-package my/locales
   :ensure nil
   :init
-  (defun sanityinc/utf8-locale-p (v)
+  (defun my/utf8-locale-p (v)
     "Return whether locale string V relates to a UTF-8 locale."
     (and v (string-match "UTF-8" v)))
 
-  (defun sanityinc/locale-is-utf8-p ()
+  (defun my/locale-is-utf8-p ()
     "Return t iff the \"locale\" command or environment variables prefer UTF-8."
-    (or (sanityinc/utf8-locale-p (and (executable-find "locale") (shell-command-to-string "locale")))
-        (sanityinc/utf8-locale-p (getenv "LC_ALL"))
-        (sanityinc/utf8-locale-p (getenv "LC_CTYPE"))
-        (sanityinc/utf8-locale-p (getenv "LANG"))))
+    (or (my/utf8-locale-p (and (executable-find "locale") (shell-command-to-string "locale")))
+        (my/utf8-locale-p (getenv "LC_ALL"))
+        (my/utf8-locale-p (getenv "LC_CTYPE"))
+        (my/utf8-locale-p (getenv "LANG"))))
 
-  (when (or window-system (sanityinc/locale-is-utf8-p))
+  (when (or window-system (my/locale-is-utf8-p))
     (set-language-environment 'utf-8)
     (setq locale-coding-system 'utf-8)
     (set-default-coding-systems 'utf-8)
