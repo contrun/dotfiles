@@ -245,6 +245,7 @@ in {
       curl
       at
       git
+      chezmoi
       coreutils
       sxhkd
       mimeo
@@ -253,6 +254,7 @@ in {
       mlocate
       htop
       iotop
+      iftop
       iw
       lsof
       hardinfo
@@ -770,20 +772,20 @@ in {
   systemd.packages = let
     usrLocalPrefix = "/usr/local/lib/systemd/system";
     etcPrefix = "/etc/systemd/system";
-    allUsrLocalUnits = pkgs.lib.attrNames
-      (pkgs.lib.filterAttrs (n: v: v == "regular" || v == "symlink")
-        (builtins.readDir usrLocalPrefix));
-    filterUnits = dir: units:
-      builtins.filter (x: builtins.pathExists "${dir}/${x}") units;
-    usrLocalUnits = filterUnits usrLocalPrefix allUsrLocalUnits;
-    makeUnit = dir: unit:
+    makeUnit = from: to: unit:
       pkgs.writeTextFile {
         name = builtins.replaceStrings [ "@" ] [ "__" ] unit;
-        text = builtins.readFile "${dir}/${unit}";
-        destination = "${etcPrefix}/${unit}";
+        text = builtins.readFile "${from}/${unit}";
+        destination = "${to}/${unit}";
       };
-    readUsrLocalUnit = unit: makeUnit usrLocalPrefix unit;
-  in map readUsrLocalUnit usrLocalUnits;
+    getAllUnits = from: to:
+      let
+        files = builtins.readDir from;
+        units = pkgs.lib.attrNames
+          (pkgs.lib.filterAttrs (n: v: v == "regular" || v == "symlink") files);
+        newUnits = map (unit: makeUnit from to unit) units;
+      in pkgs.lib.optionals (builtins.pathExists from) newUnits;
+  in getAllUnits usrLocalPrefix etcPrefix;
 
   systemd = {
     automounts = systemdMounts.autoMounts;

@@ -564,6 +564,7 @@ myManageHook =
           (className =? "mpv") --> doShiftAndView "video",
           (className =? "vlc") --> doShiftAndView "video",
           (className =? "MPlayer") --> doShiftAndView "video",
+          (appName =? "calibre-ebook-viewer") --> doShiftAndView "reading",
           (className =? "Zathura") --> doShiftAndView "reading",
           (fmap (=~ ".*KOReader$") title) --> doShiftAndView "reading"
         ]

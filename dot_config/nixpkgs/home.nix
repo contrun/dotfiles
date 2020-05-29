@@ -126,6 +126,7 @@ let
         "protobuf"
         "capnproto"
         "gflags"
+        "chezmoi"
         "direnv"
         "lorri"
         "yarn"
@@ -204,6 +205,7 @@ let
         # The following does not exist on nixpkgs yet
         # kubernix
         "terraform"
+        "flink"
         "kubernetes"
         "kubernetes-helm"
         "kube3d"
@@ -377,6 +379,7 @@ let
         # # soapui
         "telnet"
         "socat"
+        "websocat"
         "neomutt"
         "mu"
         "midori"
@@ -397,7 +400,7 @@ let
         "udiskie"
         "acpi"
         "wine"
-        # "winetricks"
+        "winetricks"
         "usbutils"
         "powertop"
         "fail2ban"
