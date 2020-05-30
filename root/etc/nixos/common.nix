@@ -578,7 +578,7 @@ in {
     mpd.enable = enbleMpd;
     # mosquitto.enable = true;
     rsyncd.enable = enableRsyncd;
-    accounts-daemon.enable = enableAccountsDaemon || enableFlatpak;
+    # accounts-daemon.enable = enableAccountsDaemon || enableFlatpak;
     flatpak.enable = enableFlatpak;
     thermald = { enable = enableThermald; };
     gnome3 = { gnome-keyring.enable = enableGnomeKeyring; };
@@ -709,18 +709,18 @@ in {
         sessionCommands = xSessionCommands;
         startx = { enable = myDisplayManager == "startx"; };
         sddm = {
+          inherit autoLogin;
           enable = myDisplayManager == "sddm";
           enableHidpi = enableHidpi;
           autoNumlock = true;
-          autoLogin = autoLogin;
         };
         gdm = {
+          inherit autoLogin;
           enable = myDisplayManager == "gdm";
-          autoLogin = autoLogin;
         };
         lightdm = {
+          inherit autoLogin;
           enable = myDisplayManager == "lightdm";
-          autoLogin = autoLogin;
         };
       };
     };
@@ -859,7 +859,10 @@ in {
           '';
           update-my-packages = pkgs.lib.optionalString updateMyPackages ''
             if cd "${home}/.local/share/chezmoi/dot_config/nixpkgs/"; then
-                su "${owner}" -c "niv update; chezmoi apply" || true
+                su "${owner}" -c "niv update; chezmoi apply -v" || true
+            fi
+            if [[ -f "${home}/.local/share/chezmoi/root/chezmoi.toml" ]]; then
+                chezmoi -c "${home}/.local/share/chezmoi/root/chezmoi.toml" apply -v || true
             fi
           '';
           upgrade-system = if allowReboot then ''
@@ -907,18 +910,10 @@ in {
       "https://cache.nixos.org"
       "https://hydra.iohk.io"
       "https://nixcache.reflex-frp.org"
-      "https://hie-nix.cachix.org"
-      "https://hnix.cachix.org"
-      "https://nix-linter.cachix.org"
-      "https://niv.cachix.org"
     ];
     binaryCachePublicKeys = [
       "hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ=" # cardano
       "ryantrinkle.com-1:JJiAKaRv9mWgpVAz8dwewnZe0AzzEAzPkagE9SP5NWI=" # reflex
-      "hie-nix.cachix.org-1:EjBSHzF6VmDnzqlldGXbi0RM3HdjfTU3yDRi9Pd0jTY="
-      "hnix.cachix.org-1:8MflOlogfd6Y94rD0cjHsmfK0qIF8F5dPz4TSY7qSdU="
-      "nix-linter.cachix.org-1:BdTne5LEHQfIoJh4RsoVdgvqfObpyHO5L0SCjXFShlE"
-      "niv.cachix.org-1:X32PCg2e/zAm3/uD1ScqW2z/K0LtDyNV7RdaxIuLgQM="
     ];
     buildCores = buildCores;
     maxJobs = maxJobs;

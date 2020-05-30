@@ -60,8 +60,8 @@ let
       # startupHosts.sh &
       sxhkd -c ~/.config/sxhkd/sxhkdrc &
     '';
-    myDisplayManager = "sddm";
-    buildCores = 4;
+    myDisplayManager = "lightdm";
+    buildCores = 0;
     maxJobs = 6;
     proxy = null;
     myPath = [ "${home}/.bin" ];
@@ -79,7 +79,7 @@ let
     enableRedis = false;
     enableRsyncd = false;
     enbleMpd = false;
-    enableAccountsDaemon = false;
+    enableAccountsDaemon = true;
     enableFlatpak = false;
     enableXdgPortal = false;
     enableJupyter = true;
@@ -192,9 +192,34 @@ let
     };
     extraOutputsToInstall = [ "dev" "lib" "doc" "info" "devdoc" ];
   };
+  hostSpecific = let
+    hostname = let
+      # LC_CTYPE=C tr -dc 'a-z' < /dev/urandom | head -c3 | tee /tmp/hostname
+      hostNameFiles = [ /etc/hostname /tmp/hostname ];
+      fs = builtins.filter (x: builtins.pathExists x) hostNameFiles;
+      f = builtins.elemAt fs 0;
+      c = builtins.readFile f;
+      l = builtins.match "([[:alnum:]]+)[[:space:]]*" c;
+    in builtins.elemAt l 0;
+    hash = builtins.hashString "sha512" "hostname: ${hostname}";
+    hostId = builtins.substring 0 7 hash;
+  in {
+    inherit hostname hostId;
+  } // (if hostname == "uzq" then {
+    enableHidpi = true;
+    hostId = "80d17333";
+  } else if hostname == "ssg" then {
+    hostId = "034d2ba3";
+    dpi = 128;
+    enableHidpi = false;
+    enableIPv6 = false;
+    enableWireless = true;
+    consoleFont = "${pkgs.terminus_font}/share/consolefonts/ter-g20n.psf.gz";
+  } else
+    { });
   prefFiles = [ "/etc/nixos/override.nix" ];
   effectiveFiles = builtins.filter (x: builtins.pathExists x) prefFiles;
   readPref = path: (import (builtins.toPath path)) myArgs;
-in defaults
+in defaults // hostSpecific
 // (builtins.foldl' (accumulator: path: accumulator // readPref path) { }
   effectiveFiles)
