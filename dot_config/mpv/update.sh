@@ -28,6 +28,8 @@ https://raw.githubusercontent.com/Kagami/mpv_frame_info/master/frame_info.lua
 scripts/frame_info.lua
 https://raw.githubusercontent.com/Argon-/mpv-stats/master/stats.lua
 scripts/stats.lua
+https://raw.githubusercontent.com/gthreepw00d/mpv-iptv/master/iptv.lua
+scripts/iptv.lua
 EOF
 )"
 urls="$(awk 'NR % 2 != 0' <<< "$list")"

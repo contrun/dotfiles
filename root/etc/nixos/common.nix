@@ -796,7 +796,7 @@ in {
     nixos-update = with nixosAutoUpgrade; {
       timerConfig = {
         OnCalendar = onCalendar;
-        Unit = "nixos-update.service";
+        Unit = "nixos-update@.service";
         Persistent = true;
       };
     };
@@ -820,7 +820,7 @@ in {
       };
     };
     # copied from https://github.com/NixOS/nixpkgs/blob/7803ff314c707ee11a6d8d1c9ac4cde70737d22e/nixos/modules/tasks/auto-upgrade.nix#L72
-    nixos-update = {
+    "nixos-update@" = {
       description = "NixOS Update";
       restartIfChanged = false;
       unitConfig = { X-StopOnRemoval = false; };
@@ -829,6 +829,7 @@ in {
       environment = config.nix.envVars // {
         inherit (config.environment.sessionVariables) NIX_PATH;
         HOME = "/root";
+        ARGS = "%I";
       } // config.networking.proxy.envVars;
 
       path = [
@@ -844,6 +845,7 @@ in {
         pkgs.chezmoi
       ];
 
+      scriptArgs = "$ARGS";
       script = with nixosAutoUpgrade;
         let
           add-channel = channel: ''

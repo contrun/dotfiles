@@ -316,6 +316,7 @@ let
         "arandr"
         # "virtualbox"
         "vlc"
+        "myPackages.kodi"
         "exiv2"
         "imagemagick7"
       ];
@@ -402,6 +403,7 @@ let
         "wine"
         "winetricks"
         "usbutils"
+        "nethogs"
         "powertop"
         "fail2ban"
         "qemu"

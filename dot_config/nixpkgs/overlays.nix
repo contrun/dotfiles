@@ -6,9 +6,7 @@ let
   mySources = import ./nix/pkgs.nix { pkgs = originalNixpkgs; };
   # mySources = import ./nix/sources.nix;
 
-  aliasOverlay = self: super: {
-    inherit mySources stable unstable;
-  };
+  aliasOverlay = self: super: { inherit mySources stable unstable; };
 
   mozillaOverlay = import mySources.nixpkgs-mozilla;
 
@@ -230,7 +228,10 @@ let
 
       hie = (import mySources.all-hies { }).selection { selector = p: p; };
 
-      hls = (import mySources."haskell-language-server.nix" { }).ghc-8_6_5.ghcide;
+      hls =
+        (import mySources."haskell-language-server.nix" { }).ghc-8_6_5.ghcide;
+
+      kodi = super.kodi;
 
       ihaskell = let
         compiler = "ghc865";

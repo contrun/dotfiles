@@ -125,10 +125,10 @@
         "homepage": "https://github.com/nix-community/NUR",
         "owner": "nix-community",
         "repo": "nur-combined",
-        "rev": "5fd7f7a42373bfc76f0aafc4720a79123c58cca1",
-        "sha256": "1bjva0z1y0idh1jzl8bccb55ziif46y2i3nwhf03jcqyhnikwsy2",
+        "rev": "c9d9e381405b5487f049710533eaa6f189be8c51",
+        "sha256": "1q3gg3p8gm0gh7flwlyyr0m67j27f7q5y4rz9qhagq5avpqvdq43",
         "type": "tarball",
-        "url": "https://github.com/nix-community/nur-combined/archive/5fd7f7a42373bfc76f0aafc4720a79123c58cca1.tar.gz",
+        "url": "https://github.com/nix-community/nur-combined/archive/c9d9e381405b5487f049710533eaa6f189be8c51.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "old-ghc-nix": {
