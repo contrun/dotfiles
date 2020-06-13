@@ -191,7 +191,7 @@ in {
       (nix-du.overrideAttrs (oldAttr: { doCheck = false; }))
       nix-index
       nix-top
-      gnome3.adwaita-icon-theme
+      # gnome3.adwaita-icon-theme
       gnome3.dconf
       gnome3.gsettings-desktop-schemas
       gnome3.zenity
@@ -425,6 +425,8 @@ in {
   in overlaysAttr // pkgsAttr // configAttr;
 
   hardware = {
+    enableAllFirmware = true;
+    enableRedistributableFirmware = true;
     bumblebee = {
       enable = enableBumblebee;
       connectDisplay = true;
@@ -946,6 +948,8 @@ in {
     };
   };
 
+  boot.kernelParams = [ "boot.shell_on_fail" ];
+  boot.kernelPackages = pkgs.linuxPackages_latest;
   boot.kernel.sysctl = {
     "fs.file-max" = 51200;
     "net.core.rmem_max" = 67108864;

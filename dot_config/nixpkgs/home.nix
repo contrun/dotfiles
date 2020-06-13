@@ -166,7 +166,7 @@ let
         "gitAndTools.diff-so-fancy"
         "vscodium"
         # vscode
-        "jetbrains.idea-community"
+        "jetbrains.idea-ultimate"
         # jetbrains.pycharm-community
         # haskellIdeEngine
         # haskellPackages.ihaskell
@@ -175,6 +175,7 @@ let
         "go2nix"
         "gnum4"
         "gcc"
+        "cudatoolkit"
         "linuxPackages_latest.bcc"
         "rr"
         "gdb"
@@ -187,6 +188,15 @@ let
         # "wasm-bindgen-cli"
         "hexyl"
         "fd"
+        "bat"
+        "pastel"
+        "tokei"
+        "starship"
+        "watchexec"
+        "zoxide"
+        "kmon"
+        "bingrep"
+        "yj"
         "exa"
         "firecracker"
         "delve"
