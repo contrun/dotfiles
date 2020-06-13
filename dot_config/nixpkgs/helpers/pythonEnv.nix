@@ -1,5 +1,5 @@
 with import <nixpkgs> {};
-with python37Packages;
+with python3Packages;
 
 stdenv.mkDerivation {
   name = "impurePythonEnv";
@@ -9,9 +9,9 @@ stdenv.mkDerivation {
   buildInputs = [
     # these packages are required for virtualenv and pip to work:
     #
-    python37Full
-    python37Packages.virtualenv
-    python37Packages.pip
+    python3Full
+    python3Packages.virtualenv
+    python3Packages.pip
     # the following packages are related to the dependencies of your python
     # project.
     # In this particular example the python modules listed in the

@@ -104,7 +104,8 @@ in {
           myPath = "${home}/.config/wpa_supplicant/wpa_supplicant.conf";
           defaultPath = "/etc/wpa_supplicant.conf";
         in {
-          path = if builtins.pathExists myPath then myPath else defaultPath;
+          path = builtins.trace (builtins.pathExists myPath)
+            (if builtins.pathExists myPath then myPath else defaultPath);
           writable = true;
         };
         userControlled = { enable = true; };
@@ -200,10 +201,9 @@ in {
       fzf
       jq
       wine
-      vagrant
       notify-osd-customizable
       libnotify
-      lua
+      (pkgs.myPackages.lua or lua)
       gcc
       usbutils
       powertop
@@ -223,10 +223,10 @@ in {
       xorg.libXrender
       xorg.xorgproto
       openjdk
-      python
+      (pkgs.myPackages.python or python3)
+      (pkgs.myPackages.python2 or python2)
       rofi
       ruby
-      python3
       perl
       neovim
       libffi
@@ -261,7 +261,7 @@ in {
       dmenu
       dmidecode
       dunst
-      cachix
+      (cachix.overrideAttrs (oldAttr: { doCheck = false; }))
       e2fsprogs
       efibootmgr
       dbus
@@ -807,20 +807,20 @@ in {
   systemd.services = let extraServices = { };
   in extraServices // {
     # copied from https://github.com/NixOS/nixpkgs/blob/d5053d12eb23377bcc860f8cb3bfa65c4507772d/nixos/modules/services/misc/calibre-server.nix#L37
-    calibre-server = {
-      enable = enableCalibreServer;
-      description = "Calibre Server";
-      after = [ "network.target" ];
-      wantedBy = [ "multi-user.target" ];
-      serviceConfig = {
-        User = "${owner}";
-        Restart = "always";
-        ExecStart =
-          "${pkgs.calibre}/bin/calibre-server ${calibreServerLibraryDir} --port ${
-            toString calibreServerPort
-          }";
-      };
-    };
+    # calibre-server = {
+    #   enable = enableCalibreServer;
+    #   description = "Calibre Server";
+    #   after = [ "network.target" ];
+    #   wantedBy = [ "multi-user.target" ];
+    #   serviceConfig = {
+    #     User = "${owner}";
+    #     Restart = "always";
+    #     ExecStart =
+    #       "${pkgs.calibre}/bin/calibre-server ${calibreServerLibraryDir} --port ${
+    #         toString calibreServerPort
+    #       }";
+    #   };
+    # };
     # copied from https://github.com/NixOS/nixpkgs/blob/7803ff314c707ee11a6d8d1c9ac4cde70737d22e/nixos/modules/tasks/auto-upgrade.nix#L72
     "nixos-update@" = {
       description = "NixOS Update";
@@ -866,6 +866,7 @@ in {
                 su "${owner}" -c "niv update; chezmoi apply -v" || true
             fi
             if [[ -f "${home}/.local/share/chezmoi/root/chezmoi.toml" ]]; then
+                cd "${home}"
                 chezmoi -c "${home}/.local/share/chezmoi/root/chezmoi.toml" apply -v || true
             fi
           '';

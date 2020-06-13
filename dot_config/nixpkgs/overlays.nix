@@ -138,7 +138,9 @@ let
         protobuf
       ]);
 
-      python = with super;
+      lua = super.lua.withPackages (ps: with ps; [ busted luafilesystem luarocks lua-lsp nvim-client ]);
+
+      python = with stable;
         python3Full.withPackages (ps:
           with ps; [
             pip
@@ -203,7 +205,7 @@ let
           };
         };
 
-      python2 = with super;
+      python2 = with stable;
         python2Full.withPackages
         (ps: with ps; [ pip setuptools sortedcontainers pycparser ]);
       # (ps: with ps; [ pip setuptools pynvim jmespath pylint flake8 ]);

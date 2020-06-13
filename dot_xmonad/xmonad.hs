@@ -58,6 +58,16 @@ myFocusFollowsMouse = True
 myClickJustFocuses :: Bool
 myClickJustFocuses = False
 
+myIdeaBinary :: String
+myIdeaBinary = "idea-ultimate"
+
+-- myIdeaBinary = "idea-community"
+
+myIdeaClassName :: String
+myIdeaClassName = "jetbrains-idea"
+
+-- myIdeaClassName = "jetbrains-idea-ce"
+
 -- Width of the window border in pixels.
 --
 myBorderWidth = 1
@@ -385,7 +395,7 @@ myAddtionalKeys =
              (myMod "S-w", runOrRaiseInHiddenWorkspace "web" "chromium" (className =? "Chromium-browser")),
              (myMod "e", raiseMaybeInHiddenWorkspace "editor" (spawn "emacsclient --alternate-editor='' --no-wait --create-frame --frame-parameters='(quote (name . \"quick emacs frame\"))'") (title =? "quick emacs frame")),
              (myMod "q", raiseMaybeInHiddenWorkspace "quickTerminal" (spawn "alacritty --class 'QuickTerminal' -e tmux new 'exec zsh'") (appName =? "QuickTerminal")),
-             (myMod "i", runOrRaiseInHiddenWorkspace "ide" "idea-community" (className =? "jetbrains-idea-ce")),
+             (myMod "i", runOrRaiseInHiddenWorkspace "ide" myIdeaBinary (className =? myIdeaClassName)),
              (myMod "p", runOrRaiseInHiddenWorkspace "password" "keepassxc" (className =? "KeePassXC")),
              (myMod "z", toggleOrViewHiddenWorkspace' "zstash"),
              (myMod "C-z", (windows . W.shift) "zstash"),
@@ -415,7 +425,7 @@ myAddtionalKeys =
              (launcherMode1 "r", runOrRaiseInHiddenWorkspace "reading" "koreader" (fmap (=~ ".*KOReader$") title)),
              (launcherMode1 "f", spawn "doublecmd"),
              (launcherMode1 "z", spawn "zotero"),
-             (launcherMode1 "i", spawn "idea-community"),
+             (launcherMode1 "i", runOrRaiseInHiddenWorkspace "ide" myIdeaBinary (className =? myIdeaClassName)),
              (launcherMode1 "v", spawn "codium"),
              (launcherMode1 "p", runOrRaiseInHiddenWorkspace "reading" "zathura" (className =? "Zathura")),
              (launcherMode1 "l", spawn "calibre"),
@@ -551,7 +561,7 @@ myManageHook =
         [title =? t --> doIgnore | t <- myTitleIgnores],
         [className =? c --> doIgnore | c <- myClassIgnores],
         [namedScratchpadManageHook myScratchpads],
-        [ (className =? "jetbrains-idea-ce") --> doShiftHiddenWorkspace "ide",
+        [ (className =? myIdeaClassName) --> doShiftHiddenWorkspace "ide",
           (title =? "quick emacs frame") --> doShiftHiddenWorkspace "editor",
           (className =? "keepassxc") --> doShiftHiddenWorkspace "password",
           (appName =? "QuickTerminal") --> doShiftHiddenWorkspace "quickTerminal",

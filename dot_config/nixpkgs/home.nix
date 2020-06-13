@@ -90,6 +90,7 @@ let
         "lldb"
         "lld"
         "clang"
+        "gdb"
       ];
     }
     {
@@ -136,7 +137,7 @@ let
         "clang-tools"
         "html-tidy"
         "radare2"
-        "luarocks"
+        "myPackages.lua"
         "xmlstarlet"
         "nasm"
         "go"
@@ -175,10 +176,9 @@ let
         "go2nix"
         "gnum4"
         "gcc"
-        "cudatoolkit"
+        "stable.cudatoolkit"
         "linuxPackages_latest.bcc"
         "rr"
-        "gdb"
         "gdbgui"
         "valgrind"
         "wabt"
@@ -216,6 +216,7 @@ let
         # kubernix
         "terraform"
         "flink"
+        "confluent-platform"
         "kubernetes"
         "kubernetes-helm"
         "kube3d"
@@ -362,6 +363,7 @@ let
         "hugo"
         "you-get"
         "uget"
+        "miniupnpc"
         "wireguard"
         # qutebrowser
         # telegram-cli
@@ -490,7 +492,7 @@ let
       priority = 45;
       packages = getPackages [
         "pdf2djvu"
-        "calibre"
+        # "stable.calibre"
         "fbreader"
         "languagetool"
         "proselint"
@@ -512,7 +514,7 @@ let
         "auctex"
         "mupdf"
         "graphviz"
-        "impressive"
+        "stable.impressive"
         "gnuplot"
         "goldendict"
         "kdeApplications.okular"
@@ -675,7 +677,7 @@ let
         # libvdpau-va-gl
         # liferea
         # logrotate
-        # lolcat
+        "lolcat"
         "copyq"
         "kpcli"
         # "bitwarden-cli"

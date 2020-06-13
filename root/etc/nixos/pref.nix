@@ -205,9 +205,13 @@ let
     hostId = builtins.substring 0 7 hash;
   in {
     inherit hostname hostId;
-  } // (if hostname == "uzq" then {
+  } // (if hostname == "uzq" then rec {
     enableHidpi = true;
     hostId = "80d17333";
+    wirelessBackend = "wpa_supplicant";
+    enableSupplicant = wirelessBackend == "wpa_supplicant";
+    enableWireless = enableSupplicant;
+    enableIwd = wirelessBackend == "iwd";
   } else if hostname == "ssg" then {
     hostId = "034d2ba3";
     dpi = 128;

@@ -1689,6 +1689,7 @@ With arg N, insert N newlines."
   )
 
 (use-package lsp-python-ms)
+(use-package lsp-metals)
 (use-package caml)
 (use-package flycheck-ocaml)
 (use-package tuareg)
