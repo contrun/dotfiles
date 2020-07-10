@@ -16,6 +16,9 @@
 # Yavide alias
 # alias yavide="gvim --servername yavide -f -N -u /opt/yavide/.vimrc -u /opt/yavide/.vimrc"
 
+# Add RVM to PATH for scripting. Make sure this is the last PATH variable change.
+export PATH="$PATH:$HOME/.rvm/bin"
+
 # start tmux and zsh
 if [ -z "$TMUX" ] && command -v tmux.sh && [ -z "$NO_TMUX" ]; then
         :

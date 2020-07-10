@@ -140,11 +140,14 @@ let
 
       lua = super.lua.withPackages (ps: with ps; [ busted luafilesystem luarocks lua-lsp nvim-client ]);
 
+      ruby = super.ruby_2_7.withPackages (ps: with ps; [ rake rails rspec ]);
+
       python = with stable;
         python3Full.withPackages (ps:
           with ps; [
             pip
             chardet
+            dateutil
             setuptools
             virtualenvwrapper
             yapf

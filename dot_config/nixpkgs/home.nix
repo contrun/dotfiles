@@ -22,6 +22,11 @@ let
       collection.packages)) [ ] packageCollection;
   packageCollection = [
     {
+      name = "command line tools (preferred)";
+      priority = 49;
+      packages = getPackages [ "parallel" ];
+    }
+    {
       name = "command line tools";
       priority = 50;
       packages = getPackages [
@@ -42,8 +47,9 @@ let
         "ack"
         "patch"
         "pandoc"
-        "parallel"
+        "moreutils"
         "nnn"
+        "glib"
         "broot"
         "ncdu"
         "links"
@@ -91,6 +97,7 @@ let
         "lld"
         "clang"
         "gdb"
+        "hadoop_3_1"
       ];
     }
     {
@@ -104,13 +111,15 @@ let
         "bear"
         "upx"
         "rustup"
+        "gopls"
+        "rust-analyzer"
         "cargo-edit"
         "cargo-tree"
         "cargo-xbuild"
         # cargo-update
         "cargo-generate"
         "racket"
-        "ruby"
+        "myPackages.ruby"
         "zeal"
         "vagrant"
         "shellcheck"
@@ -121,6 +130,7 @@ let
         # rls
         "astyle"
         "postgresql"
+        "libmysqlclient"
         "myPackages.idris"
         "myPackages.elba"
         "pydb"
@@ -218,11 +228,11 @@ let
         "flink"
         "confluent-platform"
         "kubernetes"
-        "kubernetes-helm"
+        "stable.kubernetes-helm"
         "kube3d"
         "k9s"
         "minikube"
-        "libguestfs-with-appliance"
+        # "libguestfs-with-appliance"
         "python3Packages.binwalk"
         "binutils"
         "bison"
@@ -272,7 +282,11 @@ let
         "gradle"
         "maven"
         "ant"
+        "openjdk14"
         "coursier"
+        "leiningen"
+        "clojure"
+        "clojure-lsp"
         "scala"
         "scalafmt"
         # "graalvm8"
@@ -292,7 +306,7 @@ let
         "openssl"
         "glib-networking"
         "myPackages.python"
-        "myPackages.haskell"
+        "myPackages.haskellStable"
         "perlPackages.Appcpanminus"
         "perlPackages.locallib"
         "perlPackages.Appperlbrew"
@@ -335,9 +349,7 @@ let
     {
       name = "network tools (preferred)";
       priority = 24;
-      packages = getPackages [
-        "latest.firefox-nightly-bin"
-      ];
+      packages = getPackages [ "latest.firefox-nightly-bin" ];
     }
     {
       name = "network tools";
@@ -474,7 +486,7 @@ let
         # # ebook-tools
         # # eclipse-java
         "efibootmgr"
-        "dbus"
+        # "dbus"
         "linuxHeaders"
         "cryptsetup"
         "compton"
@@ -692,7 +704,7 @@ let
         # mg
         # mongodb
         # monit
-        # moreutils
+
         # most
         # mtpaint
         # # mujs-git
@@ -799,7 +811,7 @@ in {
   # };
 
   home = {
-    extraOutputsToInstall = [ "dev" "lib" "doc" "info" "devdoc" ];
+    extraOutputsToInstall = [ "dev" "lib" "doc" "info" "devdoc" "out" ];
     packages = allPackages;
     # priority = builtins.trace 4 4;
   };

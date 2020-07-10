@@ -337,7 +337,10 @@ in {
 
   programs = {
     ccache = { enable = true; };
-    java = { enable = true; };
+    java = {
+      enable = true;
+      package = pkgs.jdk14;
+    };
     gnupg.agent = { enable = enableGPGAgent; };
     ssh = { startAgent = true; };
     # vim.defaultEditor = true;
@@ -949,7 +952,7 @@ in {
     };
   };
 
-  boot.kernelParams = [ "boot.shell_on_fail" ];
+  boot.kernelParams = [ "boot.shell_on_fail" "iommu=pt" "iommu=1" ];
   boot.kernelPackages = pkgs.linuxPackages_latest;
   boot.kernel.sysctl = {
     "fs.file-max" = 51200;

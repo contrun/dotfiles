@@ -22,7 +22,8 @@ let
     dpi = 144;
     enableHidpi = true;
     enableIPv6 = true;
-    wirelessBackend = "iwd";
+    wirelessBackend = "wpa_supplicant";
+    # wirelessBackend = "iwd";
     enableSupplicant = wirelessBackend == "wpa_supplicant";
     enableWireless = enableSupplicant;
     enableIwd = wirelessBackend == "iwd";
@@ -89,7 +90,7 @@ let
     davfs2Secrets = "${home}/.davfs2/secrets";
     enableDavfs2 = true;
     systemdMounts = let
-      enableNextcloud = true;
+      enableNextcloud = false;
       enableYandex = false;
       nextcloudWhere = "/nc/sync";
       nextcloudWhat = "https://uuuuuu.ocloud.de/remote.php/webdav/sync/";
@@ -208,10 +209,6 @@ let
   } // (if hostname == "uzq" then rec {
     enableHidpi = true;
     hostId = "80d17333";
-    wirelessBackend = "wpa_supplicant";
-    enableSupplicant = wirelessBackend == "wpa_supplicant";
-    enableWireless = enableSupplicant;
-    enableIwd = wirelessBackend == "iwd";
   } else if hostname == "ssg" then {
     hostId = "034d2ba3";
     dpi = 128;
