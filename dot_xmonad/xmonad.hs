@@ -184,9 +184,9 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) =
       -- , ((modm .|. controlMask, xK_slash ), spawn ("echo \"" ++ help ++ "\" | xmessage -file -"))
     ]
       ++ [ ((m .|. modm, k), f i) --
-             -- mod-[1..9], Switch to workspace N
-             -- mod-ctrl-[1..9], Move client to workspace N
-             --
+      -- mod-[1..9], Switch to workspace N
+      -- mod-ctrl-[1..9], Move client to workspace N
+      --
            | (i, k) <- zip (XMonad.workspaces conf) [xK_1 .. xK_9],
              (f, m) <- [(toggleOrView', 0), (windows . W.shift, controlMask)]
          ]
@@ -395,7 +395,8 @@ myAddtionalKeys =
              (myMod "S-w", runOrRaiseInHiddenWorkspace "web" "chromium" (className =? "Chromium-browser")),
              (myMod "e", raiseMaybeInHiddenWorkspace "editor" (spawn "emacsclient --alternate-editor='' --no-wait --create-frame --frame-parameters='(quote (name . \"quick emacs frame\"))'") (title =? "quick emacs frame")),
              (myMod "q", raiseMaybeInHiddenWorkspace "quickTerminal" (spawn "alacritty --class 'QuickTerminal' -e tmux new 'exec zsh'") (appName =? "QuickTerminal")),
-             (myMod "i", runOrRaiseInHiddenWorkspace "ide" myIdeaBinary (className =? myIdeaClassName)),
+             -- (myMod "i", runOrRaiseInHiddenWorkspace "ide" myIdeaBinary (className =? myIdeaClassName)),
+             (myMod "i", toggleOrViewHiddenWorkspace' "ide"),
              (myMod "p", runOrRaiseInHiddenWorkspace "password" "keepassxc" (className =? "KeePassXC")),
              (myMod "z", toggleOrViewHiddenWorkspace' "zstash"),
              (myMod "C-z", (windows . W.shift) "zstash"),
@@ -593,6 +594,7 @@ myManageHook =
 -- Event handling
 
 -- * EwmhDesktops users should change this to ewmhDesktopsEventHook
+
 --
 -- Defines a custom handler function for X Events. The function should
 -- return (All True) if the default handler is to be run afterwards. To
@@ -621,13 +623,13 @@ myStartupHook = do
   -- setWMName "LG3D"
   io $ setEnv "_JAVA_AWT_WM_NONREPARENTING" "1"
   return () -- workaround for checkKeymap!
-    -- workaround to integrate Java Swing/GUI apps into XMonad layouts;
-    -- otherwise they just float around.
-    -- setWMName "LG3D"
-    -- workaround to keep xmobar/dock visible after xmonad restart; otherwise
-    -- the dock can be lost/hidden behind wallpaper.
-    -- spawn "xdotool windowraise `xdotool search --all --name xmobar`"
-    -- spawnOnce "dropbox start"
+  -- workaround to integrate Java Swing/GUI apps into XMonad layouts;
+  -- otherwise they just float around.
+  -- setWMName "LG3D"
+  -- workaround to keep xmobar/dock visible after xmonad restart; otherwise
+  -- the dock can be lost/hidden behind wallpaper.
+  -- spawn "xdotool windowraise `xdotool search --all --name xmobar`"
+  -- spawnOnce "dropbox start"
 
 ------------------------------------------------------------------------
 -- Now run xmonad with all the defaults we set up.

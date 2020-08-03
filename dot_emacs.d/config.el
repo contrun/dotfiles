@@ -1568,6 +1568,9 @@ With arg N, insert N newlines."
 
 (use-package webpaste)
 
+(use-package systemd)
+(use-package helm-systemd)
+
 
 (use-package git-messenger)
 ;; Though see also vc-annotate's "n" & "p" bindings
@@ -1665,7 +1668,7 @@ With arg N, insert N newlines."
 (use-package lsp-haskell
   :after lsp
   :custom
-  (lsp-haskell-process-path-hie "hie-wrapper")
+  (lsp-haskell-process-path-hie "haskell-language-server-wrapper")
   (default-nix-wrapper (lambda (args)
                          (let ((sandbox (nix-current-sandbox))
                                (nix-shell "nix-shell"))
@@ -1754,6 +1757,7 @@ With arg N, insert N newlines."
   (go-mode . lsp)
   (sh-mode . lsp)
   (python-mode . lsp)
+  (ruby-mode . lsp)
   :init
   (when (executable-find "ag")
     (setq lsp-python-ms-executable "mspyls")
@@ -1763,7 +1767,6 @@ With arg N, insert N newlines."
   ;; (lsp-ui-doc-enable nil)
   (lsp-rust-racer-completion nil)
   (lsp-rust-server 'rust-analyzer)
-  (lsp-haskell-process-path-hie "hie-wrapper")
   (lsp-prefer-flymake nil)
   (lsp-auto-guess-root t)
   (lsp-idle-delay 0.500)
@@ -2777,56 +2780,51 @@ With arg N, insert N newlines."
     )
   )
 
-;;; Basic ruby setup
-(use-package ruby-mode
-  :mode
-  "Rakefile\\'" "\\.rake\\'" "\\.rxml\\'" "\\.rjs\\'"
-  "\\.irbrc\\'" "\\.pryrc\\'" "\\.builder\\'" "\\.ru\\'"
-  "\\.gemspec\\'" "Gemfile\\'" "Kirkfile\\'" "Brewfile\\'"
-  :mode ("Gemfile\\.lock\\'" . conf-mode )
-  :hook (ruby-mode . subword-mode)
-  :init
-  (setq-default
-   ruby-use-encoding-map nil
-   ruby-insert-encoding-magic-comment nil)
-  )
-
-(use-package ruby-hash-syntax)
-
-(with-eval-after-load 'page-break-lines
-  (push 'ruby-mode page-break-lines-modes))
-
-(use-package rspec-mode)
-
 
-;;; Inferior ruby
-(use-package inf-ruby)
+;; ;;; Basic ruby setup
+;; (use-package ruby-mode
+;;   :mode
+;;   "Rakefile\\'" "\\.rake\\'" "\\.rxml\\'" "\\.rjs\\'"
+;;   "\\.irbrc\\'" "\\.pryrc\\'" "\\.builder\\'" "\\.ru\\'"
+;;   "\\.gemspec\\'" "Gemfile\\'" "Kirkfile\\'" "Brewfile\\'"
+;;   :mode ("Gemfile\\.lock\\'" . conf-mode )
+;;   :hook (ruby-mode . subword-mode)
+;;   :init
+;;   (setq-default
+;;    ruby-use-encoding-map nil
+;;    ruby-insert-encoding-magic-comment nil)
+;;   )
 
+;; (use-package ruby-hash-syntax)
 
-
-;;; Ruby compilation
-(use-package ruby-compilation)
+;; (with-eval-after-load 'page-break-lines
+;;   (push 'ruby-mode page-break-lines-modes))
 
-(with-eval-after-load 'ruby-mode
-  (let ((m ruby-mode-map))
-    (define-key m [S-f7] 'ruby-compilation-this-buffer)
-    (define-key m [f7] 'ruby-compilation-this-test)))
+;; (use-package rspec-mode)
 
-(with-eval-after-load 'ruby-compilation
-  (defalias 'rake 'ruby-compilation-rake))
+;; ;;; Inferior ruby
+;; (use-package inf-ruby)
 
+;; ;;; Ruby compilation
+;; (use-package ruby-compilation)
 
-
-;;; Robe
-(use-package robe
-  :init
-  (with-eval-after-load 'ruby-mode
-    (add-hook 'ruby-mode-hook 'robe-mode))
-  (with-eval-after-load 'company
-    (dolist (hook (mapcar 'derived-mode-hook-name '(ruby-mode inf-ruby-mode html-erb-mode haml-mode)))
-      (add-hook hook
-                (lambda () (local-push-company-backend 'company-robe))))))
+;; (with-eval-after-load 'ruby-mode
+;;   (let ((m ruby-mode-map))
+;;     (define-key m [S-f7] 'ruby-compilation-this-buffer)
+;;     (define-key m [f7] 'ruby-compilation-this-test)))
 
+;; (with-eval-after-load 'ruby-compilation
+;;   (defalias 'rake 'ruby-compilation-rake))
+
+;; ;;; Robe
+;; (use-package robe
+;;   :init
+;;   (with-eval-after-load 'ruby-mode
+;;     (add-hook 'ruby-mode-hook 'robe-mode))
+;;   (with-eval-after-load 'company
+;;     (dolist (hook (mapcar 'derived-mode-hook-name '(ruby-mode inf-ruby-mode html-erb-mode haml-mode)))
+;;       (add-hook hook
+;;                 (lambda () (local-push-company-backend 'company-robe))))))
 
 
 ;;; ri support

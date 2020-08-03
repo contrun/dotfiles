@@ -44,6 +44,7 @@ let
             cabal-install
             stack
             git-annex
+            haskell-language-server
             # hie
             # leksah
           ];
@@ -89,7 +90,7 @@ let
             semigroups
             comonad
             vector
-            massiv
+            # massiv
             profunctors
             hashable
             unordered-containers
@@ -140,7 +141,7 @@ let
 
       lua = super.lua.withPackages (ps: with ps; [ busted luafilesystem luarocks lua-lsp nvim-client ]);
 
-      ruby = super.ruby_2_7.withPackages (ps: with ps; [ rake rails rspec ]);
+      ruby = super.ruby_2_7.withPackages (ps: with ps; [ rake rails rspec pry pry-byebug pry-doc rubocop rubocop-performance ]);
 
       python = with stable;
         python3Full.withPackages (ps:
@@ -231,7 +232,7 @@ let
             -o $out/bin/almond
       '';
 
-      hie = (import mySources.all-hies { }).selection { selector = p: p; };
+      # hie = (import mySources.all-hies { }).selection { selector = p: p; };
 
       hls =
         (import mySources."haskell-language-server.nix" { }).ghc-8_6_5.ghcide;

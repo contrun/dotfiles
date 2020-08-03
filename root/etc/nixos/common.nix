@@ -104,8 +104,7 @@ in {
           myPath = "${home}/.config/wpa_supplicant/wpa_supplicant.conf";
           defaultPath = "/etc/wpa_supplicant.conf";
         in {
-          path = builtins.trace (builtins.pathExists myPath)
-            (if builtins.pathExists myPath then myPath else defaultPath);
+          path = if builtins.pathExists myPath then myPath else defaultPath;
           writable = true;
         };
         userControlled = { enable = true; };
@@ -589,15 +588,16 @@ in {
     gnome3 = { gnome-keyring.enable = enableGnomeKeyring; };
     jupyter = {
       enable = enableJupyter;
+      port = 8899;
       user = owner;
       password =
         "open('${home}/.customized/jupyter/jupyter_password', 'r', encoding='utf8').read().strip()";
       kernels = {
-        python3 = let python = pkgs.myPackage.python or pkgs.python;
+        python3 = let pythonPkg = pkgs.myPackages.python or pkgs.python3;
         in {
           displayName = "Python 3";
           argv = [
-            "${python.interpreter}"
+            "${pythonPkg.interpreter}"
             "-m"
             "ipykernel_launcher"
             "-f"
@@ -605,9 +605,9 @@ in {
           ];
           language = "python";
           logo32 =
-            "${python}/${python.sitePackages}/ipykernel/resources/logo-32x32.png";
+            "${pythonPkg}/${pythonPkg.sitePackages}/ipykernel/resources/logo-32x32.png";
           logo64 =
-            "${python}/${python.sitePackages}/ipykernel/resources/logo-64x64.png";
+            "${pythonPkg}/${pythonPkg.sitePackages}/ipykernel/resources/logo-64x64.png";
         };
       };
     };
@@ -622,7 +622,6 @@ in {
 
     sslh = {
       enable = true;
-      listenAddress = "0.0.0.0";
       port = 443;
       transparent = true;
       appendConfig = ''
@@ -714,17 +713,14 @@ in {
         sessionCommands = xSessionCommands;
         startx = { enable = myDisplayManager == "startx"; };
         sddm = {
-          inherit autoLogin;
           enable = myDisplayManager == "sddm";
           enableHidpi = enableHidpi;
           autoNumlock = true;
         };
         gdm = {
-          inherit autoLogin;
           enable = myDisplayManager == "gdm";
         };
         lightdm = {
-          inherit autoLogin;
           enable = myDisplayManager == "lightdm";
         };
       };
@@ -948,7 +944,7 @@ in {
     in {
       inherit authorizedKeys hostKeys;
       enable = false && enableBootSSH && authorizedKeys != [ ]
-        && (builtins.trace hostKeys hostKeys) != [ ];
+        && hostKeys != [ ];
     };
   };
 

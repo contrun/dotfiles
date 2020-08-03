@@ -53,7 +53,8 @@ let
         "broot"
         "ncdu"
         "links"
-        "jq"
+        "mustache-go"
+        "mustache-spec"
         "curl"
         "unrar"
         "bzip2"
@@ -130,6 +131,9 @@ let
         # rls
         "astyle"
         "postgresql"
+        "mariadb"
+        "dbeaver"
+        "flyway"
         "libmysqlclient"
         "myPackages.idris"
         "myPackages.elba"
@@ -142,6 +146,7 @@ let
         "lorri"
         "yarn"
         "redis"
+        "rdbtools"
         "meld"
         "ccache"
         "clang-tools"
@@ -260,7 +265,7 @@ let
         "bundix"
         "buildah"
         "ansible"
-        "myPackages.hie"
+        # "myPackages.hie"
         "nodejs_latest"
         "nodePackages.prettier"
         # vscode-extensions.ms-python.python
@@ -306,7 +311,7 @@ let
         "openssl"
         "glib-networking"
         "myPackages.python"
-        "myPackages.haskellStable"
+        "myPackages.haskell"
         "perlPackages.Appcpanminus"
         "perlPackages.locallib"
         "perlPackages.Appperlbrew"
@@ -341,6 +346,7 @@ let
         "arandr"
         # "virtualbox"
         "vlc"
+        "pyradio"
         "myPackages.kodi"
         "exiv2"
         "imagemagick7"
@@ -397,6 +403,7 @@ let
         "stunnel"
         "shadowsocks-libev"
         "v2ray"
+        "clash"
         # # simplescreenrecorder
         # sloccount
         # # slop
@@ -538,6 +545,7 @@ let
         "libreoffice"
         # zile
         "freemind"
+        "xmind"
         "zotero"
         "k2pdfopt"
         "pdftk"
@@ -546,6 +554,11 @@ let
         "djvulibre"
         "djvu2pdf"
       ];
+    }
+    {
+      name = "utilities (preferred)";
+      priority = 34;
+      packages = getPackages [ "elfutils" ];
     }
     {
       name = "utilities";
@@ -564,6 +577,7 @@ let
         "lz4"
         "zip"
         "xclip"
+        "kdeconnect"
         "adbfs-rootless"
         "asciinema"
         "pcmanfm"
@@ -759,6 +773,7 @@ let
         # # speedcrunch
         "sshfs"
         "rsync"
+        "filezilla"
         "rclone"
         "gnutar"
         "zstd"
