@@ -338,7 +338,6 @@ in {
     ccache = { enable = true; };
     java = {
       enable = true;
-      package = pkgs.jdk14;
     };
     gnupg.agent = { enable = enableGPGAgent; };
     ssh = { startAgent = true; };
@@ -469,6 +468,26 @@ in {
         text = "ln -sfn ${pkgs.bash}/bin/bash /bin/bash";
         deps = [ "binsh" ];
       };
+
+      # Fuck pre-built dynamic binaries
+      # copied from https://github.com/NixOS/nixpkgs/pull/69057
+      ldlinux = with pkgs.lib; concatStrings (mapAttrsToList (target: source: ''
+        mkdir -m 0755 -p $(dirname ${target})
+        ln -sfn ${escapeShellArg source} ${target}.tmp
+        mv -f ${target}.tmp ${target} # atomically replace
+      '') {
+        "i686-linux"."/lib/ld-linux.so.2" =
+          "${pkgs.glibc.out}/lib/ld-linux.so.2";
+        "x86_64-linux"."/lib/ld-linux.so.2" =
+          "${pkgs.pkgsi686Linux.glibc.out}/lib/ld-linux.so.2";
+        "x86_64-linux"."/lib64/ld-linux-x86-64.so.2" =
+          "${pkgs.glibc.out}/lib64/ld-linux-x86-64.so.2";
+        "aarch64-linux"."/lib/ld-linux-aarch64.so.1" =
+          "${pkgs.glibc.out}/lib/ld-linux-aarch64.so.1";
+        "armv7l-linux"."/lib/ld-linux-armhf.so.3" =
+          "${pkgs.glibc.out}/lib/ld-linux-armhf.so.3";
+      }.${pkgs.stdenv.system} or { });
+
       # make some symlinks to /bin, just for convenience
       binShortcuts = {
         text = ''
@@ -476,6 +495,7 @@ in {
         '';
         deps = [ "binsh" "usrlocalbin" ];
       };
+
       addChannels = let
         add-channel = channel:
           "${config.nix.package.out}/bin/nix-channel --add ${
@@ -717,12 +737,8 @@ in {
           enableHidpi = enableHidpi;
           autoNumlock = true;
         };
-        gdm = {
-          enable = myDisplayManager == "gdm";
-        };
-        lightdm = {
-          enable = myDisplayManager == "lightdm";
-        };
+        gdm = { enable = myDisplayManager == "gdm"; };
+        lightdm = { enable = myDisplayManager == "lightdm"; };
       };
     };
   };
@@ -924,7 +940,7 @@ in {
     useSandbox = "relaxed";
     gc = {
       automatic = true;
-      options = "--delete-older-than 14d";
+      options = "--delete-older-than 60d";
     };
     optimise = { automatic = true; };
     autoOptimiseStore = true;
@@ -943,8 +959,8 @@ in {
       ];
     in {
       inherit authorizedKeys hostKeys;
-      enable = false && enableBootSSH && authorizedKeys != [ ]
-        && hostKeys != [ ];
+      enable = false && enableBootSSH && authorizedKeys != [ ] && hostKeys
+        != [ ];
     };
   };
 

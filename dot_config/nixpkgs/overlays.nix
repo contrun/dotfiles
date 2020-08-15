@@ -23,6 +23,17 @@ let
       };
     };
 
+  dontCheckOverlay = self: super:
+    let
+      python37 = super.python37.override {
+        packageOverrides = self: super: {
+          pytest = super.pytest.overrideAttrs (old: { doCheck = false; });
+        };
+      };
+    in {
+      mitmproxy = super.mitmproxy.overrideAttrs (old: { doCheck = false; });
+    };
+
   myOverlay = self: super: {
     myPackages = let
       getHaskellPackages = pkgs:
@@ -139,9 +150,20 @@ let
         protobuf
       ]);
 
-      lua = super.lua.withPackages (ps: with ps; [ busted luafilesystem luarocks lua-lsp nvim-client ]);
+      lua = super.lua.withPackages
+        (ps: with ps; [ busted luafilesystem luarocks lua-lsp nvim-client ]);
 
-      ruby = super.ruby_2_7.withPackages (ps: with ps; [ rake rails rspec pry pry-byebug pry-doc rubocop rubocop-performance ]);
+      ruby = super.ruby_2_7.withPackages (ps:
+        with ps; [
+          rake
+          rails
+          rspec
+          pry
+          pry-byebug
+          pry-doc
+          rubocop
+          rubocop-performance
+        ]);
 
       python = with stable;
         python3Full.withPackages (ps:
@@ -568,6 +590,7 @@ in [
   mozillaOverlay
   emacsOverlay
   haskellOverlay
+  dontCheckOverlay
   myOverlay
   shellsOverlay
   # additionalOutputsOverlay

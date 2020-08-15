@@ -1,12 +1,19 @@
 { config, pkgs, ... }:
 let
   # To avoid clash within the buildEnv of home-manager
-  overridePkg = pkg: priority:
-    pkg.overrideAttrs (oldAttrs: {
+  overridePkg = pkg: func:
+    if pkg ? overrideAttrs then
+      pkg.overrideAttrs (oldAttrs: func oldAttrs)
+    else
+      pkgs.lib.warn "${pkg.name} does not have attribute overrideAttrs" pkg;
+  dontCheckPkg = pkg:
+    overridePkg pkg (oldAttrs: {
       # Fuck, why every package has broken tests? I just want to trust the devil.
+      # Fuck, this does not seem to work.
       doCheck = false;
-      meta = { priority = priority; };
     });
+  changePkgPriority = pkg: priority:
+    overridePkg pkg (oldAttrs: { meta = { priority = priority; }; });
   getAttr = attrset: path:
     builtins.foldl' (acc: x:
       if acc ? ${x} then
@@ -14,11 +21,12 @@ let
       else
         pkgs.lib.warn "${path} does not exists" null) attrset
     (pkgs.lib.splitString "." path);
+  getPkg = attrset: path: dontCheckPkg (getAttr attrset path);
   getPackages = list:
-    (builtins.filter (x: x != null) (builtins.map (x: getAttr pkgs x) list));
+    (builtins.filter (x: x != null) (builtins.map (x: getPkg pkgs x) list));
   # To report an error when package does not exist, instead of quit immediately
   allPackages = builtins.foldl' (acc: collection:
-    acc ++ (builtins.map (pkg: overridePkg pkg collection.priority)
+    acc ++ (builtins.map (pkg: changePkgPriority pkg collection.priority)
       collection.packages)) [ ] packageCollection;
   packageCollection = [
     {
@@ -96,8 +104,9 @@ let
         "universal-ctags"
         "lldb"
         "lld"
-        "clang"
         "gdb"
+        "gcc"
+        "glibc"
         "hadoop_3_1"
       ];
     }
@@ -108,6 +117,7 @@ let
         "cmake"
         "meson"
         "ninja"
+        "clang"
         "bashdb"
         "bear"
         "upx"
@@ -124,14 +134,14 @@ let
         "zeal"
         "vagrant"
         "shellcheck"
-        "zig"
+        # "zig"
         # stdman
         # stdmanpages
         "ccls"
         # rls
         "astyle"
         "postgresql"
-        "mariadb"
+        # "mariadb"
         "dbeaver"
         "flyway"
         "libmysqlclient"
@@ -183,21 +193,19 @@ let
         "vscodium"
         # vscode
         "jetbrains.idea-ultimate"
-        # jetbrains.pycharm-community
-        # haskellIdeEngine
-        # haskellPackages.ihaskell
-        # haskellPackages.ihaskell-widgets
-        # spyder
+        "jetbrains.clion"
+        "jetbrains.datagrip"
+        "jetbrains.goland"
+        "jetbrains.pycharm-professional"
         "go2nix"
         "gnum4"
-        "gcc"
         "stable.cudatoolkit"
         "linuxPackages_latest.bcc"
         "rr"
         "gdbgui"
         "valgrind"
         "wabt"
-        "emscripten"
+        "stable.emscripten"
         # "wasm-pack"
         # wasm-strip
         # "wasm-bindgen-cli"
@@ -287,7 +295,7 @@ let
         "gradle"
         "maven"
         "ant"
-        "openjdk14"
+        # "openjdk14"
         "coursier"
         "leiningen"
         "clojure"
@@ -303,6 +311,7 @@ let
         "elixir"
         "myPackages.elixir-ls"
         "pkgconfig"
+        "gcc.cc.lib"
         "zlib"
         "libunwind"
         "gmp"
@@ -373,7 +382,7 @@ let
         "iperf"
         "openssh"
         "insomnia"
-        "mitmproxy"
+        # "mitmproxy"
         "openssl"
         "redsocks"
         "wget"

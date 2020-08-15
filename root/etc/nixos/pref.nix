@@ -208,6 +208,7 @@ let
     inherit hostname hostId;
   } // (if hostname == "uzq" then rec {
     enableHidpi = true;
+    consoleFont = "${pkgs.terminus_font}/share/consolefonts/ter-g20n.psf.gz";
     hostId = "80d17333";
   } else if hostname == "ssg" then {
     hostId = "034d2ba3";

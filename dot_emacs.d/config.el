@@ -1693,6 +1693,7 @@ With arg N, insert N newlines."
 
 (use-package lsp-python-ms)
 (use-package lsp-metals)
+(use-package lsp-java)
 (use-package caml)
 (use-package flycheck-ocaml)
 (use-package tuareg)
@@ -1720,12 +1721,6 @@ With arg N, insert N newlines."
   )
 
 (use-package rust-mode)
-
-(use-package lsp-java
-  :after lsp
-  :hook
-  (java-mode . lsp)
-  )
 
 (use-package go-dlv
   :after go-mode
@@ -1758,6 +1753,7 @@ With arg N, insert N newlines."
   (sh-mode . lsp)
   (python-mode . lsp)
   (ruby-mode . lsp)
+  (java-mode . lsp)
   :init
   (when (executable-find "ag")
     (setq lsp-python-ms-executable "mspyls")
@@ -1788,6 +1784,7 @@ With arg N, insert N newlines."
   (dap-mode t)
   (dap-ui-mode t)
   (require 'dap-gdb-lldb)
+  (require 'dap-java)
   (dap-gdb-lldb-setup)
   )
 
