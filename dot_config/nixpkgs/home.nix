@@ -106,8 +106,9 @@ let
         "lld"
         "gdb"
         "gcc"
-        "glibc"
+        # "glibc"
         "hadoop_3_1"
+        "gnumake"
       ];
     }
     {
@@ -187,11 +188,13 @@ let
         "gitAndTools.lab"
         "gitAndTools.git-extras"
         "gitAndTools.git-hub"
-        "stable.gitAndTools.git-annex"
+        "gitAndTools.git-annex"
         "gitAndTools.git-subrepo"
         "gitAndTools.diff-so-fancy"
         "vscodium"
         # vscode
+        "insomnia"
+        "postman"
         "jetbrains.idea-ultimate"
         "jetbrains.clion"
         "jetbrains.datagrip"
@@ -199,7 +202,7 @@ let
         "jetbrains.pycharm-professional"
         "go2nix"
         "gnum4"
-        "stable.cudatoolkit"
+        "cudatoolkit"
         "linuxPackages_latest.bcc"
         "rr"
         "gdbgui"
@@ -231,7 +234,7 @@ let
         # # gkeyring
         # # glances
         "distcc"
-        "gnumake"
+        "remake"
         "cntr"
         "docker"
         "docker_compose"
@@ -241,7 +244,7 @@ let
         "flink"
         "confluent-platform"
         "kubernetes"
-        "stable.kubernetes-helm"
+        "kubernetes-helm"
         "kube3d"
         "k9s"
         "minikube"
@@ -277,7 +280,7 @@ let
         "nodejs_latest"
         "nodePackages.prettier"
         # vscode-extensions.ms-python.python
-        "stable.hadolint"
+        "hadolint"
         "haskellPackages.ormolu"
         "solargraph"
         "nodePackages.dockerfile-language-server-nodejs"
@@ -311,7 +314,7 @@ let
         "elixir"
         "myPackages.elixir-ls"
         "pkgconfig"
-        "gcc.cc.lib"
+        # "gcc.cc.lib"
         "zlib"
         "libunwind"
         "gmp"
@@ -396,7 +399,7 @@ let
         # telegram-cli
         # spectral
         "tdesktop"
-        "nheko"
+        "stable.nheko"
         "irssi"
         "chromium"
         "brave"
@@ -520,13 +523,13 @@ let
       priority = 45;
       packages = getPackages [
         "pdf2djvu"
-        # "stable.calibre"
+        "calibre"
         "fbreader"
         "languagetool"
         "proselint"
         "sigil"
         "wordnet"
-        "stable.haskellPackages.patat"
+        "haskellPackages.patat"
         "myPackages.hunspell"
         "myPackages.aspell"
         "pdfgrep"
@@ -542,7 +545,7 @@ let
         "auctex"
         "mupdf"
         "graphviz"
-        "stable.impressive"
+        "impressive"
         "gnuplot"
         "goldendict"
         "kdeApplications.okular"
@@ -803,7 +806,7 @@ let
         "taskwarrior"
         # # tcllib
         "termite"
-        # "stable.termonad-with-packages"
+        "termonad-with-packages"
         # # tesseract
         # # texinfo
         "thefuck"

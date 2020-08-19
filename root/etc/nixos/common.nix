@@ -321,7 +321,7 @@ in {
       # pkg-config
       PKG_CONFIG_PATH =
         "$HOME/.nix-profile/lib/pkgconfig:$HOME/.nix-profile/share/pkgconfig:/run/current-system/sw/lib/pkgconfig:/run/current-system/sw/share/pkgconfig";
-      PATH = [ "$HOME/.local/bin" "$HOME/.bin" ]
+      PATH = [ "$HOME/.bin" "$HOME/.local/bin" ]
         ++ (map (x: x + "/bin") [ CABALPATH CARGOPATH GOPATH ])
         ++ [ "${NODE_PATH}/node_modules/.bin" ] ++ [ "/usr/local/bin" ];
       LESS = "-F -X -R";
