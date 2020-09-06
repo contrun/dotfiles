@@ -177,6 +177,7 @@ let
             pycparser
             python-language-server
             pynvim
+            dbus-python
             pyparsing
             black
             requests

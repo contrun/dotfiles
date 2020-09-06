@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 set -xe
 cd ~/.xmonad
-if [[ -f  xmonad-x86_64-linux ]] && find . -name xmonad.hs -newer xmonad-x86_64-linux; then
-     exit 0
-fi
+# if [[ -f  xmonad-x86_64-linux ]] && find . -name xmonad.hs -newer xmonad-x86_64-linux; then
+#      exit 0
+# fi
 declare -a nix_args=()
 if [[ -d /etc/nixos ]]; then
     nix_args+=("--nix-add-gc-roots")

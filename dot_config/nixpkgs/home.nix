@@ -126,7 +126,6 @@ let
         "gopls"
         "rust-analyzer"
         "cargo-edit"
-        "cargo-tree"
         "cargo-xbuild"
         # cargo-update
         "cargo-generate"
@@ -494,6 +493,7 @@ let
         "debootstrap"
         "dmidecode"
         "bind"
+        "smartdns"
         "bridge-utils"
         # dnstracer
         # # doublecmd-gtk2
@@ -806,7 +806,7 @@ let
         "taskwarrior"
         # # tcllib
         "termite"
-        "termonad-with-packages"
+        # "termonad-with-packages"
         # # tesseract
         # # texinfo
         "thefuck"

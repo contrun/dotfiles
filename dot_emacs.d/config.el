@@ -1666,7 +1666,6 @@ With arg N, insert N newlines."
   )
 
 (use-package lsp-haskell
-  :after lsp
   :custom
   (lsp-haskell-process-path-hie "haskell-language-server-wrapper")
   (default-nix-wrapper (lambda (args)
@@ -1779,9 +1778,7 @@ With arg N, insert N newlines."
 (use-package lsp-treemacs :commands lsp-treemacs-errors-list)
 
 (use-package dap-mode
-  :after lsp-mode
   :config
-  (dap-mode t)
   (dap-ui-mode t)
   (require 'dap-gdb-lldb)
   (require 'dap-java)

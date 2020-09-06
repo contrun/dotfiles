@@ -28,6 +28,7 @@ import XMonad.Actions.PerWorkspaceKeys
 import qualified XMonad.Actions.Search as S
 import XMonad.Actions.WindowGo
 import XMonad.Hooks.DynamicLog
+import XMonad.Hooks.EwmhDesktops
 import XMonad.Hooks.ManageDocks (ToggleStruts (ToggleStruts))
 import XMonad.Hooks.SetWMName (setWMName)
 import XMonad.Layout.AutoMaster
@@ -571,13 +572,14 @@ myManageHook =
           (className =? "discord") --> doShiftHiddenWorkspace "chat",
           (className =? "zoom") --> doShiftHiddenWorkspace "chat",
           (className =? "telegram-desktop") --> doShiftHiddenWorkspace "chat",
-          (title =? "Picture-in-Picture") --> doShiftAndView "video",
-          (className =? "mpv") --> doShiftAndView "video",
-          (className =? "vlc") --> doShiftAndView "video",
-          (className =? "MPlayer") --> doShiftAndView "video",
-          (appName =? "calibre-ebook-viewer") --> doShiftAndView "reading",
-          (className =? "Zathura") --> doShiftAndView "reading",
-          (fmap (=~ ".*KOReader$") title) --> doShiftAndView "reading"
+          (title =? "Picture-in-Picture") --> doShiftAndViewHiddenWorkspace "video",
+          (className =? "mpv") --> doShiftAndViewHiddenWorkspace "video",
+          (className =? "vlc") --> doShiftAndViewHiddenWorkspace "video",
+          (className =? "Kodi") --> doShiftAndViewHiddenWorkspace "video",
+          (className =? "MPlayer") --> doShiftAndViewHiddenWorkspace "video",
+          (appName =? "calibre-ebook-viewer") --> doShiftAndViewHiddenWorkspace "reading",
+          (className =? "Zathura") --> doShiftAndViewHiddenWorkspace "reading",
+          (fmap (=~ ".*KOReader$") title) --> doShiftAndViewHiddenWorkspace "reading"
         ]
       ]
   where
@@ -659,7 +661,7 @@ myPP =
     justAcronym = \x -> if elem x myHiddenWorkspaces then map toUpper (take 1 x) else x
 
 -- The main function.
-main = xmonad =<< statusBar myStatusBar myPP myToggleStruts defaults
+main = xmonad =<< statusBar myStatusBar myPP myToggleStruts (ewmh defaults)
 
 -- A structure containing your configuration settings, overriding
 -- fields in the default config. Any you don't override, will

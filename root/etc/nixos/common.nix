@@ -103,8 +103,9 @@ in {
         configFile = let
           myPath = "${home}/.config/wpa_supplicant/wpa_supplicant.conf";
           defaultPath = "/etc/wpa_supplicant.conf";
-        in {
           path = if builtins.pathExists myPath then myPath else defaultPath;
+        in {
+          inherit (path);
           writable = true;
         };
         userControlled = { enable = true; };
@@ -326,6 +327,8 @@ in {
         ++ [ "${NODE_PATH}/node_modules/.bin" ] ++ [ "/usr/local/bin" ];
       LESS = "-F -X -R";
       EDITOR = "nvim";
+    } // pkgs.lib.optionalAttrs (pkgs ? myPackages) {
+      # PYTHONPATH = "${python3Packages.makePythonPath [ myPackages.python ]}";
     };
     variables = {
       # systemctl --user does not work without this
@@ -336,9 +339,7 @@ in {
 
   programs = {
     ccache = { enable = true; };
-    java = {
-      enable = true;
-    };
+    java = { enable = true; };
     gnupg.agent = { enable = enableGPGAgent; };
     ssh = { startAgent = true; };
     # vim.defaultEditor = true;
@@ -471,22 +472,23 @@ in {
 
       # Fuck pre-built dynamic binaries
       # copied from https://github.com/NixOS/nixpkgs/pull/69057
-      ldlinux = with pkgs.lib; concatStrings (mapAttrsToList (target: source: ''
-        mkdir -m 0755 -p $(dirname ${target})
-        ln -sfn ${escapeShellArg source} ${target}.tmp
-        mv -f ${target}.tmp ${target} # atomically replace
-      '') {
-        "i686-linux"."/lib/ld-linux.so.2" =
-          "${pkgs.glibc.out}/lib/ld-linux.so.2";
-        "x86_64-linux"."/lib/ld-linux.so.2" =
-          "${pkgs.pkgsi686Linux.glibc.out}/lib/ld-linux.so.2";
-        "x86_64-linux"."/lib64/ld-linux-x86-64.so.2" =
-          "${pkgs.glibc.out}/lib64/ld-linux-x86-64.so.2";
-        "aarch64-linux"."/lib/ld-linux-aarch64.so.1" =
-          "${pkgs.glibc.out}/lib/ld-linux-aarch64.so.1";
-        "armv7l-linux"."/lib/ld-linux-armhf.so.3" =
-          "${pkgs.glibc.out}/lib/ld-linux-armhf.so.3";
-      }.${pkgs.stdenv.system} or { });
+      ldlinux = with pkgs.lib;
+        concatStrings (mapAttrsToList (target: source: ''
+          mkdir -m 0755 -p $(dirname ${target})
+          ln -sfn ${escapeShellArg source} ${target}.tmp
+          mv -f ${target}.tmp ${target} # atomically replace
+        '') {
+          "i686-linux"."/lib/ld-linux.so.2" =
+            "${pkgs.glibc.out}/lib/ld-linux.so.2";
+          "x86_64-linux"."/lib/ld-linux.so.2" =
+            "${pkgs.pkgsi686Linux.glibc.out}/lib/ld-linux.so.2";
+          "x86_64-linux"."/lib64/ld-linux-x86-64.so.2" =
+            "${pkgs.glibc.out}/lib64/ld-linux-x86-64.so.2";
+          "aarch64-linux"."/lib/ld-linux-aarch64.so.1" =
+            "${pkgs.glibc.out}/lib/ld-linux-aarch64.so.1";
+          "armv7l-linux"."/lib/ld-linux-armhf.so.3" =
+            "${pkgs.glibc.out}/lib/ld-linux-armhf.so.3";
+        }.${pkgs.stdenv.system} or { });
 
       # make some symlinks to /bin, just for convenience
       binShortcuts = {
