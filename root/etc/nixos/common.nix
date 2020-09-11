@@ -313,12 +313,14 @@ in {
       # help building locally compiled programs
       LIBRARY_PATH = "$HOME/.nix-profile/lib:/run/current-system/sw/lib";
       LD_LIBRARY_PATH = "$HOME/.nix-profile/lib:/run/current-system/sw/lib";
+      CMAKE_LIBRARY_PATH = "$HOME/.nix-profile/lib:/run/current-system/sw/lib";
       # header files
       CPATH = "$HOME/.nix-profile/include:/run/current-system/sw/include";
       C_INCLUDE_PATH =
         "$HOME/.nix-profile/include:/run/current-system/sw/include";
       CPLUS_INCLUDE_PATH =
         "$HOME/.nix-profile/include:/run/current-system/sw/include";
+      CMAKE_INCLUDE_PATH = "$HOME/.nix-profile/include:/run/current-system/sw/include";
       # pkg-config
       PKG_CONFIG_PATH =
         "$HOME/.nix-profile/lib/pkgconfig:$HOME/.nix-profile/share/pkgconfig:/run/current-system/sw/lib/pkgconfig:/run/current-system/sw/share/pkgconfig";
@@ -777,6 +779,7 @@ in {
   virtualisation = {
     libvirtd = { enable = enableLibvirtd; };
     virtualbox.host = {
+      # package = stable.virtuablbox or pkgs.virtualbox;
       enable = enableVirtualboxHost;
       enableExtensionPack = enableVirtualboxHost;
       # enableHardening = false;
