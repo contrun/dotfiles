@@ -41,10 +41,10 @@
         "homepage": "",
         "owner": "nix-community",
         "repo": "emacs-overlay",
-        "rev": "585e07a72aa50c06c523fc6037bb13441bd5c47b",
-        "sha256": "1c0rwbzpm3jbb2zii5qv5yqrhcw4zznf6b62xvv8014bz6wfj1hl",
+        "rev": "f7b2e7e560a11468dabc7a2801cc9d5f6d5a1af2",
+        "sha256": "1rsm1jnri09ylwm3sxv0hnagvsaf31rf57mwx3qnb155mxyxzb93",
         "type": "tarball",
-        "url": "https://github.com/nix-community/emacs-overlay/archive/585e07a72aa50c06c523fc6037bb13441bd5c47b.tar.gz",
+        "url": "https://github.com/nix-community/emacs-overlay/archive/f7b2e7e560a11468dabc7a2801cc9d5f6d5a1af2.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "ghcide-nix": {
@@ -81,6 +81,18 @@
         "sha256": "03n9xrmypig3d911r05psr0vnrdzrbbpg6jacxigjfv2isiwh17k",
         "type": "tarball",
         "url": "https://github.com/gibiansky/ihaskell/archive/21ca14d6da871aeb7f0cd018d9e1bb94d5fca677.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
+    "jupyterWith": {
+        "branch": "master",
+        "description": "declarative and reproducible Jupyter environments - powered by Nix",
+        "homepage": "",
+        "owner": "tweag",
+        "repo": "jupyterWith",
+        "rev": "6021b5d6005e75b0718f1dee52b1ecdb0e9f14d2",
+        "sha256": "0fikw1mgkfiyn61jhmx0cvlirb50i1xb62vq6ysnbf4gy0giffjm",
+        "type": "tarball",
+        "url": "https://github.com/tweag/jupyterWith/archive/6021b5d6005e75b0718f1dee52b1ecdb0e9f14d2.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "niv": {
@@ -125,10 +137,10 @@
         "homepage": "https://github.com/nix-community/NUR",
         "owner": "nix-community",
         "repo": "nur-combined",
-        "rev": "02b29e826594452b2f53e8bc4298302315580b0c",
-        "sha256": "0c0xbb8gaa37kss03w0ijk18rskhivmz9m24x3p5rglwc5pwd0hx",
+        "rev": "0bd8948379f660a61c92627ce360710f02eb089a",
+        "sha256": "03m6aapy1gkahv9ayw8m0715bgd2zn3x4s8zq9w7cxfd6rjwslds",
         "type": "tarball",
-        "url": "https://github.com/nix-community/nur-combined/archive/02b29e826594452b2f53e8bc4298302315580b0c.tar.gz",
+        "url": "https://github.com/nix-community/nur-combined/archive/0bd8948379f660a61c92627ce360710f02eb089a.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "old-ghc-nix": {

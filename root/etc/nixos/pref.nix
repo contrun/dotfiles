@@ -19,6 +19,7 @@ let
     consoleFont = null;
     hostname = "hostname";
     hostId = "346b7a87";
+    enableSessionVariables = true;
     dpi = 144;
     enableHidpi = true;
     enableIPv6 = true;
@@ -40,8 +41,8 @@ let
     '';
     dnsmasqServers = [ "223.6.6.6" "180.76.76.76" "8.8.8.8" "9.9.9.9" ];
     enableArbtt = true;
-    myWindowManager = "xmonad";
-    myDefaultSession = "none+" + myWindowManager;
+    xWindowManager = "xmonad";
+    xDefaultSession = "none+" + xWindowManager;
     xSessionCommands = ''
       # echo "$(date -R): $@" >> ~/log
       # . ~/.xinitrc &
@@ -61,7 +62,8 @@ let
       # startupHosts.sh &
       sxhkd -c ~/.config/sxhkd/sxhkdrc &
     '';
-    myDisplayManager = "lightdm";
+    # xSessionCommands = "";
+    xDisplayManager = "lightdm";
     buildCores = 0;
     maxJobs = 6;
     proxy = null;
@@ -153,11 +155,13 @@ let
     calibreServerPort = 8213;
     enableSlock = true;
     enableZSH = true;
+    enableJava = true;
     enableNextcloudClient = false;
     enableWireshark = true;
     enabledInputMethod = "fcitx";
     enableVirtualboxHost = true;
     enableLibvirtd = true;
+    enableAnbox = false;
     enableUnifi = false;
     enableUdisks2 = true;
     enableAvahi = true;
@@ -170,7 +174,9 @@ let
     autoUpgradeChannel = "https://nixos.org/channels/nixos-unstable";
     autosshServers = with pkgs.lib;
       let
-        lines = splitString "\n" (readFile "${home}/.ssh/config");
+        configFiles = [ "${home}/.ssh/config" ];
+        goodConfigFiles = builtins.filter (x: builtins.pathExists x) configFiles;
+        lines = builtins.foldl' (a: e: a ++ (splitString "\n" (readFile e))) [] goodConfigFiles;
         autosshLines = filter (x: hasPrefix "Host autossh" x) lines;
         servers = map (x: removePrefix "Host " x) autosshLines;
       in filter (x: x != "autossh") servers;
@@ -179,6 +185,8 @@ let
     enableFprintAuth = false;
     enableBootSSH = true;
     enableGnomeKeyring = false;
+    kernelPatches = [ ];
+    kernelPackages = pkgs.linuxPackages_latest;
     networkingInterfaces = { };
     nixosStableVersion = "20.03";
     nixosAutoUpgrade = {
@@ -208,8 +216,22 @@ let
     inherit hostname hostId;
   } // (if hostname == "uzq" then rec {
     enableHidpi = true;
+    # enableAnbox = true;
     consoleFont = "${pkgs.terminus_font}/share/consolefonts/ter-g20n.psf.gz";
     hostId = "80d17333";
+    kernelPackages = pkgs.linuxPackages_5_7;
+    # kernelPatches = [{
+    #   # See https://github.com/NixOS/nixpkgs/issues/91367
+    #   name = "anbox-kernel-config";
+    #   patch = null;
+    #   extraConfig = ''
+    #     CONFIG_ASHMEM=y
+    #     CONFIG_ANDROID=y
+    #     CONFIG_ANDROID_BINDER_IPC=y
+    #     CONFIG_ANDROID_BINDERFS=y
+    #     CONFIG_ANDROID_BINDER_DEVICES="binder,hwbinder,vndbinder"
+    #   '';
+    # }];
   } else if hostname == "ssg" then {
     hostId = "034d2ba3";
     dpi = 128;

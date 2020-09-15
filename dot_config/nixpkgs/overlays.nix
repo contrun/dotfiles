@@ -36,10 +36,10 @@ let
 
   myOverlay = self: super: {
     myPackages = let
-      getHaskellPackages = pkgs:
-        pkgs.haskellPackages.ghcWithPackages (haskellPackages:
-          let allPackages = allHaskellPackages haskellPackages;
-          in pkgs.lib.flatten (pkgs.lib.attrValues allPackages));
+      getHaskellPackages = haskellPackages:
+        let allPackages = allHaskellPackages haskellPackages;
+        in super.lib.flatten (super.lib.attrValues allPackages);
+
       allHaskellPackages = haskellPackages:
         with haskellPackages; rec {
           binaries = [
@@ -54,8 +54,6 @@ let
             cabal2nix
             cabal-install
             stack
-            git-annex
-            haskell-language-server
             # hie
             # leksah
           ];
@@ -79,7 +77,7 @@ let
             attoparsec
             # bloodhound
             texmath
-            sbv
+            # sbv
             vty
             pandoc-types
             proto-lens
@@ -112,9 +110,59 @@ let
             conduit-extra
             # arbtt
           ];
+          misc = [ hvega formatting ];
         };
 
-    in {
+      getPython3Packages = ps:
+        with ps; [
+          pip
+          chardet
+          dateutil
+          setuptools
+          virtualenvwrapper
+          yapf
+          pycparser
+          python-language-server
+          pynvim
+          pyparsing
+          black
+          requests
+          # jupyter
+          # ipykernel
+          # ipywidgets
+          # jupyter_client
+          # jupyter_console
+          # jupyter_core
+          # jupyterhub
+          # jupyterlab
+          # jupyterlab_launcher
+          # jupyterlab_server
+          # jupyterhub-ldapauthenticator
+          # jupytext
+          # nbconvert
+          # nbformat
+          # nbsphinx
+          # nbstripout
+          matplotlib
+          bokeh
+          plotly
+          altair
+          bokeh
+          vega
+          vega_datasets
+          numpy
+          pandas
+          scipy
+          arrow
+          subliminal
+          lxml
+          django
+          cookiecutter
+          pillow
+          elasticsearch-dsl
+          pyyaml
+        ];
+    in rec {
       aspell = with super;
         aspellWithDicts (ps: with ps; [ en fr de en-science en-computers ]);
 
@@ -137,9 +185,9 @@ let
           ];
       };
 
-      haskellStable = getHaskellPackages stable;
+      haskellStable = stable.haskellPackages.ghcWithPackages getHaskellPackages;
 
-      haskell = getHaskellPackages super;
+      haskell = super.haskellPackages.ghcWithPackages getHaskellPackages;
 
       idris = stable.idrisPackages.with-packages (with stable.idrisPackages; [
         base
@@ -165,56 +213,29 @@ let
           rubocop-performance
         ]);
 
-      python = with stable;
-        python3Full.withPackages (ps:
-          with ps; [
-            pip
-            chardet
-            dateutil
-            setuptools
-            virtualenvwrapper
-            yapf
-            pycparser
-            python-language-server
-            pynvim
-            dbus-python
-            pyparsing
-            black
-            requests
-            jupyter
-            ipykernel
-            ipywidgets
-            jupyter_client
-            jupyter_console
-            jupyter_core
-            jupyterhub
-            jupyterlab
-            jupyterlab_launcher
-            jupyterlab_server
-            jupyterhub-ldapauthenticator
-            jupytext
-            nbconvert
-            nbformat
-            nbsphinx
-            nbstripout
-            matplotlib
-            bokeh
-            plotly
-            altair
-            bokeh
-            vega
-            vega_datasets
-            numpy
-            pandas
-            scipy
-            subliminal
-            lxml
-            django
-            cookiecutter
-            pillow
-            elasticsearch-dsl
-            pyyaml
-          ]);
+      jupyterWith = import mySources.jupyterWith { };
+
+      jupyter = let
+        jupyterWith = import mySources.jupyterWith { };
+        iPython = jupyterWith.kernels.iPythonWith {
+          name = "python";
+          packages = getPython3Packages;
+          python3 = python;
+          ignoreCollisions = true;
+        };
+
+        iHaskell = jupyterWith.kernels.iHaskellWith {
+          name = "haskell";
+          packages = getHaskellPackages;
+        };
+
+        jupyterEnvironment =
+          jupyterWith.jupyterlabWith { kernels = [ iPython iHaskell ]; };
+      in jupyterEnvironment;
+
+      pythonPackages = stable.python3Packages;
+
+      python = stable.python3Full.withPackages getPython3Packages;
 
       python-rocksdb = with self;
         python2Packages.buildPythonPackage rec {

@@ -105,11 +105,14 @@ in {
           defaultPath = "/etc/wpa_supplicant.conf";
           path = if builtins.pathExists myPath then myPath else defaultPath;
         in {
-          inherit (path);
+          # inherit (path) ;
           writable = true;
         };
         userControlled = { enable = true; };
-        extraConf = "";
+        extraConf = ''
+          ctrl_interface=DIR=/run/wpa_supplicant GROUP=wheel
+          update_config=1
+        '';
       };
     };
     proxy.default = proxy;
@@ -279,6 +282,7 @@ in {
       i3lock
       i3status
       xmobar
+      firefox
       rsync
       sshfs
       termite
@@ -292,8 +296,6 @@ in {
       xsel
       xvkbd
       fcron
-      zlib
-      openssl
       gmp
     ];
     enableDebugInfo = enableDebugInfo;
@@ -301,7 +303,7 @@ in {
       ssh = "ssh -C";
       bc = "bc -l";
     };
-    sessionVariables = rec {
+    sessionVariables = pkgs.lib.optionalAttrs (enableSessionVariables) (rec {
       MYSHELL = if enableZSH then "zsh" else "bash";
       MYTERMINAL = "alacritty";
       GOPATH = "$HOME/.go";
@@ -312,15 +314,21 @@ in {
       LOCALBINPATH = "$HOME/.local/bin";
       # help building locally compiled programs
       LIBRARY_PATH = "$HOME/.nix-profile/lib:/run/current-system/sw/lib";
-      LD_LIBRARY_PATH = "$HOME/.nix-profile/lib:/run/current-system/sw/lib";
+      # Don't set LD_LIBRARY_PATH here, there will be various problems. 
+      MY_LD_LIBRARY_PATH = "$HOME/.nix-profile/lib:/run/current-system/sw/lib";
+      # cmake does not respect LIBRARY_PATH
       CMAKE_LIBRARY_PATH = "$HOME/.nix-profile/lib:/run/current-system/sw/lib";
+      # Linking can sometimes fails because ld is unable to find libraries like libstdc++.
+      # export LIBRARY_PATH="$LIBRARY_PATH:$CC_LIBRARY_PATH"
+      CC_LIBRARY_PATH = "/local/lib";
       # header files
       CPATH = "$HOME/.nix-profile/include:/run/current-system/sw/include";
       C_INCLUDE_PATH =
         "$HOME/.nix-profile/include:/run/current-system/sw/include";
       CPLUS_INCLUDE_PATH =
         "$HOME/.nix-profile/include:/run/current-system/sw/include";
-      CMAKE_INCLUDE_PATH = "$HOME/.nix-profile/include:/run/current-system/sw/include";
+      CMAKE_INCLUDE_PATH =
+        "$HOME/.nix-profile/include:/run/current-system/sw/include";
       # pkg-config
       PKG_CONFIG_PATH =
         "$HOME/.nix-profile/lib/pkgconfig:$HOME/.nix-profile/share/pkgconfig:/run/current-system/sw/lib/pkgconfig:/run/current-system/sw/share/pkgconfig";
@@ -330,8 +338,9 @@ in {
       LESS = "-F -X -R";
       EDITOR = "nvim";
     } // pkgs.lib.optionalAttrs (pkgs ? myPackages) {
-      # PYTHONPATH = "${python3Packages.makePythonPath [ myPackages.python ]}";
-    };
+      # export PYTHONPATH="$MYPYTHONPATH:$PYTHONPATH"
+      MYPYTHONPATH = "${pkgs.myPackages.pythonPackages.makePythonPath [ pkgs.myPackages.python ]}";
+    });
     variables = {
       # systemctl --user does not work without this
       # https://serverfault.com/questions/887283/systemctl-user-process-org-freedesktop-systemd1-exited-with-status-1/887298#887298
@@ -341,7 +350,7 @@ in {
 
   programs = {
     ccache = { enable = true; };
-    java = { enable = true; };
+    java = { enable = enableJava; };
     gnupg.agent = { enable = enableGPGAgent; };
     ssh = { startAgent = true; };
     # vim.defaultEditor = true;
@@ -365,6 +374,11 @@ in {
   };
 
   fonts = {
+    enableDefaultFonts = true;
+    enableFontDir = true;
+    fontconfig = {
+      enable = true;
+    };
     fonts = with pkgs; [
       wqy_microhei
       wqy_zenhei
@@ -465,6 +479,15 @@ in {
       usrlocalbin = {
         text = "mkdir -m 0755 -p /usr/local/bin";
         deps = [ ];
+      };
+      local = {
+        text = "mkdir -m 0755 -p /local/bin && mkdir -m 0755 -p /local/lib";
+        deps = [ ];
+      };
+      cclibs = {
+        text =
+          "cd /local/lib; for i in ${pkgs.gcc.cc.lib}/lib/*; do ln -sfn $i; done";
+        deps = [ "local" ];
       };
       # Fuck /bin/bash
       binbash = {
@@ -611,29 +634,12 @@ in {
     thermald = { enable = enableThermald; };
     gnome3 = { gnome-keyring.enable = enableGnomeKeyring; };
     jupyter = {
+      package = pkgs.myPackages.jupyter or pkgs.jupyter;
       enable = enableJupyter;
       port = 8899;
       user = owner;
       password =
         "open('${home}/.customized/jupyter/jupyter_password', 'r', encoding='utf8').read().strip()";
-      kernels = {
-        python3 = let pythonPkg = pkgs.myPackages.python or pkgs.python3;
-        in {
-          displayName = "Python 3";
-          argv = [
-            "${pythonPkg.interpreter}"
-            "-m"
-            "ipykernel_launcher"
-            "-f"
-            "{connection_file}"
-          ];
-          language = "python";
-          logo32 =
-            "${pythonPkg}/${pythonPkg.sitePackages}/ipykernel/resources/logo-32x32.png";
-          logo64 =
-            "${pythonPkg}/${pythonPkg.sitePackages}/ipykernel/resources/logo-64x64.png";
-        };
-      };
     };
 
     locate = {
@@ -708,9 +714,9 @@ in {
       # desktopManager.xfce.enableXfwm = false;
       # desktopManager.gnome3.enable = true;
       windowManager = {
-        i3.enable = myWindowManager == "i3";
+        i3.enable = true;
         xmonad = {
-          enable = myWindowManager == "xmonad";
+          enable = true;
           enableContribAndExtras = true;
           extraPackages = haskellPackages:
             with haskellPackages; [
@@ -728,21 +734,21 @@ in {
         };
       };
       displayManager = let
-        defaultSession = myDefaultSession;
+        defaultSession = xDefaultSession;
         autoLogin = {
           enable = enableAutoLogin;
           user = owner;
         };
       in {
         sessionCommands = xSessionCommands;
-        startx = { enable = myDisplayManager == "startx"; };
+        startx = { enable = xDisplayManager == "startx"; };
         sddm = {
-          enable = myDisplayManager == "sddm";
+          enable = xDisplayManager == "sddm";
           enableHidpi = enableHidpi;
           autoNumlock = true;
         };
-        gdm = { enable = myDisplayManager == "gdm"; };
-        lightdm = { enable = myDisplayManager == "lightdm"; };
+        gdm = { enable = xDisplayManager == "gdm"; };
+        lightdm = { enable = xDisplayManager == "lightdm"; };
       };
     };
   };
@@ -806,6 +812,7 @@ in {
       # enableHardening = false;
     };
     docker.enable = true;
+    anbox = { enable = enableAnbox; };
   };
   # powerManagement = {
   #   enable = true;
@@ -991,7 +998,8 @@ in {
   };
 
   boot.kernelParams = [ "boot.shell_on_fail" "iommu=pt" "iommu=1" ];
-  boot.kernelPackages = pkgs.linuxPackages_latest;
+  boot.kernelPackages = kernelPackages;
+  boot.kernelPatches = kernelPatches;
   boot.kernel.sysctl = {
     "fs.file-max" = 51200;
     "net.core.rmem_max" = 67108864;
