@@ -774,6 +774,27 @@ in {
     shell = if enableZSH then pkgs.zsh else pkgs.bash;
   };
 
+  users.users.fallback = {
+    createHome = true;
+    extraGroups = [
+      "wheel"
+      "video"
+      "kvm"
+      "audio"
+      "disk"
+      "networkmanager"
+      "adbusers"
+      "docker"
+      "davfs2"
+      "wireshark"
+      "vboxusers"
+      "lp"
+      "input"
+      "mlocate"
+    ];
+    isNormalUser = true;
+  };
+
   users.groups."${ownerGroup}" = { gid = ownerGroupGid; };
 
   virtualisation = {
