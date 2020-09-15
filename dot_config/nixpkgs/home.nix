@@ -245,6 +245,7 @@ let
         "confluent-platform"
         "kubernetes"
         "kubernetes-helm"
+        "kustomize"
         "kube3d"
         "k9s"
         "minikube"
@@ -270,7 +271,7 @@ let
         # adoptopenjdk-jre-openj9-bin-11
         # android-platform-tools
         "colordiff"
-        "android-studio"
+        "androidStudioPackages.dev"
         "jq"
         "coq"
         "bundix"
@@ -850,4 +851,5 @@ in {
     packages = allPackages;
     # priority = builtins.trace 4 4;
   };
+  manual.manpages.enable = false;
 }

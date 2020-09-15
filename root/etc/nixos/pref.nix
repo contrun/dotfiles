@@ -159,7 +159,10 @@ let
     enableNextcloudClient = false;
     enableWireshark = true;
     enabledInputMethod = "fcitx";
-    enableVirtualboxHost = true;
+    # enableVirtualboxHost = true;
+    # Build of virtual box frequently failes. touching "$HOME/.cache/disable_virtual_box"
+    # is less irritating than editing this file.
+    enableVirtualboxHost = ! builtins.pathExists "${home}/.cache/disable_virtual_box";
     enableLibvirtd = true;
     enableAnbox = false;
     enableUnifi = false;

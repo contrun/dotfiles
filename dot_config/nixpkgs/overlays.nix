@@ -54,6 +54,10 @@ let
             cabal2nix
             cabal-install
             stack
+            git-annex
+            haskell-language-server
+            implicit-hie
+            hie-bios
             # hie
             # leksah
           ];
@@ -260,7 +264,9 @@ let
 
       texLive = self.texlive.combine { inherit (self.texlive) scheme-full; };
 
-      emacs = (super.emacsPackagesGen super.emacsUnstable).emacsWithPackages
+      # emacs = (super.emacsPackagesGen super.emacsUnstable).emacsWithPackages
+      emacs = (super.emacsPackagesGen super.emacsGit).emacsWithPackages
+      # emacs = (super.emacsPackagesGen super.emacs).emacsWithPackages
         (epkgs: [ self.mu self.notmuch ]);
 
       almond = let

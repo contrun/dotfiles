@@ -148,7 +148,7 @@ Plug 'jacoborus/tender.vim'
 Plug 'jdsimcoe/abstract.vim'
 " Plug 'jonathanfilip/vim-lucius'
 Plug 'joshdick/onedark.vim'
-Plug 'junegunn/seoul256.vim'
+" Plug 'junegunn/seoul256.vim'
 " Plug 'keith/parsec.vim'
 Plug 'kristijanhusak/vim-hybrid-material'
 " Plug 'lifepillar/vim-solarized8'
@@ -854,7 +854,7 @@ set nobackup
 set nowritebackup
 
 " Give more space for displaying messages.
-set cmdheight=2
+set cmdheight=1
 
 " Having longer updatetime (default is 4000 ms = 4 s) leads to noticeable
 " delays and poor user experience.
@@ -1005,7 +1005,7 @@ xmap <silent> <TAB> <Plug>(coc-range-select)
 "   \ 'javascript': ['javascript-typescript-stdio'],
 "   \ 'javascript.jsx': ['tcp://127.0.0.1:2089'],
 "   \ 'python': ['pyls'],
-"   \ 'haskell': ['hie-wrapper'],
+"   \ 'haskell': ['hasekll-language-server-wrapper'],
 "   \ 'ocaml': ['ocaml-language-server', '--stdio'],
 "   \ }
 
@@ -1091,6 +1091,7 @@ function! Denite_vgrep(search_string)
 endfunction
 vnoremap <silent><LocalLeader>v y:call Denite_vgrep('<C-R><C-R>"')<CR>
 
+let g:tex_flavor = 'latex'
 " autopairs
 
 let g:AutoPairsShortcutToggle = '<leadaer>at'
