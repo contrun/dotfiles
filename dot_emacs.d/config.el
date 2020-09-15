@@ -1665,7 +1665,31 @@ With arg N, insert N newlines."
 ;;   :hook (haskell-mode . nix-haskell-mode)
 ;;   )
 
-(use-package lsp-haskell)
+(use-package lsp-haskell
+  :init
+  (setq   lsp-haskell-process-path-hie "haskell-language-server-wrapper"
+          default-nix-wrapper (lambda (args)
+                                (let ((sandbox (nix-current-sandbox))
+                                      (nix-shell "nix-shell"))
+                                  (if (and (executable-find nix-shell)
+                                           (file-exists-p sandbox)
+                                           (not (file-directory-p sandbox)))
+                                      (append
+                                       (list nix-shell "-I" "." "--command")
+                                       (list (mapconcat 'identity args " "))
+                                       (list sandbox)
+                                       )
+                                    args
+                                    )
+                                  )
+                                )
+          lsp-haskell-process-wrapper-function default-nix-wrapper
+          haskell-enable-hindent t
+          haskell-enable-hlint t
+          haskell-completion-backend 'lsp
+          haskell-process-type 'cabal-new-repl
+          )
+  )
 
 (use-package lsp-python-ms)
 (use-package lsp-metals)
@@ -1746,27 +1770,6 @@ With arg N, insert N newlines."
   (lsp-enable-on-type-formatting t)
   (lsp-enable-file-watchers nil)
   (lsp-file-watch-threshold 3000)
-  (lsp-haskell-process-path-hie "haskell-language-server-wrapper")
-  (default-nix-wrapper (lambda (args)
-                         (let ((sandbox (nix-current-sandbox))
-                               (nix-shell "nix-shell"))
-                           (if (and (executable-find nix-shell)
-                                    (file-exists-p sandbox)
-                                    (not (file-directory-p sandbox)))
-                               (append
-                                (list nix-shell "-I" "." "--command")
-                                (list (mapconcat 'identity args " "))
-                                (list sandbox)
-                                )
-                             args
-                             )
-                           )
-                         ))
-  (lsp-haskell-process-wrapper-function default-nix-wrapper)
-  (haskell-enable-hindent t)
-  (haskell-enable-hlint t)
-  (haskell-completion-backend 'lsp)
-  (haskell-process-type 'cabal-new-repl)
   )
 
 (use-package lsp-ui :commands lsp-ui-mode)

@@ -207,6 +207,7 @@ cabal.sandbox.config
 *.hp
 *.eventlog
 .stack-work/
+dot_stack/global-project/stack.yaml.lock
 cabal.project.local
 cabal.project.local~
 .HTF/

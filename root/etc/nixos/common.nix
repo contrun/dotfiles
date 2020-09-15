@@ -339,7 +339,8 @@ in {
       EDITOR = "nvim";
     } // pkgs.lib.optionalAttrs (pkgs ? myPackages) {
       # export PYTHONPATH="$MYPYTHONPATH:$PYTHONPATH"
-      MYPYTHONPATH = "${pkgs.myPackages.pythonPackages.makePythonPath [ pkgs.myPackages.python ]}";
+      MYPYTHONPATH = "${pkgs.myPackages.pythonPackages.makePythonPath
+        [ pkgs.myPackages.python ]}";
     });
     variables = {
       # systemctl --user does not work without this
@@ -376,9 +377,7 @@ in {
   fonts = {
     enableDefaultFonts = true;
     enableFontDir = true;
-    fontconfig = {
-      enable = true;
-    };
+    fontconfig = { enable = true; };
     fonts = with pkgs; [
       wqy_microhei
       wqy_zenhei
@@ -548,11 +547,11 @@ in {
       enable = enableArbtt;
     };
     compton = { enable = true; };
-    # TODO: For some unfathomable reason, this does not work.
-    # calibre-server = {
-    #   enable = enableCalibreServer;
-    #   libraryDir = calibreServerLibraryDir;
-    # };
+    connman = { enable = enableConnman; };
+    calibre-server = {
+      enable = enableCalibreServer;
+      libraryDir = calibreServerLibraryDir;
+    };
     vsftpd = {
       enable = true;
       userlist = [ owner ];
@@ -625,7 +624,6 @@ in {
     udisks2.enable = enableUdisks2;
     redis.enable = enableRedis;
     fail2ban.enable = enableFail2ban && config.networking.firewall.enable;
-    # ipfs.enable = true;
     mpd.enable = enbleMpd;
     # mosquitto.enable = true;
     rsyncd.enable = enableRsyncd;

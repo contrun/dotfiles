@@ -26,6 +26,7 @@ let
     wirelessBackend = "wpa_supplicant";
     # wirelessBackend = "iwd";
     enableSupplicant = wirelessBackend == "wpa_supplicant";
+    enableConnman = false;
     enableWireless = enableSupplicant;
     enableIwd = wirelessBackend == "iwd";
     enableBumblebee = false;

@@ -4,7 +4,6 @@ let
   originalNixpkgs = import <nixpkgs> { };
 
   mySources = import ./nix/pkgs.nix { pkgs = originalNixpkgs; };
-  # mySources = import ./nix/sources.nix;
 
   aliasOverlay = self: super: { inherit mySources stable unstable; };
 
@@ -51,15 +50,6 @@ let
             # brittany
             hoogle
             # stack2nix
-            cabal2nix
-            cabal-install
-            stack
-            git-annex
-            haskell-language-server
-            implicit-hie
-            hie-bios
-            # hie
-            # leksah
           ];
           libraries = [
             zlib
@@ -166,6 +156,9 @@ let
           elasticsearch-dsl
           pyyaml
         ];
+      makeEmacsPkg = emacsPkg:
+        (super.emacsPackagesGen emacsPkg).emacsWithPackages
+        (epkgs: [ super.mu super.notmuch ]);
     in rec {
       aspell = with super;
         aspellWithDicts (ps: with ps; [ en fr de en-science en-computers ]);
@@ -264,10 +257,13 @@ let
 
       texLive = self.texlive.combine { inherit (self.texlive) scheme-full; };
 
-      # emacs = (super.emacsPackagesGen super.emacsUnstable).emacsWithPackages
-      emacs = (super.emacsPackagesGen super.emacsGit).emacsWithPackages
-      # emacs = (super.emacsPackagesGen super.emacs).emacsWithPackages
-        (epkgs: [ self.mu self.notmuch ]);
+      emacs = makeEmacsPkg super.emacsGit;
+
+      emacsStable = makeEmacsPkg super.emacs;
+
+      emacsGit = makeEmacsPkg super.emacsGit;
+
+      emacsUnstable = makeEmacsPkg super.emacsUnstable;
 
       almond = let
         scalaVersion = "2.12.8";

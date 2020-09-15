@@ -191,7 +191,6 @@ let
         "gitAndTools.git-subrepo"
         "gitAndTools.diff-so-fancy"
         "vscodium"
-        # vscode
         "insomnia"
         "postman"
         "jetbrains.idea-ultimate"
@@ -238,8 +237,7 @@ let
         "cntr"
         "docker"
         "docker_compose"
-        # The following does not exist on nixpkgs yet
-        # kubernix
+        "kubernix"
         "terraform"
         "flink"
         "confluent-platform"
@@ -308,6 +306,11 @@ let
         "scalafmt"
         # "graalvm8"
         "metals"
+        "stack"
+        "cabal-install"
+        "cabal2nix"
+        "haskellPackages.implicit-hie"
+        "haskellPackages.hie-bios"
         "haskellPackages.haskell-language-server"
         "myPackages.almond"
         "myPackages.jupyter"
