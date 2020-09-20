@@ -105,7 +105,8 @@ in {
           defaultPath = "/etc/wpa_supplicant.conf";
           path = if builtins.pathExists myPath then myPath else defaultPath;
         in {
-          # inherit (path) ;
+          # TODO: figure out why this does not work.
+          inherit (path);
           writable = true;
         };
       };
@@ -707,7 +708,6 @@ in {
       # desktopManager.gnome3.enable = true;
       # desktopManager.plasma5.enable = true;
       # desktopManager.xfce.enableXfwm = false;
-      # desktopManager.gnome3.enable = true;
       windowManager = {
         i3.enable = true;
         xmonad = {
@@ -748,7 +748,7 @@ in {
     };
   };
 
-  xdg.portal.enable = enableXdgPortal || enableFlatpak;
+  # xdg.portal.enable = enableXdgPortal || enableFlatpak;
 
   users.users."${owner}" = {
     createHome = true;
