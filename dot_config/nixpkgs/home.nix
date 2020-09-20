@@ -167,6 +167,7 @@ let
         "nasm"
         "go"
         "awscli"
+        "azure-cli"
         "sqlitebrowser"
         "sqlite"
         "mitscheme"

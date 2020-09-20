@@ -227,7 +227,10 @@ let
         };
 
         jupyterEnvironment =
-          jupyterWith.jupyterlabWith { kernels = [ iPython iHaskell ]; };
+          jupyterWith.jupyterlabWith {
+            kernels = [ iPython iHaskell ];
+            extraPackages = p: [ super.python3.pkgs.notebook super.pandoc ];
+          };
       in jupyterEnvironment;
 
       pythonPackages = stable.python3Packages;

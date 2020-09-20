@@ -95,7 +95,7 @@ in {
     hostId = hostId;
     wireless = {
       enable = enableSupplicant;
-      userControlled = { enable = true; };
+      # userControlled = { enable = true; };
       iwd.enable = enableIwd;
     };
     supplicant = pkgs.lib.optionalAttrs enableSupplicant {
@@ -108,11 +108,6 @@ in {
           # inherit (path) ;
           writable = true;
         };
-        userControlled = { enable = true; };
-        extraConf = ''
-          ctrl_interface=DIR=/run/wpa_supplicant GROUP=wheel
-          update_config=1
-        '';
       };
     };
     proxy.default = proxy;
@@ -631,8 +626,10 @@ in {
     flatpak.enable = enableFlatpak;
     thermald = { enable = enableThermald; };
     gnome3 = { gnome-keyring.enable = enableGnomeKeyring; };
-    jupyter = {
-      package = pkgs.myPackages.jupyter or pkgs.jupyter;
+    jupyter = let package = pkgs.myPackages.jupyter or pkgs.jupyter;
+      command =  if (pkgs ? myPackages && pkgs.myPackages ? jupyter) then "jupyter-lab" else "jupyter-notebook";
+      in {
+      inherit package command;
       enable = enableJupyter;
       port = 8899;
       user = owner;
