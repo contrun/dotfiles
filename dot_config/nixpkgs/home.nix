@@ -310,6 +310,7 @@ let
         "stack"
         "cabal-install"
         "cabal2nix"
+        "haskellPackages.cabalg"
         "haskellPackages.implicit-hie"
         "haskellPackages.hie-bios"
         "haskellPackages.haskell-language-server"
@@ -817,6 +818,7 @@ let
         # # tabbed
         # # tasksh
         "taskwarrior"
+        "dstask"
         # # tcllib
         "termite"
         # "termonad-with-packages"
