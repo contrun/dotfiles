@@ -41,10 +41,10 @@
         "homepage": "",
         "owner": "nix-community",
         "repo": "emacs-overlay",
-        "rev": "ce4f1097137f698d4d7f23d00aeb7c8905a68f91",
-        "sha256": "1sr49j3z5ch0wxqq5q6q02jvvqc579xra235wc40jzzpvf8vkc8w",
+        "rev": "c27b2126025f1fdcc67fb1cf6175dce37bd15fcb",
+        "sha256": "1h9vz33zggb2qq7brxnhqj4xl4m4vpqld2174yysnrc2mi6sz4mh",
         "type": "tarball",
-        "url": "https://github.com/nix-community/emacs-overlay/archive/ce4f1097137f698d4d7f23d00aeb7c8905a68f91.tar.gz",
+        "url": "https://github.com/nix-community/emacs-overlay/archive/c27b2126025f1fdcc67fb1cf6175dce37bd15fcb.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "ghcide-nix": {
@@ -77,10 +77,10 @@
         "homepage": null,
         "owner": "gibiansky",
         "repo": "ihaskell",
-        "rev": "21ca14d6da871aeb7f0cd018d9e1bb94d5fca677",
-        "sha256": "03n9xrmypig3d911r05psr0vnrdzrbbpg6jacxigjfv2isiwh17k",
+        "rev": "ef698157f44960566687a308e3455b5ba031eb43",
+        "sha256": "1y054m6fndsjiypsjgmipmhbpp3spj3fw1x53z4qrixkl43mz3mi",
         "type": "tarball",
-        "url": "https://github.com/gibiansky/ihaskell/archive/21ca14d6da871aeb7f0cd018d9e1bb94d5fca677.tar.gz",
+        "url": "https://github.com/gibiansky/ihaskell/archive/ef698157f44960566687a308e3455b5ba031eb43.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "jupyterWith": {
@@ -89,10 +89,10 @@
         "homepage": "",
         "owner": "tweag",
         "repo": "jupyterWith",
-        "rev": "6021b5d6005e75b0718f1dee52b1ecdb0e9f14d2",
-        "sha256": "0fikw1mgkfiyn61jhmx0cvlirb50i1xb62vq6ysnbf4gy0giffjm",
+        "rev": "c7bed60e5c23d92357adad37b47da4de030eb89a",
+        "sha256": "0waiyymnfvjq1jj7p19iwv854x3rham95zdr5ksvbs5ji7igxbvp",
         "type": "tarball",
-        "url": "https://github.com/tweag/jupyterWith/archive/6021b5d6005e75b0718f1dee52b1ecdb0e9f14d2.tar.gz",
+        "url": "https://github.com/tweag/jupyterWith/archive/c7bed60e5c23d92357adad37b47da4de030eb89a.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "niv": {
@@ -137,10 +137,10 @@
         "homepage": "https://github.com/nix-community/NUR",
         "owner": "nix-community",
         "repo": "nur-combined",
-        "rev": "b27d0c2166fcfa9ceab32bf34812ce250cfc120b",
-        "sha256": "0ni8shdp0mbb61q77vs080lksnr45kflvkpv5vvz9957gd9djmnl",
+        "rev": "ec73dc445baf4b57c07dec02d04aee6407fbdb95",
+        "sha256": "1rsmcys96cqwzz8d9rjp2srgkqbv310b0pa4hsariwfz9104agq1",
         "type": "tarball",
-        "url": "https://github.com/nix-community/nur-combined/archive/b27d0c2166fcfa9ceab32bf34812ce250cfc120b.tar.gz",
+        "url": "https://github.com/nix-community/nur-combined/archive/ec73dc445baf4b57c07dec02d04aee6407fbdb95.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "old-ghc-nix": {

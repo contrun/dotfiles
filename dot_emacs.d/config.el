@@ -1545,6 +1545,7 @@ With arg N, insert N newlines."
   :hook
   (prog-mode . bug-reference-prog-mode))
 
+(use-package bug-hunter)
 (use-package magit
   :init
   (setq-default magit-diff-refine-hunk t)
