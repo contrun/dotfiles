@@ -692,7 +692,7 @@ in {
       systemService = false;
     };
 
-    yandex-disk = { enable = enableYandexDisk; } // yandexConfig;
+    # yandex-disk = { enable = enableYandexDisk; } // yandexConfig;
 
     xserver = {
       enable = enableXserver;
@@ -946,10 +946,10 @@ in {
   };
 
   systemd.user = let
-    nextcloud-client = pkgs.lib.optionalAttrs enableNextcloudClient {
+    nextcloud-client = {
       services.nextcloud-client = {
         description = "nextcloud client";
-        enable = true;
+        enable = enableNextcloudClient;
         wantedBy = [ "default.target" ];
         serviceConfig = { EnvironmentFile = "%h/.config/Nextcloud/env"; };
         script = ''
@@ -962,10 +962,11 @@ in {
       };
     };
 
-    task-warrior-sync = let name = "task-warrior-sync"; in pkgs.lib.optionalAttrs enableTaskWarriorSync {
+    task-warrior-sync = let name = "task-warrior-sync";
+    in {
       services.${name} = {
         description = "sync task warrior tasks";
-        enable = true;
+        enable = enableTaskWarriorSync;
         wantedBy = [ "default.target" ];
         serviceConfig = { };
         script = ''
@@ -973,6 +974,7 @@ in {
         '';
       };
       timers.${name} = {
+        enable = enableTaskWarriorSync;
         timerConfig = {
           OnCalendar = "*-*-* *:1/3:00";
           Unit = "${name}.service";
@@ -980,7 +982,25 @@ in {
         };
       };
     };
-    all = [ nextcloud-client task-warrior-sync ];
+    yandex-disk = let
+      name = "yandex-disk";
+      syncFolder = "${home}/Sync";
+    in {
+      services.${name} = {
+        enable = enableYandexDisk;
+        description = "Yandex-disk server";
+        after = [ "network.target" ];
+        wantedBy = [ "default.target" ];
+        unitConfig.RequiresMountsFor = syncFolder;
+        script = ''
+          if ! ${pkgs.yandex-disk}/bin/yandex-disk start --no-daemon --dir="${syncFolder}"; then
+             ${pkgs.noti}/bin/noti --title "yandex disk" --message "yandex disk exited unexpectedly"
+          fi
+        '';
+      };
+    };
+
+    all = [ nextcloud-client task-warrior-sync yandex-disk ];
   in builtins.foldl' (a: e: pkgs.lib.recursiveUpdate a e) { } all;
 
   nix = {

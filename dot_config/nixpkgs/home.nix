@@ -801,6 +801,7 @@ let
         "rsync"
         "filezilla"
         "rclone"
+        "yandex-disk"
         "gnutar"
         "zstd"
         "gzip"
