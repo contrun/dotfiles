@@ -106,7 +106,8 @@ in {
           path = if builtins.pathExists myPath then myPath else defaultPath;
         in {
           # TODO: figure out why this does not work.
-          inherit (path);
+          inherit (path)
+          ;
           writable = true;
         };
       };
@@ -553,7 +554,13 @@ in {
       userlist = [ owner ];
       userlistEnable = true;
     };
-    fcron = { enable = true; };
+    fcron = {
+      enable = true;
+      maxSerialJobs = 5;
+      systab = ''
+        */5 * * * *   ${owner}   . /etc/profile; ${pkgs.taskwarrior}/bin/task synchronize
+      '';
+    };
     offlineimap = {
       enable = enableOfflineimap;
       install = true;
@@ -627,9 +634,13 @@ in {
     flatpak.enable = enableFlatpak;
     thermald = { enable = enableThermald; };
     gnome3 = { gnome-keyring.enable = enableGnomeKeyring; };
-    jupyter = let package = pkgs.myPackages.jupyter or pkgs.jupyter;
-      command =  if (pkgs ? myPackages && pkgs.myPackages ? jupyter) then "jupyter-lab" else "jupyter-notebook";
-      in {
+    jupyter = let
+      package = pkgs.myPackages.jupyter or pkgs.jupyter;
+      command = if (pkgs ? myPackages && pkgs.myPackages ? jupyter) then
+        "jupyter-lab"
+      else
+        "jupyter-notebook";
+    in {
       inherit package command;
       enable = enableJupyter;
       port = 8899;
@@ -934,9 +945,9 @@ in {
     };
   };
 
-  systemd.user.services = let
+  systemd.user = let
     nextcloud-client = pkgs.lib.optionalAttrs enableNextcloudClient {
-      nextcloud-client = {
+      services.nextcloud-client = {
         description = "nextcloud client";
         enable = true;
         wantedBy = [ "default.target" ];
@@ -950,7 +961,27 @@ in {
         '';
       };
     };
-  in nextcloud-client;
+
+    task-warrior-sync = let name = "task-warrior-sync"; in pkgs.lib.optionalAttrs enableTaskWarriorSync {
+      services.${name} = {
+        description = "sync task warrior tasks";
+        enable = true;
+        wantedBy = [ "default.target" ];
+        serviceConfig = { };
+        script = ''
+          ${pkgs.taskwarrior}/bin/task synchronize
+        '';
+      };
+      timers.${name} = {
+        timerConfig = {
+          OnCalendar = "*-*-* *:1/3:00";
+          Unit = "${name}.service";
+          Persistent = true;
+        };
+      };
+    };
+    all = [ nextcloud-client task-warrior-sync ];
+  in builtins.foldl' (a: e: pkgs.lib.recursiveUpdate a e) { } all;
 
   nix = {
     binaryCaches = [

@@ -158,6 +158,7 @@ let
     enableZSH = true;
     enableJava = true;
     enableNextcloudClient = false;
+    enableTaskWarriorSync = true;
     enableWireshark = true;
     enabledInputMethod = "fcitx";
     # enableVirtualboxHost = true;
