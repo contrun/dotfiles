@@ -152,7 +152,7 @@ let
     enableGPGAgent = true;
     enableADB = true;
     enableCalibreServer = true;
-    calibreServerLibraryDir = "${home}/Storage/Calibre";
+    calibreServerLibraries = [ "${home}/Storage/Calibre" ];
     calibreServerPort = 8213;
     enableSlock = true;
     enableZSH = true;

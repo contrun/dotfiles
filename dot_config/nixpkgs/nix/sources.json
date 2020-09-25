@@ -41,10 +41,10 @@
         "homepage": "",
         "owner": "nix-community",
         "repo": "emacs-overlay",
-        "rev": "c27b2126025f1fdcc67fb1cf6175dce37bd15fcb",
-        "sha256": "1h9vz33zggb2qq7brxnhqj4xl4m4vpqld2174yysnrc2mi6sz4mh",
+        "rev": "986d1e79ee9e758709cdcdb1cc3d086677f8be55",
+        "sha256": "1favgla5mb25x34msh5wwczrjmxp5hp7ys19jz1kr1bvz8hf4z0h",
         "type": "tarball",
-        "url": "https://github.com/nix-community/emacs-overlay/archive/c27b2126025f1fdcc67fb1cf6175dce37bd15fcb.tar.gz",
+        "url": "https://github.com/nix-community/emacs-overlay/archive/986d1e79ee9e758709cdcdb1cc3d086677f8be55.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "ghcide-nix": {
@@ -137,10 +137,10 @@
         "homepage": "https://github.com/nix-community/NUR",
         "owner": "nix-community",
         "repo": "nur-combined",
-        "rev": "ec73dc445baf4b57c07dec02d04aee6407fbdb95",
-        "sha256": "1rsmcys96cqwzz8d9rjp2srgkqbv310b0pa4hsariwfz9104agq1",
+        "rev": "4d8d2fb6f511f7c0d2e780c399128fc3d7531679",
+        "sha256": "0529qzy0dzi2na61kd3fr9fl8pj4b0qb86hmz169ki255sb937ph",
         "type": "tarball",
-        "url": "https://github.com/nix-community/nur-combined/archive/ec73dc445baf4b57c07dec02d04aee6407fbdb95.tar.gz",
+        "url": "https://github.com/nix-community/nur-combined/archive/4d8d2fb6f511f7c0d2e780c399128fc3d7531679.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "old-ghc-nix": {
@@ -161,10 +161,10 @@
         "homepage": "",
         "owner": "2mol",
         "repo": "pboy",
-        "rev": "341e3fb591cb900e7e813f47cd9d1a72d48cad81",
-        "sha256": "0f3ciglkynafqbhxvcz8kmaskd9qaidbcm47hs6lfyps05a2s3as",
+        "rev": "f107c37895e3b3aea72a84888f95ec36c65c0802",
+        "sha256": "17b55hgd3khshwba7x0hzhfwmmbk2ffa84rsd9kd6b784ymkhzyp",
         "type": "tarball",
-        "url": "https://github.com/2mol/pboy/archive/341e3fb591cb900e7e813f47cd9d1a72d48cad81.tar.gz",
+        "url": "https://github.com/2mol/pboy/archive/f107c37895e3b3aea72a84888f95ec36c65c0802.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     }
 }

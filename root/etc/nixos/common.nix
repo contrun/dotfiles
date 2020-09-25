@@ -348,7 +348,10 @@ in {
 
   programs = {
     ccache = { enable = true; };
-    java = { enable = enableJava; };
+    java = {
+      enable = enableJava;
+      package = pkgs.openjdk11;
+    };
     gnupg.agent = { enable = enableGPGAgent; };
     ssh = { startAgent = true; };
     # vim.defaultEditor = true;
@@ -466,7 +469,22 @@ in {
   };
 
   system = {
-    activationScripts = {
+    activationScripts = pkgs.lib.optionalAttrs enableJava {
+      jdks = {
+        text = ''
+          ln -s ${pkgs.openjdk14.home} /local/jdks/openjdk14
+          ln -s ${pkgs.openjdk11.home} /local/jdks/openjdk11
+          ln -s ${pkgs.openjdk8.home} /local/jdks/openjdk8
+        '';
+        deps = [ "local" ];
+      };
+    } // pkgs.lib.optionalAttrs nixosAutoUpgrade.enableHomeManager {
+      addHomeManagerChannel = {
+        text =
+          "${config.nix.package.out}/bin/nix-channel --add ${nixosAutoUpgrade.homeManagerChannel} home-manager";
+        deps = [ ];
+      };
+    } // {
       mkCcacheDirs = {
         text =
           "mkdir -p -m0777 /var/cache/ccache && chown root:nixbld /var/cache/ccache";
@@ -477,7 +495,8 @@ in {
         deps = [ ];
       };
       local = {
-        text = "mkdir -m 0755 -p /local/bin && mkdir -m 0755 -p /local/lib";
+        text =
+          "mkdir -m 0755 -p /local/bin && mkdir -m 0755 -p /local/lib && mkdir -m 0755 -p /local/jdks";
         deps = [ ];
       };
       cclibs = {
@@ -485,6 +504,7 @@ in {
           "cd /local/lib; for i in ${pkgs.gcc.cc.lib}/lib/*; do ln -sfn $i; done";
         deps = [ "local" ];
       };
+
       # Fuck /bin/bash
       binbash = {
         text = "ln -sfn ${pkgs.bash}/bin/bash /bin/bash";
@@ -529,12 +549,6 @@ in {
           nixosAutoUpgrade.nixosChannelList;
         deps = [ ];
       };
-    } // pkgs.lib.optionalAttrs nixosAutoUpgrade.enableHomeManager {
-      addHomeManagerChannel = {
-        text =
-          "${config.nix.package.out}/bin/nix-channel --add ${nixosAutoUpgrade.homeManagerChannel} home-manager";
-        deps = [ ];
-      };
     };
   };
 
@@ -547,7 +561,7 @@ in {
     connman = { enable = enableConnman; };
     calibre-server = {
       enable = enableCalibreServer;
-      libraryDir = calibreServerLibraryDir;
+      libraries = calibreServerLibraries;
     };
     vsftpd = {
       enable = true;
@@ -557,9 +571,7 @@ in {
     fcron = {
       enable = true;
       maxSerialJobs = 5;
-      systab = ''
-        */5 * * * *   ${owner}   . /etc/profile; ${pkgs.taskwarrior}/bin/task synchronize
-      '';
+      systab = "";
     };
     offlineimap = {
       enable = enableOfflineimap;
@@ -860,21 +872,6 @@ in {
 
   systemd.services = let extraServices = { };
   in extraServices // {
-    # copied from https://github.com/NixOS/nixpkgs/blob/d5053d12eb23377bcc860f8cb3bfa65c4507772d/nixos/modules/services/misc/calibre-server.nix#L37
-    # calibre-server = {
-    #   enable = enableCalibreServer;
-    #   description = "Calibre Server";
-    #   after = [ "network.target" ];
-    #   wantedBy = [ "multi-user.target" ];
-    #   serviceConfig = {
-    #     User = "${owner}";
-    #     Restart = "always";
-    #     ExecStart =
-    #       "${pkgs.calibre}/bin/calibre-server ${calibreServerLibraryDir} --port ${
-    #         toString calibreServerPort
-    #       }";
-    #   };
-    # };
     # copied from https://github.com/NixOS/nixpkgs/blob/7803ff314c707ee11a6d8d1c9ac4cde70737d22e/nixos/modules/tasks/auto-upgrade.nix#L72
     "nixos-update@" = {
       description = "NixOS Update";
@@ -982,6 +979,7 @@ in {
         };
       };
     };
+
     yandex-disk = let
       name = "yandex-disk";
       syncFolder = "${home}/Sync";
