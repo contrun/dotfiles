@@ -201,6 +201,8 @@ in {
       fzf
       jq
       wine
+      fdm
+      mailutils
       notify-osd-customizable
       libnotify
       (pkgs.myPackages.lua or lua)
@@ -472,9 +474,9 @@ in {
     activationScripts = pkgs.lib.optionalAttrs enableJava {
       jdks = {
         text = ''
-          ln -s ${pkgs.openjdk14.home} /local/jdks/openjdk14
-          ln -s ${pkgs.openjdk11.home} /local/jdks/openjdk11
-          ln -s ${pkgs.openjdk8.home} /local/jdks/openjdk8
+          ln -sfn ${pkgs.openjdk14.home} /local/jdks/openjdk14
+          ln -sfn ${pkgs.openjdk11.home} /local/jdks/openjdk11
+          ln -sfn ${pkgs.openjdk8.home} /local/jdks/openjdk8
         '';
         deps = [ "local" ];
       };
@@ -635,6 +637,16 @@ in {
       HandleLidSwitch=ignore
       RuntimeDirectorySize=50%
     '';
+    postfix = {
+      enable = true;
+      rootAlias = owner;
+      extraConfig = ''
+        myhostname = ${hostname}
+        mydomain = localdomain
+        mydestination = $myhostname, localhost.$mydomain, localhost
+        mynetworks_style = host
+      '';
+    };
     postgresql.enable = enablePostgres;
     udisks2.enable = enableUdisks2;
     redis.enable = enableRedis;
@@ -773,8 +785,7 @@ in {
 
   # xdg.portal.enable = enableXdgPortal || enableFlatpak;
 
-  users.users."${owner}" = {
-    createHome = true;
+  users.users = let
     extraGroups = [
       "wheel"
       "video"
@@ -790,33 +801,24 @@ in {
       "lp"
       "input"
       "mlocate"
+      "postfix"
     ];
-    group = ownerGroup;
-    home = home;
-    isNormalUser = true;
-    uid = ownerUid;
-    shell = if enableZSH then pkgs.zsh else pkgs.bash;
-  };
-
-  users.users.fallback = {
-    createHome = true;
-    extraGroups = [
-      "wheel"
-      "video"
-      "kvm"
-      "audio"
-      "disk"
-      "networkmanager"
-      "adbusers"
-      "docker"
-      "davfs2"
-      "wireshark"
-      "vboxusers"
-      "lp"
-      "input"
-      "mlocate"
-    ];
-    isNormalUser = true;
+  in {
+    "${owner}" = {
+      createHome = true;
+      inherit extraGroups;
+      group = ownerGroup;
+      home = home;
+      isNormalUser = true;
+      uid = ownerUid;
+      shell = if enableZSH then pkgs.zsh else pkgs.bash;
+    };
+    # Fallback user when "${owner}" encounters problems
+    fallback = {
+      createHome = true;
+      inherit extraGroups;
+      isNormalUser = true;
+    };
   };
 
   users.groups."${ownerGroup}" = { gid = ownerGroupGid; };
@@ -837,170 +839,202 @@ in {
   #   cpuFreqGovernor = "ondemand";
   # };
 
-  systemd.packages = let
-    usrLocalPrefix = "/usr/local/lib/systemd/system";
-    etcPrefix = "/etc/systemd/system";
-    makeUnit = from: to: unit:
-      pkgs.writeTextFile {
-        name = builtins.replaceStrings [ "@" ] [ "__" ] unit;
-        text = builtins.readFile "${from}/${unit}";
-        destination = "${to}/${unit}";
+  systemd = let
+    notify-systemd-unit-failures = let name = "notify-systemd-unit-failures";
+    in {
+      "${name}@" = {
+        description = "notify systemd unit failures with mailutils";
+        serviceConfig = {
+          Type = "oneshot";
+          ExecStart = ''
+            ${pkgs.bash}/bin/bash -c "${pkgs.mailutils}/bin/mail --set=noASKCC --subject 'Systemd unit %i failed' ${owner} < /dev/null"
+          '';
+        };
       };
-    getAllUnits = from: to:
-      let
-        files = builtins.readDir from;
-        units = pkgs.lib.attrNames
-          (pkgs.lib.filterAttrs (n: v: v == "regular" || v == "symlink") files);
-        newUnits = map (unit: makeUnit from to unit) units;
-      in pkgs.lib.optionals (builtins.pathExists from) newUnits;
-  in getAllUnits usrLocalPrefix etcPrefix;
-
-  systemd = {
+    };
+    always-fails = let name = "always-fails";
+    in {
+      ${name} = {
+        enable = true;
+        description = "Unit that always fails";
+        onFailure = [ "notify-systemd-unit-failures@%i.service" ];
+        wantedBy = [ "default.target" ];
+        serviceConfig = { ExecStart = "${pkgs.coreutils}/bin/false"; };
+      };
+    };
+  in {
     automounts = systemdMounts.autoMounts;
     mounts = systemdMounts.mounts;
-  };
 
-  systemd.timers = {
-    nixos-update = with nixosAutoUpgrade; {
-      timerConfig = {
-        OnCalendar = onCalendar;
-        Unit = "nixos-update@.service";
-        Persistent = true;
-      };
-    };
-  };
-
-  systemd.services = let extraServices = { };
-  in extraServices // {
-    # copied from https://github.com/NixOS/nixpkgs/blob/7803ff314c707ee11a6d8d1c9ac4cde70737d22e/nixos/modules/tasks/auto-upgrade.nix#L72
-    "nixos-update@" = {
-      description = "NixOS Update";
-      restartIfChanged = false;
-      unitConfig = { X-StopOnRemoval = false; };
-      serviceConfig.Type = "oneshot";
-
-      environment = config.nix.envVars // {
-        inherit (config.environment.sessionVariables) NIX_PATH;
-        HOME = "/root";
-        ARGS = "%I";
-      } // config.networking.proxy.envVars;
-
-      path = [
-        pkgs.coreutils
-        pkgs.gnutar
-        pkgs.xz.bin
-        pkgs.shadow.su
-        pkgs.gitMinimal
-        config.nix.package.out
-        config.system.build.nixos-rebuild
-        pkgs.niv
-        pkgs.home-manager
-        pkgs.chezmoi
-      ];
-
-      scriptArgs = "$ARGS";
-      script = with nixosAutoUpgrade;
+    packages = let
+      usrLocalPrefix = "/usr/local/lib/systemd/system";
+      etcPrefix = "/etc/systemd/system";
+      makeUnit = from: to: unit:
+        pkgs.writeTextFile {
+          name = builtins.replaceStrings [ "@" ] [ "__" ] unit;
+          text = builtins.readFile "${from}/${unit}";
+          destination = "${to}/${unit}";
+        };
+      getAllUnits = from: to:
         let
-          add-channel = channel: ''
-            nix-channel --add ${nixChannelURL channel} ${channel}
-          '';
-          update-channels = let
-            home-manager = pkgs.lib.optionalString enableHomeManager ''
-              nix-channel --add ${homeManagerChannel} home-manager
-            '';
-          in home-manager
-          + (pkgs.lib.concatMapStrings add-channel nixosChannelList) + ''
-            nix-channel --update
-          '';
-          update-my-packages = pkgs.lib.optionalString updateMyPackages ''
-            if cd "${home}/.local/share/chezmoi/dot_config/nixpkgs/"; then
-                su "${owner}" -c "niv update; chezmoi apply -v" || true
-            fi
-            if [[ -f "${home}/.local/share/chezmoi/root/chezmoi.toml" ]]; then
-                cd "${home}"
-                chezmoi -c "${home}/.local/share/chezmoi/root/chezmoi.toml" apply -v || true
-            fi
-          '';
-          upgrade-system = if allowReboot then ''
-            nixos-rebuild boot ${toString nixosRebuildFlags}
-            booted="$(readlink /run/booted-system/{initrd,kernel,kernel-modules})"
-            built="$(readlink /nix/var/nix/profiles/system/{initrd,kernel,kernel-modules})"
-            if [ "$booted" = "$built" ]; then
-              nixos-rebuild switch ${toString nixosRebuildFlags}
-            else
-              /run/current-system/sw/bin/shutdown -r +1
-            fi
-          '' else ''
-            nixos-rebuild switch ${toString nixosRebuildFlags}
-          '';
-          update-home-manager = pkgs.lib.optionalString enableHomeManager ''
-            su "${owner}" -c "nix-shell '<home-manager>' -A install" || true
-            su "${owner}" -c "home-manager switch" || true
-          '';
-        in update-channels + update-my-packages + update-home-manager
-        + upgrade-system;
-    };
-  };
+          files = builtins.readDir from;
+          units = pkgs.lib.attrNames
+            (pkgs.lib.filterAttrs (n: v: v == "regular" || v == "symlink")
+              files);
+          newUnits = map (unit: makeUnit from to unit) units;
+        in pkgs.lib.optionals (builtins.pathExists from) newUnits;
+    in getAllUnits usrLocalPrefix etcPrefix;
 
-  systemd.user = let
-    nextcloud-client = {
-      services.nextcloud-client = {
-        description = "nextcloud client";
-        enable = enableNextcloudClient;
-        wantedBy = [ "default.target" ];
-        serviceConfig = { EnvironmentFile = "%h/.config/Nextcloud/env"; };
-        script = ''
-          mkdir -p "$HOME/$localFolder"
-          while true; do
-                ${pkgs.nextcloud-client}/bin/nextcloudcmd --non-interactive --silent --user "$user" --password "$password" "$localFolder" "$remoteUrl" || true
-                ${pkgs.inotify-tools}/bin/inotifywait -t 120 "$localFolder" > /dev/null 2>&1 || true
-          done
-        '';
-      };
-    };
-
-    task-warrior-sync = let name = "task-warrior-sync";
-    in {
-      services.${name} = {
-        description = "sync task warrior tasks";
-        enable = enableTaskWarriorSync;
-        wantedBy = [ "default.target" ];
-        serviceConfig = { };
-        script = ''
-          ${pkgs.taskwarrior}/bin/task synchronize
-        '';
-      };
-      timers.${name} = {
-        enable = enableTaskWarriorSync;
+    timers = {
+      nixos-update = with nixosAutoUpgrade; {
         timerConfig = {
-          OnCalendar = "*-*-* *:1/3:00";
-          Unit = "${name}.service";
+          OnCalendar = onCalendar;
+          Unit = "nixos-update@.service";
           Persistent = true;
         };
       };
     };
 
-    yandex-disk = let
-      name = "yandex-disk";
-      syncFolder = "${home}/Sync";
-    in {
-      services.${name} = {
-        enable = enableYandexDisk;
-        description = "Yandex-disk server";
-        after = [ "network.target" ];
-        wantedBy = [ "default.target" ];
-        unitConfig.RequiresMountsFor = syncFolder;
-        script = ''
-          if ! ${pkgs.yandex-disk}/bin/yandex-disk start --no-daemon --dir="${syncFolder}"; then
-             ${pkgs.noti}/bin/noti --title "yandex disk" --message "yandex disk exited unexpectedly"
-          fi
-        '';
+    services = always-fails // notify-systemd-unit-failures // {
+      # copied from https://github.com/NixOS/nixpkgs/blob/7803ff314c707ee11a6d8d1c9ac4cde70737d22e/nixos/modules/tasks/auto-upgrade.nix#L72
+      "nixos-update@" = {
+        description = "NixOS Update";
+        restartIfChanged = false;
+        unitConfig = { X-StopOnRemoval = false; };
+        serviceConfig.Type = "oneshot";
+
+        environment = config.nix.envVars // {
+          inherit (config.environment.sessionVariables) NIX_PATH;
+          HOME = "/root";
+          ARGS = "%I";
+        } // config.networking.proxy.envVars;
+
+        path = [
+          pkgs.coreutils
+          pkgs.gnutar
+          pkgs.xz.bin
+          pkgs.shadow.su
+          pkgs.gitMinimal
+          config.nix.package.out
+          config.system.build.nixos-rebuild
+          pkgs.niv
+          pkgs.home-manager
+          pkgs.chezmoi
+        ];
+
+        scriptArgs = "$ARGS";
+        script = with nixosAutoUpgrade;
+          let
+            add-channel = channel: ''
+              nix-channel --add ${nixChannelURL channel} ${channel}
+            '';
+            update-channels = let
+              home-manager = pkgs.lib.optionalString enableHomeManager ''
+                nix-channel --add ${homeManagerChannel} home-manager
+              '';
+            in home-manager
+            + (pkgs.lib.concatMapStrings add-channel nixosChannelList) + ''
+              nix-channel --update
+            '';
+            update-my-packages = pkgs.lib.optionalString updateMyPackages ''
+              if cd "${home}/.local/share/chezmoi/dot_config/nixpkgs/"; then
+                  su "${owner}" -c "niv update; chezmoi apply -v" || true
+              fi
+              if [[ -f "${home}/.local/share/chezmoi/root/chezmoi.toml" ]]; then
+                  cd "${home}"
+                  chezmoi -c "${home}/.local/share/chezmoi/root/chezmoi.toml" apply -v || true
+              fi
+            '';
+            upgrade-system = if allowReboot then ''
+              nixos-rebuild boot ${toString nixosRebuildFlags}
+              booted="$(readlink /run/booted-system/{initrd,kernel,kernel-modules})"
+              built="$(readlink /nix/var/nix/profiles/system/{initrd,kernel,kernel-modules})"
+              if [ "$booted" = "$built" ]; then
+                nixos-rebuild switch ${toString nixosRebuildFlags}
+              else
+                /run/current-system/sw/bin/shutdown -r +1
+              fi
+            '' else ''
+              nixos-rebuild switch ${toString nixosRebuildFlags}
+            '';
+            update-home-manager = pkgs.lib.optionalString enableHomeManager ''
+              su "${owner}" -c "nix-shell '<home-manager>' -A install" || true
+              su "${owner}" -c "home-manager switch" || true
+            '';
+          in update-channels + update-my-packages + update-home-manager
+          + upgrade-system;
       };
     };
 
-    all = [ nextcloud-client task-warrior-sync yandex-disk ];
-  in builtins.foldl' (a: e: pkgs.lib.recursiveUpdate a e) { } all;
+    user = let
+      nextcloud-client = {
+        services.nextcloud-client = {
+          enable = enableNextcloudClient;
+          description = "nextcloud client";
+          wantedBy = [ "default.target" ];
+          serviceConfig = {
+            Restart = "always";
+            EnvironmentFile = "%h/.config/Nextcloud/env";
+          };
+          script = ''
+            mkdir -p "$HOME/$localFolder"
+            while true; do
+                  ${pkgs.nextcloud-client}/bin/nextcloudcmd --non-interactive --silent --user "$user" --password "$password" "$localFolder" "$remoteUrl" || true
+                  ${pkgs.inotify-tools}/bin/inotifywait -t 120 "$localFolder" > /dev/null 2>&1 || true
+            done
+          '';
+        };
+      };
 
+      task-warrior-sync = let name = "task-warrior-sync";
+      in {
+        services.${name} = {
+          description = "sync task warrior tasks";
+          enable = enableTaskWarriorSync;
+          wantedBy = [ "default.target" ];
+          serviceConfig = {
+            Type = "oneshot";
+            ExecStart = "${pkgs.taskwarrior}/bin/task synchronize";
+          };
+        };
+        timers.${name} = {
+          enable = enableTaskWarriorSync;
+          onFailure = [ "notify-systemd-unit-failures@%i.service" ];
+          timerConfig = {
+            OnCalendar = "*-*-* *:1/3:00";
+            Unit = "${name}.service";
+            Persistent = true;
+          };
+        };
+      };
+
+      yandex-disk = let
+        name = "yandex-disk";
+        syncFolder = "${home}/Sync";
+      in {
+        services.${name} = {
+          enable = enableYandexDisk;
+          description = "Yandex-disk server";
+          onFailure = [ "notify-systemd-unit-failures@%i.service" ];
+          after = [ "network.target" ];
+          wantedBy = [ "default.target" ];
+          unitConfig.RequiresMountsFor = syncFolder;
+          serviceConfig = {
+            Restart = "always";
+            ExecStart =
+              "${pkgs.yandex-disk}/bin/yandex-disk start --no-daemon --dir='${syncFolder}'";
+          };
+        };
+      };
+
+      all = [
+        { services = always-fails // notify-systemd-unit-failures; }
+        nextcloud-client
+        task-warrior-sync
+        yandex-disk
+      ];
+    in builtins.foldl' (a: e: pkgs.lib.recursiveUpdate a e) { } all;
+  };
   nix = {
     binaryCaches = [
       "https://mirrors.tuna.tsinghua.edu.cn/nix-channels/store"
