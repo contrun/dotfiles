@@ -852,16 +852,6 @@ in {
         };
       };
     };
-    always-fails = let name = "always-fails";
-    in {
-      ${name} = {
-        enable = true;
-        description = "Unit that always fails";
-        onFailure = [ "notify-systemd-unit-failures@%i.service" ];
-        wantedBy = [ "default.target" ];
-        serviceConfig = { ExecStart = "${pkgs.coreutils}/bin/false"; };
-      };
-    };
   in {
     automounts = systemdMounts.autoMounts;
     mounts = systemdMounts.mounts;
@@ -895,7 +885,7 @@ in {
       };
     };
 
-    services = always-fails // notify-systemd-unit-failures // {
+    services = notify-systemd-unit-failures // {
       # copied from https://github.com/NixOS/nixpkgs/blob/7803ff314c707ee11a6d8d1c9ac4cde70737d22e/nixos/modules/tasks/auto-upgrade.nix#L72
       "nixos-update@" = {
         description = "NixOS Update";
@@ -1028,7 +1018,7 @@ in {
       };
 
       all = [
-        { services = always-fails // notify-systemd-unit-failures; }
+        { services = notify-systemd-unit-failures; }
         nextcloud-client
         task-warrior-sync
         yandex-disk
