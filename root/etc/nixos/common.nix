@@ -212,6 +212,8 @@ in {
       fail2ban
       qemu
       aqemu
+      ldns
+      bind
       nix-prefetch-scripts
       pulsemixer
       acpilight
@@ -313,7 +315,7 @@ in {
       LOCALBINPATH = "$HOME/.local/bin";
       # help building locally compiled programs
       LIBRARY_PATH = "$HOME/.nix-profile/lib:/run/current-system/sw/lib";
-      # Don't set LD_LIBRARY_PATH here, there will be various problems. 
+      # Don't set LD_LIBRARY_PATH here, there will be various problems.
       MY_LD_LIBRARY_PATH = "$HOME/.nix-profile/lib:/run/current-system/sw/lib";
       # cmake does not respect LIBRARY_PATH
       CMAKE_LIBRARY_PATH = "$HOME/.nix-profile/lib:/run/current-system/sw/lib";
@@ -556,7 +558,7 @@ in {
 
   services = {
     arbtt = {
-      package = stable.haskellPackages.arbtt;
+      package = stable.haskellPackages.arbtt or pkgs.haskellPackages.arbtt;
       enable = enableArbtt;
     };
     compton = { enable = true; };
@@ -586,6 +588,10 @@ in {
       resolveLocalQueries = dnsmasqResolveLocalQueries;
       servers = dnsmasqServers;
       extraConfig = dnsmasqExtraConfig;
+    };
+    smartdns = {
+      enable = enableSmartdns;
+      settings = smartdnsSettings;
     };
     openssh = {
       enable = true;

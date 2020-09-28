@@ -41,10 +41,10 @@
         "homepage": "",
         "owner": "nix-community",
         "repo": "emacs-overlay",
-        "rev": "cfe662ca8d8d7a9a83dbfea352782c7e790d72cc",
-        "sha256": "1fzr2d4yyszqc6hhfy3zkcpylybl7cnmcv75hcz8l17m9pazff3s",
+        "rev": "3d59e29cda0c2c1b640e793c3f50a5077c4d9ce3",
+        "sha256": "11px8r12w7h282qsgqrqq6wj3pmym5lphmlkjkapdrcs6c67lgrw",
         "type": "tarball",
-        "url": "https://github.com/nix-community/emacs-overlay/archive/cfe662ca8d8d7a9a83dbfea352782c7e790d72cc.tar.gz",
+        "url": "https://github.com/nix-community/emacs-overlay/archive/3d59e29cda0c2c1b640e793c3f50a5077c4d9ce3.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "ghcide-nix": {
@@ -137,10 +137,10 @@
         "homepage": "https://github.com/nix-community/NUR",
         "owner": "nix-community",
         "repo": "nur-combined",
-        "rev": "31fae9386f8ddbae7b6fddb7ca0d50ea8183c8dc",
-        "sha256": "073qgpbk0bac82nsj0hiv8cf8y9iqpxnyfgbmpvqyi02470lxr01",
+        "rev": "d99472b9418c85a9646398b2772f9c23ef192852",
+        "sha256": "1v922zlybzaxc11ncnqc308g5bdaknznmydal21qpsy65b4763lq",
         "type": "tarball",
-        "url": "https://github.com/nix-community/nur-combined/archive/31fae9386f8ddbae7b6fddb7ca0d50ea8183c8dc.tar.gz",
+        "url": "https://github.com/nix-community/nur-combined/archive/d99472b9418c85a9646398b2772f9c23ef192852.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "old-ghc-nix": {

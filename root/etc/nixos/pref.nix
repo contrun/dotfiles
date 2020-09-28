@@ -31,6 +31,16 @@ let
     enableIwd = wirelessBackend == "iwd";
     enableBumblebee = false;
     enableMediaKeys = true;
+    enableSmartdns = true;
+    smartdnsSettings = {
+      bind = ":5533 -no-rule -group example";
+      cache-size = 4096;
+      server-tls = [ "8.8.8.8:853" "1.1.1.1:853" ];
+      server-https =
+        "https://cloudflare-dns.com/dns-query -exclude-default-group";
+      prefetch-domain = true;
+      speed-check-mode = "ping,tcp:80";
+    };
     enableDnsmasq = false;
     enableDebugInfo = false;
     dnsmasqListenAddress = "127.0.0.233";
@@ -167,7 +177,8 @@ let
     # enableVirtualboxHost = true;
     # Build of virtual box frequently failes. touching "$HOME/.cache/disable_virtual_box"
     # is less irritating than editing this file.
-    enableVirtualboxHost = ! builtins.pathExists "${home}/.cache/disable_virtual_box";
+    enableVirtualboxHost =
+      !builtins.pathExists "${home}/.cache/disable_virtual_box";
     enableLibvirtd = true;
     enableAnbox = false;
     enableUnifi = false;
@@ -183,8 +194,10 @@ let
     autosshServers = with pkgs.lib;
       let
         configFiles = [ "${home}/.ssh/config" ];
-        goodConfigFiles = builtins.filter (x: builtins.pathExists x) configFiles;
-        lines = builtins.foldl' (a: e: a ++ (splitString "\n" (readFile e))) [] goodConfigFiles;
+        goodConfigFiles =
+          builtins.filter (x: builtins.pathExists x) configFiles;
+        lines = builtins.foldl' (a: e: a ++ (splitString "\n" (readFile e))) [ ]
+          goodConfigFiles;
         autosshLines = filter (x: hasPrefix "Host autossh" x) lines;
         servers = map (x: removePrefix "Host " x) autosshLines;
       in filter (x: x != "autossh") servers;

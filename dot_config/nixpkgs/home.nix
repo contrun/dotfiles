@@ -511,6 +511,7 @@ let
         "debootstrap"
         "dmidecode"
         "bind"
+        "ldns"
         "smartdns"
         "bridge-utils"
         # dnstracer
