@@ -407,7 +407,6 @@ let
         "hugo"
         "you-get"
         "uget"
-        "miniupnpc"
         "wireguard"
         # qutebrowser
         # telegram-cli
@@ -425,8 +424,9 @@ let
         "geoipWithDatabase"
         "syncthing"
         "sslh"
-        "miniupnpc"
+        "miniupnpc_2"
         "miniupnpd"
+        "gupnp-tools"
         "strongswan"
         "stunnel"
         "shadowsocks-libev"

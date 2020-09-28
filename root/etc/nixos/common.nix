@@ -976,6 +976,48 @@ in {
         };
       };
 
+      hole-puncher = let
+        name = "hole-puncher";
+        unitName = "${name}@";
+        script = pkgs.writeShellScript "hole-puncher" ''
+          set -xe
+          instance="4443-44443"
+          if [[ -n "$1" ]] && grep -Eq '[0-9]+-[0-9]+' <<< "$1"; then instance="$1"; fi
+          internalPort="$(awk -F- '{print $1}' <<< "$instance")"
+          externalPort="$(awk -F- '{print $2}' <<< "$instance")"
+          interfaces="$(ip link show up | awk -F'[ :]' '/MULTICAST/&&/LOWER_UP/ {print $3}')"
+          protocols="tcp udp"
+          result="$(parallel -r -v upnpc -m {1} -r $internalPort $externalPort {2} ::: $interfaces ::: $protocols || true)"
+          awk -v OFS=, '/is redirected to/ {print $2, $8, $3}' <<< "$result"
+        '';
+      in {
+        services.${unitName} = {
+          description = "NAT traversal worker";
+          enable = enableHolePuncher;
+          wantedBy = [ "default.target" ];
+          path = [
+            pkgs.coreutils
+            pkgs.parallel
+            pkgs.miniupnpc
+            pkgs.iproute
+            pkgs.gawk
+          ];
+          serviceConfig = {
+            Type = "oneshot";
+            ExecStart = "${script} %i";
+          };
+        };
+        timers.${unitName} = {
+          enable = enableHolePuncher;
+          onFailure = [ "notify-systemd-unit-failures@%i.service" ];
+          timerConfig = {
+            OnCalendar = "*-*-* *:3/20:00";
+            Unit = "${unitName}%i.service";
+            Persistent = true;
+          };
+        };
+      };
+
       task-warrior-sync = let name = "task-warrior-sync";
       in {
         services.${name} = {
@@ -1020,6 +1062,7 @@ in {
       all = [
         { services = notify-systemd-unit-failures; }
         nextcloud-client
+        hole-puncher
         task-warrior-sync
         yandex-disk
       ];

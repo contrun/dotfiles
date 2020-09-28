@@ -159,6 +159,7 @@ let
     enableJava = true;
     enableNextcloudClient = false;
     enableTaskWarriorSync = true;
+    enableHolePuncher = true;
     enableWireshark = true;
     enabledInputMethod = "fcitx";
     # enableVirtualboxHost = true;
