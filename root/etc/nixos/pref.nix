@@ -54,7 +54,7 @@ let
       feh --bg-fill "$(shuf -n1 -e ~/Storage/wallpapers/*)" &
       # shadowsocksControl.sh restart 4 1 &
       # systemctl --user start syncthing &
-      systemctl --user start ddns &
+      # systemctl --user start ddns &
       # sudo iw dev wlp2s0 set power_save off &
       # ibus-daemon -drx &
       copyq &
@@ -160,6 +160,7 @@ let
     enableNextcloudClient = false;
     enableTaskWarriorSync = true;
     enableHolePuncher = true;
+    enableDdns = true;
     enableWireshark = true;
     enabledInputMethod = "fcitx";
     # enableVirtualboxHost = true;

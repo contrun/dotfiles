@@ -683,7 +683,7 @@ in {
 
     sslh = {
       enable = true;
-      port = 443;
+      port = 44443;
       transparent = true;
       appendConfig = ''
         protocols:
@@ -692,7 +692,7 @@ in {
           { name: "openvpn"; host: "localhost"; port: "1194"; probe: "builtin"; },
           { name: "xmpp"; host: "localhost"; port: "5222"; probe: "builtin"; },
           { name: "http"; host: "localhost"; port: "80"; probe: "builtin"; },
-          { name: "ssl"; host: "localhost"; port: "443"; probe: "builtin"; },
+          { name: "tls"; host: "localhost"; port: "443"; probe: "builtin"; },
           { name: "anyprot"; host: "localhost"; port: "443"; probe: "builtin"; }
         );
       '';
@@ -957,6 +957,55 @@ in {
     };
 
     user = let
+      ddns = let
+        name = "ddns";
+        unitName = "${name}@";
+        script = pkgs.writeShellScript "ddns" ''
+          set -xe
+          host="$(hostname)"
+          if [[ -n "$1" ]] && [[ "$1" != "default" ]]; then host="$1"; fi
+          base="''${base:example.com}"
+          domain="$host.$base"
+          password="''${password:simpelPassword}"
+          interfaces="$(ip link show up | awk -F'[ :]' '/MULTICAST/&&/LOWER_UP/ {print $3}')"
+          ipAddr="$(parallel -k -r -v upnpc -m {1} -s ::: $interfaces 2>/dev/null | awk '/ExternalIPAddress/ {print $3}' | head -n1 || true)"
+          if [[ -z "$ipAddr" ]]; then ipAddr="$(curl -s myip.ipip.net | perl -pe 's/.*?([0-9]{1,3}.*[0-9]{1,3}?).*/\1/g')"; fi
+          curl "https://dyn.dns.he.net/nic/update?hostname=$domain&password=$password&myip=$ipAddr"
+          ipv6Addr="$(ip -6 addr show scope global primary | awk '/inet6/ {print $2}' | awk -F/ '{print $1}')"
+          if [[ -n "$ipv6Addr" ]]; then curl "https://dyn.dns.he.net/nic/update?hostname=$domain&password=$password&myip=$ipv6Addr"; fi
+        '';
+      in {
+        services.${unitName} = {
+          description = "ddns worker";
+          enable = enableDdns;
+          wantedBy = [ "default.target" ];
+          path = [
+            pkgs.coreutils
+            pkgs.inetutils
+            pkgs.parallel
+            pkgs.miniupnpc
+            pkgs.iproute
+            pkgs.gawk
+            pkgs.perl
+            pkgs.curl
+          ];
+          serviceConfig = {
+            Type = "oneshot";
+            ExecStart = "${script} %i";
+            EnvironmentFile="%h/.config/ddns/env";
+          };
+        };
+        timers.${unitName} = {
+          enable = enableDdns;
+          onFailure = [ "notify-systemd-unit-failures@%i.service" ];
+          timerConfig = {
+            OnCalendar = "*-*-* *:1/2:34";
+            Unit = "${unitName}%i.service";
+            Persistent = true;
+          };
+        };
+      };
+
       nextcloud-client = {
         services.nextcloud-client = {
           enable = enableNextcloudClient;
@@ -966,11 +1015,15 @@ in {
             Restart = "always";
             EnvironmentFile = "%h/.config/Nextcloud/env";
           };
+          path = [
+            pkgs.nextcloud-client
+            pkgs.inotify-tools
+          ];
           script = ''
             mkdir -p "$HOME/$localFolder"
             while true; do
-                  ${pkgs.nextcloud-client}/bin/nextcloudcmd --non-interactive --silent --user "$user" --password "$password" "$localFolder" "$remoteUrl" || true
-                  ${pkgs.inotify-tools}/bin/inotifywait -t 120 "$localFolder" > /dev/null 2>&1 || true
+                  nextcloudcmd --non-interactive --silent --user "$user" --password "$password" "$localFolder" "$remoteUrl" || true
+                  inotifywait -t 120 "$localFolder" > /dev/null 2>&1 || true
             done
           '';
         };
@@ -981,10 +1034,10 @@ in {
         unitName = "${name}@";
         script = pkgs.writeShellScript "hole-puncher" ''
           set -xe
-          instance="4443-44443"
+          instance="44443-44443"
           if [[ -n "$1" ]] && grep -Eq '[0-9]+-[0-9]+' <<< "$1"; then instance="$1"; fi
-          internalPort="$(awk -F- '{print $1}' <<< "$instance")"
           externalPort="$(awk -F- '{print $2}' <<< "$instance")"
+          internalPort="$(awk -F- '{print $1}' <<< "$instance")"
           interfaces="$(ip link show up | awk -F'[ :]' '/MULTICAST/&&/LOWER_UP/ {print $3}')"
           protocols="tcp udp"
           result="$(parallel -r -v upnpc -m {1} -r $internalPort $externalPort {2} ::: $interfaces ::: $protocols || true)"
@@ -1061,6 +1114,7 @@ in {
 
       all = [
         { services = notify-systemd-unit-failures; }
+        ddns
         nextcloud-client
         hole-puncher
         task-warrior-sync
