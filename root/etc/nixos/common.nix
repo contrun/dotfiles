@@ -681,6 +681,8 @@ in {
       pruneBindMounts = true;
     };
 
+    k3s = { enable = enableK3s; docker = true;};
+
     sslh = {
       enable = true;
       port = 44443;

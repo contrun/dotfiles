@@ -249,6 +249,7 @@ let
         "kube3d"
         "k9s"
         "minikube"
+        "k3s"
         # "libguestfs-with-appliance"
         "python3Packages.binwalk"
         "binutils"

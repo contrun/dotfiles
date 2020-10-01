@@ -92,6 +92,7 @@ let
     enableFail2ban = true;
     davfs2Secrets = "${home}/.davfs2/secrets";
     enableDavfs2 = true;
+    enableK3s = true;
     systemdMounts = let
       enableNextcloud = false;
       enableYandex = false;
@@ -243,7 +244,6 @@ let
     hostId = "034d2ba3";
     dpi = 128;
     enableHidpi = false;
-    enableIPv6 = false;
     enableWireless = true;
     consoleFont = "${pkgs.terminus_font}/share/consolefonts/ter-g20n.psf.gz";
   } else

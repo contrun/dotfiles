@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -xe
 old() {
         radioStations="$(
                 cat <<EOF
@@ -100,10 +101,10 @@ download_radio_browser_data() {
         pyradio_file="$HOME/.config/pyradio/stations.csv"
         declare -a tags=("classical")
         for tag in "${tags[@]}"; do
-                url="http://www.radio-browser.info/webservice/json/stations/bytagexact/$tag"
+                url="https://de1.api.radio-browser.info/json/stations/bytagexact/$tag"
                 filename="$dir/$tag.json"
                 if [[ ! -f "$filename" ]] || [[ $(find "$filename" -mtime +7 -print) ]]; then
-                        if ! curl -s --create-dirs -o "$filename" "$url"; then
+                        if ! curl -s -L --create-dirs -o "$filename" "$url"; then
                                 echo "Downloading $url to $name failed"
                         fi
                 fi
@@ -113,7 +114,7 @@ download_radio_browser_data() {
 
 my_pyradio() {
         download_radio_browser_data
-        pyradio "$@"
+        # pyradio "$@"
 }
 
 my_pyradio "$@"
