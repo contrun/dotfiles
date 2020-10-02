@@ -681,24 +681,20 @@ in {
       pruneBindMounts = true;
     };
 
-    k3s = { enable = enableK3s; docker = true;};
+    k3s = {
+      enable = enableK3s;
+      docker = true;
+    };
 
     sslh = {
       enable = true;
       port = 44443;
-      transparent = true;
-      appendConfig = ''
-        protocols:
-        (
-          { name: "ssh"; service: "ssh"; host: "localhost"; port: "22"; probe: "builtin"; },
-          { name: "openvpn"; host: "localhost"; port: "1194"; probe: "builtin"; },
-          { name: "xmpp"; host: "localhost"; port: "5222"; probe: "builtin"; },
-          { name: "http"; host: "localhost"; port: "80"; probe: "builtin"; },
-          { name: "tls"; host: "localhost"; port: "443"; probe: "builtin"; },
-          { name: "anyprot"; host: "localhost"; port: "443"; probe: "builtin"; }
-        );
-      '';
-    };
+      transparent = false;
+      verbose = true;
+    } // (let p = "${home}/.config/sslh/sslh.conf";
+    in pkgs.lib.optionalAttrs (builtins.pathExists p) {
+      appendConfig = (builtins.readFile p);
+    });
 
     unifi.enable = enableUnifi;
 
@@ -994,7 +990,7 @@ in {
           serviceConfig = {
             Type = "oneshot";
             ExecStart = "${script} %i";
-            EnvironmentFile="%h/.config/ddns/env";
+            EnvironmentFile = "%h/.config/ddns/env";
           };
         };
         timers.${unitName} = {
@@ -1017,10 +1013,7 @@ in {
             Restart = "always";
             EnvironmentFile = "%h/.config/Nextcloud/env";
           };
-          path = [
-            pkgs.nextcloud-client
-            pkgs.inotify-tools
-          ];
+          path = [ pkgs.nextcloud-client pkgs.inotify-tools ];
           script = ''
             mkdir -p "$HOME/$localFolder"
             while true; do
