@@ -687,6 +687,9 @@ in {
       pruneBindMounts = true;
     };
 
+    # change port
+    # sudo chown -R e /etc/rancher/k3s/
+    # k3s kubectl patch service traefik -n kube-system -p '{"spec": {"ports": [{"port": 443,"targetPort": 443, "nodePort": 30443, "protocol": "TCP", "name": "https"},{"port": 80,"targetPort": 80, "nodePort": 30080, "protocol": "TCP", "name": "http"}], "type": "LoadBalancer"}}'
     k3s = {
       enable = enableK3s;
       docker = true;
@@ -1003,7 +1006,7 @@ in {
           enable = enableDdns;
           onFailure = [ "notify-systemd-unit-failures@%i.service" ];
           timerConfig = {
-            OnCalendar = "*-*-* *:1/2:34";
+            OnCalendar = "*-*-* *:2/10:43";
             Unit = "${unitName}%i.service";
             Persistent = true;
           };
