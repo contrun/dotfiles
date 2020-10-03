@@ -1,4 +1,5 @@
-[[ $TERM == "dumb" ]] && unsetopt zle && PS1='$ ' && return
+# Avoid indefinite hang in tramp, https://www.emacswiki.org/emacs/TrampMode#toc9
+[[ $TERM == "tramp" ]] && unsetopt zle && PS1='$ ' && return
 # [ -f /etc/profile.d/my.sh ] && . /etc/profile.d/my.sh
 ZSH_CONF="full"
 [[ -f ~/.zsh_conf ]] && ZSH_CONF="$(cat ~/.zsh_conf)"

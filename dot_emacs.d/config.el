@@ -1589,6 +1589,14 @@ With arg N, insert N newlines."
 
 (use-package kubernetes-tramp)
 
+(use-package tramp
+  :ensure nil
+  :init
+  (setq tramp-default-method "ssh")
+  ;; Avoid indefinite hang in tramp, https://www.emacswiki.org/emacs/TrampMode#toc9
+  (setq tramp-terminal-type "tramp")
+  )
+
 (use-package projectile
   :bind-keymap
   ("s-p" . projectile-command-map)
@@ -4298,8 +4306,10 @@ With arg N, insert N newlines."
 (use-package lua-mode)
 (use-package htmlize)
 (use-package dsvn)
+
 (when my/is-mac
   )
+
 (unless (eq system-type 'windows-nt)
   (use-package daemons))
 (use-package dotenv-mode)
@@ -4448,8 +4458,9 @@ Selectively runs either `after-make-console-frame-hooks' or
 (use-package theme-looper)
 
 (use-package format-all
-  :hook
-  (first-change . my/format-all-mode)
+  ;; For some unfathomable reason, this hangs tramp.
+  ;; :hook
+  ;; (first-change . my/format-all-mode)
   :commands my/format-all-mode my/toggle-format-project-files format-all-buffer format-all-mode
   :config
   (defvar my/just-format-it-root-marker ".just_format_it")

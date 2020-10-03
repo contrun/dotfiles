@@ -1,4 +1,5 @@
-[[ $TERM == "dumb" ]] && unsetopt zle && PS1='$ ' && return
+# Avoid indefinite hang in tramp, https://www.emacswiki.org/emacs/TrampMode#toc9
+[[ $TERM == "tramp" ]] && unsetopt zle && PS1='$ ' && return
 #
 # ~/.bashrc
 #
