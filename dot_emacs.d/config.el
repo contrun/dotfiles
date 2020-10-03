@@ -4,6 +4,7 @@
 ;;----------------------------------------------------------------------------
 ;; Adjust garbage collection thresholds during startup, and thereafter
 ;;----------------------------------------------------------------------------
+(toggle-debug-on-error)
 (let ((normal-gc-cons-threshold (* 128 1024 1024))
       (init-gc-cons-threshold (* 256 1024 1024)))
   (setq gc-cons-threshold init-gc-cons-threshold)
@@ -402,15 +403,15 @@ pressing `<leader> m`. Set it to `nil` to disable it.")
 
 (use-package req-package)
 
-(use-package quelpa)
+;; (use-package quelpa)
 
-(use-package quelpa-use-package)
+;; (use-package quelpa-use-package)
 
-(use-package auto-package-update
-  :init
-  (setq auto-package-update-delete-old-versions t)
-  (setq auto-package-update-hide-results t)
-  (auto-package-update-maybe))
+;; (use-package auto-package-update
+;;   :init
+;;   (setq auto-package-update-delete-old-versions t)
+;;   (setq auto-package-update-hide-results t)
+;;   (auto-package-update-maybe))
 
 (use-package paradox
   :defer t
@@ -839,11 +840,6 @@ Get required params to call `dash-docs-result-url' from SEARCH-RESULT."
     (use-package flx)
     (setq-default ivy-re-builders-alist
                   '((t . ivy--regex-fuzzy))))
-  )
-
-(use-package ivy-historian
-  :hook
-  (after-init . (lambda () (ivy-historian-mode t)))
   )
 
 (use-package counsel
@@ -1395,8 +1391,8 @@ Call a second time to restore the original window configuration."
 ;; Cut/copy the current line if no region is active
 ;;----------------------------------------------------------------------------
 (use-package whole-line-or-region
-  :hook
-  (after-init . whole-line-or-region-mode)
+  :init
+  (require 'whole-line-or-region)
   :diminish whole-line-or-region-mode
   )
 
@@ -2067,7 +2063,7 @@ With arg N, insert N newlines."
           :keys "b"
           :file ,(expand-file-name "bookmarks.org" my/org-capture-directory)
           :headline "Bookmark inbox"
-          :template ("** %:description"
+          :template ("* %:description"
                      "   CREATED: %U"
                      "   [[%:link][%:description]]"
                      "   %:initial")
@@ -2086,7 +2082,7 @@ With arg N, insert N newlines."
           :keys "t"
           :file ,(expand-file-name "todo.org" my/org-capture-directory)
           :headline "Future tasks"
-          :template ("** TODO %:description"
+          :template ("* TODO %:description"
                      "   CREATED: %U"
                      "   REFERENCE: [[%:link][%:description]]"
                      "   %?%:initial")
@@ -2097,7 +2093,7 @@ With arg N, insert N newlines."
           :keys "w"
           :file ,(expand-file-name "wiki.org"  my/org-capture-directory)
           :headline "Captured personal wiki items"
-          :template ("** %:description"
+          :template ("* %:description"
                      "   CREATED: %U"
                      "   [[%:link][%:description]]"
                      "   %:initial")
@@ -2108,7 +2104,7 @@ With arg N, insert N newlines."
           :keys "c"
           :file ,(expand-file-name "capture.org" my/org-capture-directory)
           :headline "captured"
-          :template ("** %:description"
+          :template ("* %:description"
                      "CREATED: %U"
                      "REFERENCE: [[%:link][%:description]]"
                      "%?%:initial")
@@ -2119,7 +2115,7 @@ With arg N, insert N newlines."
           :keys "i"
           :file ,(expand-file-name "ideas.org" my/org-capture-directory)
           :headline "ideas"
-          :template ("** %?%:description"
+          :template ("* %?%:description"
                      "   CREATED: %U"
                      "   TAGS: "
                      "   SOURCE: [[%:link][%:description]]"
@@ -2198,14 +2194,14 @@ With arg N, insert N newlines."
           :keys "r"
           :file ,(expand-file-name "reading.org" my/org-capture-directory)
           :function (lambda() (org-capture-template-goto-link))
-          :template ("** P%:initial %? %U "
+          :template ("* P%:initial %? %U "
                      "%x")
           :kill-buffer 1)
          ("test"
           :keys "z"
           :file "/tmp/1.org"
           :function org-capture-template-goto-link
-          :template ("** P%:initial %? %U "
+          :template ("* P%:initial %? %U "
                      "%x")))))
 
 (defadvice org-capture-finalize
@@ -4311,8 +4307,8 @@ With arg N, insert N newlines."
 (use-package uptimes
   :config
   (setq-default uptimes-keep-count 200)
-  :hook
-  (after-init . (lambda () (require 'uptimes)))
+  ; :hook
+  ; (after-init . (lambda () (require 'uptimes)))
   )
 
 

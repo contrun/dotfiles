@@ -212,6 +212,24 @@ let
 
       jupyterWith = import mySources.jupyterWith { };
 
+      vscode = let
+        extensions = (with super.vscode-extensions; [
+          bbenoist.Nix
+          ms-python.python
+          ms-azuretools.vscode-docker
+          ms-vscode-remote.remote-ssh
+          matklad.rust-analyzer
+          # haskell.haskell
+          james-yu.latex-workshop
+          ms-kubernetes-tools.vscode-kubernetes-tools
+          # ms-vscode.Go
+          scala-lang.scala
+          scalameta.metals
+        ]);
+      in super.vscode-with-extensions.override {
+        vscodeExtensions = extensions;
+      };
+
       jupyter = let
         jupyterWith = import mySources.jupyterWith { };
         iPython = jupyterWith.kernels.iPythonWith {
@@ -226,11 +244,10 @@ let
           packages = getHaskellPackages;
         };
 
-        jupyterEnvironment =
-          jupyterWith.jupyterlabWith {
-            kernels = [ iPython iHaskell ];
-            extraPackages = p: [ super.python3.pkgs.notebook super.pandoc ];
-          };
+        jupyterEnvironment = jupyterWith.jupyterlabWith {
+          kernels = [ iPython iHaskell ];
+          extraPackages = p: [ super.python3.pkgs.notebook super.pandoc ];
+        };
       in jupyterEnvironment;
 
       pythonPackages = stable.python3Packages;
@@ -260,7 +277,8 @@ let
 
       texLive = self.texlive.combine { inherit (self.texlive) scheme-full; };
 
-      emacs = makeEmacsPkg super.emacsGit;
+      # emacs = makeEmacsPkg super.emacsGit;
+      emacs = makeEmacsPkg super.emacs;
 
       emacsStable = makeEmacsPkg super.emacs;
 

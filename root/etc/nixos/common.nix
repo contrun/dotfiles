@@ -251,6 +251,7 @@ in {
       git
       chezmoi
       coreutils
+      sudo
       sxhkd
       mimeo
       libsecret
