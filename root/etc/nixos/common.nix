@@ -180,6 +180,7 @@ in {
       manpages
       fuse
       iptables
+      nftables
       ipset
       dnsmasq
       nixFlakes
@@ -383,7 +384,7 @@ in {
 
   fonts = {
     enableDefaultFonts = true;
-    enableFontDir = true;
+    fontDir.enable = true;
     fontconfig = { enable = true; };
     fonts = with pkgs; [
       wqy_microhei

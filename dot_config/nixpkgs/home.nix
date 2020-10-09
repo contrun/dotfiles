@@ -317,7 +317,7 @@ let
         "haskellPackages.implicit-hie"
         "haskellPackages.hie-bios"
         "haskellPackages.haskell-language-server"
-        "myPackages.almond"
+        # "myPackages.almond"
         "myPackages.jupyter"
         # ihaskell
         "shfmt"

@@ -29,9 +29,9 @@ let
           pytest = super.pytest.overrideAttrs (old: { doCheck = false; });
         };
       };
-    in {
-      mitmproxy = super.mitmproxy.overrideAttrs (old: { doCheck = false; });
-    };
+      packages = { inherit (super) mitmproxy notmuch; };
+    in super.lib.mapAttrs (name: p: p.overrideAttrs (old: { doCheck = false; }))
+    packages;
 
   myOverlay = self: super: {
     myPackages = let
@@ -288,11 +288,11 @@ let
 
       almond = let
         scalaVersion = "2.12.8";
-        almondVersion = "0.6.0";
+        almondVersion = "0.10.8";
       in super.runCommand "almond" { nativeBuildInputs = [ self.coursier ]; } ''
-        export COURSIER_CACHE=$(pwd)
         mkdir -p $out/bin
         coursier bootstrap \
+            --cache "$PWD"
             -r jitpack \
             -i user -I user:sh.almond:scala-kernel-api_${scalaVersion}:${almondVersion} \
             sh.almond:scala-kernel_${scalaVersion}:${almondVersion} \
@@ -402,16 +402,16 @@ let
       koreader = with super;
         stdenv.mkDerivation rec {
           pname = "koreader";
-          version = "2020.04.1";
+          version = "2020.09";
 
           src = fetchurl {
             url =
               "https://github.com/koreader/koreader/releases/download/v${version}/koreader-${version}-amd64.deb";
-            sha256 = "1bhn33bd3pv9yfspckjbx8p89jvi009rlx2gpisd1n1psarzrafj";
+            sha256 = "12kiw3mw8g8d9fb8ywd4clm2bgblhq2gqcxzadwpmf0wxq7p0v8z";
           };
           sourceRoot = ".";
           nativeBuildInputs = [ makeWrapper dpkg ];
-          buildInputs = [ luajit gtk3-x11 SDL2 glib ];
+          buildInputs = [ luajit gtk3-x11 SDL2 glib noto-fonts nerdfonts ];
           unpackCmd = "dpkg-deb -x ${src} .";
 
           dontConfigure = true;
@@ -421,6 +421,12 @@ let
             mkdir -p $out/bin
             cp -R usr/* $out/
             cp ${luajit}/bin/luajit $out/lib/koreader/luajit
+            find $out -xtype l -delete
+            cd $out/lib/koreader/fonts/noto
+            for i in ${noto-fonts}/share/fonts/truetype/noto/*; do
+                ln -s "$i"
+            done
+            ln -s "${nerdfonts}/share/fonts/opentype/NerdFonts/Droid Sans Mono Nerd Font Complete Mono.otf" $out/lib/koreader/fonts/droid/DroidSansMono.ttf
             wrapProgram $out/bin/koreader --prefix LD_LIBRARY_PATH : ${
               stdenv.lib.makeLibraryPath [ gtk3-x11 SDL2 glib ]
             }

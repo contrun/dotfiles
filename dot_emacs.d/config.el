@@ -4,7 +4,7 @@
 ;;----------------------------------------------------------------------------
 ;; Adjust garbage collection thresholds during startup, and thereafter
 ;;----------------------------------------------------------------------------
-(toggle-debug-on-error)
+;; (toggle-debug-on-error)
 (let ((normal-gc-cons-threshold (* 128 1024 1024))
       (init-gc-cons-threshold (* 256 1024 1024)))
   (setq gc-cons-threshold init-gc-cons-threshold)

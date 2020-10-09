@@ -35,11 +35,14 @@ let
     smartdnsSettings = {
       bind = ":5533 -no-rule -group example";
       cache-size = 4096;
+      server = [ "180.76.76.76" "223.5.5.5" ] ++ [ "9.9.9.9" ]
+        ++ [ "192.0.2.2:53" ];
       server-tls = [ "8.8.8.8:853" "1.1.1.1:853" ];
       server-https =
         "https://cloudflare-dns.com/dns-query -exclude-default-group";
       prefetch-domain = true;
       speed-check-mode = "ping,tcp:80";
+      log-level = "info";
     };
     enableDnsmasq = false;
     enableDebugInfo = false;
