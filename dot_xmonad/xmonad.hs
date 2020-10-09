@@ -47,7 +47,7 @@ import XMonad.Util.WindowProperties
 -- The preferred terminal program, which is used in a binding below and by
 -- certain contrib modules.
 --
-myTerminal = "myTerminal"
+myTerminal = "alacritty"
 
 -- myTerminal      = "termite -e ~/.bin/tmux.sh"
 
