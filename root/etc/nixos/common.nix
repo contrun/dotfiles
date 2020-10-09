@@ -973,16 +973,16 @@ in {
         unitName = "${name}@";
         script = pkgs.writeShellScript "ddns" ''
           set -xe
-          host="$(hostname)"
+          host="''${host:-$(hostname)}"
           if [[ -n "$1" ]] && [[ "$1" != "default" ]]; then host="$1"; fi
-          base="''${base:example.com}"
+          base="''${base:-example.com}"
           domain="$host.$base"
-          password="''${password:simpelPassword}"
+          password="''${password:-simpelPassword}"
           interfaces="$(ip link show up | awk -F'[ :]' '/MULTICAST/&&/LOWER_UP/ {print $3}')"
           ipAddr="$(parallel -k -r -v upnpc -m {1} -s ::: $interfaces 2>/dev/null | awk '/ExternalIPAddress/ {print $3}' | head -n1 || true)"
           if [[ -z "$ipAddr" ]]; then ipAddr="$(curl -s myip.ipip.net | perl -pe 's/.*?([0-9]{1,3}.*[0-9]{1,3}?).*/\1/g')"; fi
           curl "https://dyn.dns.he.net/nic/update?hostname=$domain&password=$password&myip=$ipAddr"
-          ipv6Addr="$(ip -6 addr show scope global primary | awk '/inet6/ {print $2}' | awk -F/ '{print $1}')"
+          ipv6Addr="$(ip -6 addr show scope global primary | grep -v mngtmpaddr | awk '/inet6/ {print $2}' | head -n1 | awk -F/ '{print $1}')"
           if [[ -n "$ipv6Addr" ]]; then curl "https://dyn.dns.he.net/nic/update?hostname=$domain&password=$password&myip=$ipv6Addr"; fi
         '';
       in {
