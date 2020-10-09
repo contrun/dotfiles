@@ -1745,10 +1745,23 @@ With arg N, insert N newlines."
 
 (use-package scala-mode)
 
+(use-package dhall-mode
+  :config
+  (setq
+   ;; uncomment the next line to disable automatic format
+   ;; dhall-format-at-save nil
+
+   ;; comment the next line to use unicode syntax
+   dhall-format-arguments (\` ("--ascii"))
+
+   ;; header-line is obsoleted by lsp-mode
+   dhall-use-header-line nil))
+
 (use-package lsp-mode
   :commands lsp
   :hook
   ;; (prog-major-mode . lsp)
+  (dhall-mode . lsp)
   (haskell-mode . lsp)
   (elixir-mode . lsp)
   (typescript-mode . lsp)
@@ -3705,6 +3718,9 @@ With arg N, insert N newlines."
                      (toogle-max-screen-estate)))
   (after-init . (lambda () (pdf-tools-install t)))
   )
+
+(straight-use-package
+ '(djvu :type git :host github :repo "dalanicolai/djvu2.el"))
 
 (use-package proof-general
   :init
