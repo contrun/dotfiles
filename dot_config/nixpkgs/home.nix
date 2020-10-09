@@ -197,6 +197,7 @@ let
         "postman"
         "jetbrains.idea-ultimate"
         "jetbrains.clion"
+        "jetbrains.webstorm"
         "jetbrains.datagrip"
         "jetbrains.goland"
         "jetbrains.pycharm-professional"
@@ -210,7 +211,7 @@ let
         "wabt"
         "stable.emscripten"
         "arrow-cpp"
-        # "wasm-pack"
+        "wasm-pack"
         # wasm-strip
         # "wasm-bindgen-cli"
         "hexyl"
@@ -396,6 +397,9 @@ let
         "privoxy"
         "badvpn"
         "connect"
+        "zeronet"
+        "tor"
+        "resilio-sync"
         "iperf"
         "openssh"
         "insomnia"
@@ -408,6 +412,7 @@ let
         "hugo"
         "you-get"
         "uget"
+        "udptunnel"
         "wireguard"
         # qutebrowser
         # telegram-cli
@@ -603,7 +608,7 @@ let
         "maim"
         "mtpaint"
         "unison"
-        # "p7zip"
+        "p7zip"
         "xarchiver"
         "lz4"
         "zip"

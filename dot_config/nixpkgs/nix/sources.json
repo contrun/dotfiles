@@ -41,10 +41,10 @@
         "homepage": "",
         "owner": "nix-community",
         "repo": "emacs-overlay",
-        "rev": "31b1392726e4c7d442963fc5793cd910d8ae651d",
-        "sha256": "1xl6yqca4g8rg86irbknlqrfs7mwyrv2gxrhb1ps5yq7q41gmmhs",
+        "rev": "5856e3224314285d974b9b5f521d0a3dfc2b4220",
+        "sha256": "0ym6lfqcrd1fzj6hmmxzpsh2p44sx8nprijxcrfnm841bgj1w3vk",
         "type": "tarball",
-        "url": "https://github.com/nix-community/emacs-overlay/archive/31b1392726e4c7d442963fc5793cd910d8ae651d.tar.gz",
+        "url": "https://github.com/nix-community/emacs-overlay/archive/5856e3224314285d974b9b5f521d0a3dfc2b4220.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "ghcide-nix": {
@@ -89,10 +89,10 @@
         "homepage": "",
         "owner": "tweag",
         "repo": "jupyterWith",
-        "rev": "747a461d67b3d56e30c8a988a892ef611c8fe460",
-        "sha256": "1kr098k1aljrqr4hwncgdzlzk3y0gmx34fqchi5lmn7v20qz2zgv",
+        "rev": "35eb565c6d00f3c61ef5e74e7e41870cfa3926f7",
+        "sha256": "15zpprs0blvlvbqapkyn92x6dpfa6va2xz25v24z67lqs96ii4jm",
         "type": "tarball",
-        "url": "https://github.com/tweag/jupyterWith/archive/747a461d67b3d56e30c8a988a892ef611c8fe460.tar.gz",
+        "url": "https://github.com/tweag/jupyterWith/archive/35eb565c6d00f3c61ef5e74e7e41870cfa3926f7.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "niv": {
@@ -101,10 +101,10 @@
         "homepage": "https://github.com/nmattia/niv",
         "owner": "nmattia",
         "repo": "niv",
-        "rev": "29ddaaf4e099c3ac0647f5b652469dfc79cd3b53",
-        "sha256": "1va6myp07gkspgxfch8z3rs9nyvys6jmgzkys6a2c4j09qxp1bs0",
+        "rev": "9d35b9e4837ab88517210b1701127612c260eccf",
+        "sha256": "0q50xhnm8g2yfyakrh0nly4swyygxpi0a8cb9gp65wcakcgvzvdh",
         "type": "tarball",
-        "url": "https://github.com/nmattia/niv/archive/29ddaaf4e099c3ac0647f5b652469dfc79cd3b53.tar.gz",
+        "url": "https://github.com/nmattia/niv/archive/9d35b9e4837ab88517210b1701127612c260eccf.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "nixpkgs": {
@@ -137,10 +137,10 @@
         "homepage": "https://github.com/nix-community/NUR",
         "owner": "nix-community",
         "repo": "nur-combined",
-        "rev": "6224aca264461de301ecb19f1b9e90cda2fc2199",
-        "sha256": "1di1zkw9bn04vcq5bn533pd8pxfcklmgh3qxm9h4fhzr243akia1",
+        "rev": "162b511464c5fd55bb52658536260f45270df8dd",
+        "sha256": "0g4iw18bz9y6qbw9ds24rmp99zp6k5q72k2b3b1xbmmy0qzdn554",
         "type": "tarball",
-        "url": "https://github.com/nix-community/nur-combined/archive/6224aca264461de301ecb19f1b9e90cda2fc2199.tar.gz",
+        "url": "https://github.com/nix-community/nur-combined/archive/162b511464c5fd55bb52658536260f45270df8dd.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "old-ghc-nix": {

@@ -182,6 +182,7 @@ in {
       iptables
       ipset
       dnsmasq
+      nixFlakes
       nix-info
       nixos-generators
       niv
@@ -252,6 +253,7 @@ in {
       chezmoi
       coreutils
       sudo
+      gettext
       sxhkd
       mimeo
       libsecret
@@ -434,6 +436,7 @@ in {
         allowUnfree = true;
         allowBroken = true;
         pulseaudio = true;
+        experimental-features = "nix-command flakes";
       };
     };
     localPkgs = "${home}/Local/nixpkgs";
@@ -1005,6 +1008,7 @@ in {
         };
         timers.${unitName} = {
           enable = enableDdns;
+          wantedBy = [ "default.target" ];
           onFailure = [ "notify-systemd-unit-failures@%i.service" ];
           timerConfig = {
             OnCalendar = "*-*-* *:2/10:43";
@@ -1067,6 +1071,7 @@ in {
         };
         timers.${unitName} = {
           enable = enableHolePuncher;
+          wantedBy = [ "default.target" ];
           onFailure = [ "notify-systemd-unit-failures@%i.service" ];
           timerConfig = {
             OnCalendar = "*-*-* *:3/20:00";
@@ -1090,6 +1095,7 @@ in {
         timers.${name} = {
           enable = enableTaskWarriorSync;
           onFailure = [ "notify-systemd-unit-failures@%i.service" ];
+          wantedBy = [ "default.target" ];
           timerConfig = {
             OnCalendar = "*-*-* *:1/3:00";
             Unit = "${name}.service";
