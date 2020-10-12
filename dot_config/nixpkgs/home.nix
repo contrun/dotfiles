@@ -179,9 +179,10 @@ let
         "wrk"
         "yq-go"
         "dhall"
-        # dhall.prelude
-        # dhall-bash
-        # dhall-json
+        "dhall-bash"
+        "dhall-json"
+        # "dhall-nix"
+        "dhall-lsp-server"
         "rlwrap"
         "git-revise"
         "git-crypt"

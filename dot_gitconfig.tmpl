@@ -8,8 +8,10 @@
 [color]
     ui = auto
 [pull]
-        rebase = true
+    rebase = true
 [github]
-        user = contrun
+    user = contrun
 [alias]
-	ignore = "!gi() { curl -sL https://www.gitignore.io/api/$@ ;}; gi"
+    ignore = "!gi() { curl -sL https://www.gitignore.io/api/$@ ;}; gi"
+[core]
+    excludesFile = ~/.gitignore
