@@ -768,36 +768,25 @@ Get required params to call `dash-docs-result-url' from SEARCH-RESULT."
      (t (format "%8d" (buffer-size)))))
   )
 
-;; Modify the default ibuffer-formats (toggle with `)
 (use-package flycheck
-  :hook (after-init . global-flycheck-mode)
+  :hook
+  (after-init . global-flycheck-mode)
   :custom
-  (flycheck-display-errors-function #'flycheck-display-error-messages-unless-error-list)
-  :config
-  (use-package flycheck-inline
-    :defer t
-    :config
-    (use-package quick-peek
-      :demand t
-      :init
-      (setq flycheck-inline-display-function
-            (lambda (msg pos)
-              (let* ((ov (quick-peek-overlay-ensure-at pos))
-                     (contents (quick-peek-overlay-contents ov)))
-                (setf (quick-peek-overlay-contents ov)
-                      (concat contents (when contents "\n") msg))
-                (quick-peek-update ov)))
-            flycheck-inline-clear-function #'quick-peek-hide)
-      )
-    )
-  (use-package flycheck-color-mode-line
-    :hook
-    (flycheck-mode . flycheck-color-mode-line-mode)
-    )
-  (use-package flycheck-package
-    :config
-    (flycheck-package-setup))
-  )
+  (flycheck-display-errors-function #'flycheck-display-error-messages-unless-error-list))
+
+(use-package flycheck-color-mode-line
+  :hook
+  (flycheck-mode . flycheck-color-mode-line-mode))
+
+(use-package flycheck-package
+  :init
+  (flycheck-package-setup))
+
+(use-package quick-peek)
+
+(use-package flycheck-inline
+  :hook
+  (flycheck-mode . flycheck-inline-mode))
 
 (use-package editorconfig
   :diminish editorconfig-mode
