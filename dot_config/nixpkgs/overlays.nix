@@ -121,6 +121,8 @@ let
           pyparsing
           black
           requests
+          python-dotenv
+          pyyaml
           # jupyter
           # ipykernel
           # ipywidgets

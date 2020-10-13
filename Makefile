@@ -27,10 +27,20 @@ home-install:
 	cp ~/.config/Code/User/settings.json $(DIR)/dot_config/Code/User/settings.json
 	chezmoi apply -v
 
+home-manager: home-install
+	home-manager switch -v
+
 root-install:
 	(cd; sudo chezmoi -c $(ROOTDIR)/chezmoi.toml apply -v)
 
 install: home-install root-install
+
+nixos-rebuild: install
+	sudo nixos-rebuild switch --show-trace
+
+aio: install
+	home-manager switch -v
+	sudo nixos-rebuild switch --show-trace
 
 home-uninstall:
 	chezmoi purge -v
