@@ -39,6 +39,9 @@ import XMonad.Layout.AutoMaster
 import XMonad.Layout.Column
 import XMonad.Layout.Hidden
 import XMonad.Prompt
+import XMonad.Prompt.FuzzyMatch (fuzzyMatch, fuzzySort)
+import XMonad.Prompt.Shell (safePrompt, shellPrompt)
+import XMonad.Prompt.Theme (themePrompt)
 import XMonad.Prompt.Workspace
 import qualified XMonad.StackSet as W
 import XMonad.Util.EZConfig
@@ -120,24 +123,25 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) =
         spawn
           "rofi -show combi -combi-modi window,drun,run -modi combi"
       ),
-      ( (mod1Mask, xK_space),
+      ( (mod4Mask, xK_s),
         spawn
           "rofi -show combi -combi-modi window,drun,run -modi combi"
       ),
       ((mod4Mask .|. shiftMask, xK_k), spawn "keymap.sh"),
-      -- launch gmrun
-      ((modm .|. controlMask, xK_p), spawn "gmrun"),
+      ((modm .|. shiftMask, xK_k), spawn "keymap.sh"),
       -- close focused window
-      ((modm .|. shiftMask, xK_c), kill),
-      ((modm .|. controlMask, xK_q), kill),
+      ((modm, xK_Escape), kill),
+      ((mod4Mask, xK_Escape), kill),
+      -- ((modm .|. shiftMask, xK_c), kill),
+      -- ((modm .|. controlMask, xK_q), kill),
       -- Rotate through the available layout algorithms
-      ((modm, xK_space), sendMessage NextLayout),
+      ((modm, xK_n), sendMessage NextLayout),
       --  Reset the layouts on the current workspace to default
       ( (modm .|. controlMask, xK_space),
         setLayout $ XMonad.layoutHook conf
       ),
       -- Resize viewed windows to the correct size
-      ((modm, xK_n), refresh),
+      ((modm .|. mod1Mask, xK_r), refresh),
       -- Move focus to the next window
       ((modm, xK_Tab), nextMatch Backward (return True)),
       ((modm .|. controlMask, xK_Tab), nextMatch Forward (return True)),
@@ -170,7 +174,6 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) =
       -- Use this binding with avoidStruts from Hooks.ManageDocks.
       -- See also the statusBar function from Hooks.DynamicLog.
       --
-      ((modm, xK_b), sendMessage ToggleStruts),
       -- Quit xmonad
       ((modm .|. shiftMask .|. controlMask, xK_q), io (exitWith ExitSuccess)),
       ((modm .|. shiftMask .|. controlMask, xK_BackSpace), removeWorkspace),
@@ -240,7 +243,7 @@ myMouseBindings (XConfig {XMonad.modMask = modm}) =
     ]
 
 myPromptKeymap =
-  M.union defaultXPKeymap $
+  M.union (emacsLikeXPKeymap' (\c -> isSpace c || elem c ['/', '-'])) $
     M.fromList
       [ ((controlMask, xK_g), quit),
         ((controlMask, xK_m), setSuccess True >> setDone True),
@@ -265,8 +268,11 @@ myXPConfig =
       bgHLight = "steelblue3",
       borderColor = "DarkOrange",
       promptBorderWidth = 1,
-      position = Top,
+      position = CenteredAt 0.25 0.5,
       historyFilter = deleteConsecutive,
+      historySize = 1024,
+      searchPredicate = fuzzyMatch,
+      sorter = fuzzySort,
       promptKeymap = myPromptKeymap
     }
 
@@ -387,7 +393,8 @@ myAddtionalKeys =
       myMod x = myModMaskStr ++ "-" ++ x
       searchBindings =
         [ (myMod "C-/", S.promptSearch myXPConfig searchEnginesCombined),
-          (unwords $ replicate 2 $ myMod "/", S.promptSearch myXPConfig defaultSearchEngine)
+          (unwords $ replicate 2 $ myMod "/", S.promptSearch myXPConfig defaultSearchEngine),
+          (unwords $ [myMod "/", "/"], shellPrompt myXPConfig)
         ]
           ++ [(unwords [myMod "/", name], S.promptSearch myXPConfig e) | e@(S.SearchEngine name _) <- searchEngines, length name == 1]
       launcherMode1 x = unwords [myMod "x", x]
@@ -401,14 +408,12 @@ myAddtionalKeys =
              (myMod "C-w", (windows . W.shift) "web"),
              (myMod "e", runInHiddenWorkspaceIfEmpty "editor" "emacsclient --alternate-editor='' --no-wait --create-frame"),
              (myMod "C-e", (windows . W.shift) "editor"),
-             (myMod "q", runInHiddenWorkspaceIfEmpty "quickTerminal" "alacritty --class 'QuickTerminal' -e tmux new 'exec zsh'"),
-             (myMod "C-q", (windows . W.shift) "quickTerminal"),
+             (myMod "q", runInHiddenWorkspaceIfEmpty "quick" "alacritty --class 'QuickTerminal' -e tmux new 'exec zsh'"),
+             (myMod "C-q", (windows . W.shift) "quick"),
              (myMod "i", runInHiddenWorkspaceIfEmpty "ide" myIdeaBinary),
              (myMod "C-i", (windows . W.shift) "ide"),
-             (myMod "p", runOrRaiseInHiddenWorkspace "password" "keepassxc" (className =? "KeePassXC")),
+             (myMod "p", runInHiddenWorkspaceIfEmpty "password" "keepassxc"),
              (myMod "C-p", (windows . W.shift) "password"),
-             (myMod "z", toggleOrViewHiddenWorkspace' "zstash"),
-             (myMod "C-z", (windows . W.shift) "zstash"),
              (myMod "c", toggleOrViewHiddenWorkspace' "chat"),
              (myMod "C-c", (windows . W.shift) "chat"),
              (myMod "h", toggleOrViewHiddenWorkspace' "hidden"),
@@ -513,6 +518,9 @@ raiseMaybeInHiddenWorkspace :: String -> X () -> Query Bool -> X ()
 raiseMaybeInHiddenWorkspace tag action query =
   whenX (toggleOrViewHiddenWorkspace tag) (raiseMaybe action query)
 
+toggleOrViewHiddenWorkspaceAndRunOrRaise :: String -> String -> Query Bool -> X ()
+toggleOrViewHiddenWorkspaceAndRunOrRaise tag command query = toggleOrViewHiddenWorkspace tag >> runOrRaise command query
+
 runOrRaiseInHiddenWorkspace :: String -> String -> Query Bool -> X ()
 runOrRaiseInHiddenWorkspace tag command query = viewHiddenWorkspace tag >> runOrRaise command query
 
@@ -584,7 +592,7 @@ myManageHook =
         [ (className =? myIdeaClassName) --> doShiftHiddenWorkspace "ide",
           (title =? "quick emacs frame") --> doShiftHiddenWorkspace "editor",
           (className =? "keepassxc") --> doShiftHiddenWorkspace "password",
-          (appName =? "QuickTerminal") --> doShiftHiddenWorkspace "quickTerminal",
+          (appName =? "QuickTerminal") --> doShiftHiddenWorkspace "quick",
           (appName =? "wechat.exe") --> doShiftHiddenWorkspace "chat",
           -- TODO: doHideWindows currently does not work for wine system tray. Can't figure out why.
           (title =? "Wine System Tray") --> doShift "hidden" <+> doHideWindows (Title "Wine System Tray"),
@@ -662,7 +670,7 @@ myStartupHook = do
 -- Run xmonad with the settings you specify. No need to modify this.
 --
 -- main = xmonad defaults
-myToggleStruts XConfig {XMonad.modMask = modm} = (modm, xK_b)
+myToggleStruts XConfig {XMonad.modMask = modm} = (modm .|. shiftMask, xK_b)
 
 myStatusBar = "xmobar"
 
@@ -680,7 +688,7 @@ myPP =
       ppUrgent = xmobarColor "red" "yellow"
     }
   where
-    myShortenedWorkspaces = ["chat", "reading", "web", "password", "ide", "quickTerminal", "editor", "vscode", "zstash", "video"]
+    myShortenedWorkspaces = ["chat", "reading", "web", "password", "ide", "quick", "editor", "vscode", "zstash", "video"]
     ignoreWorkspaces = \x -> if elem x myInvisibleWorkspaces then "" else x
     justAcronym = \x -> if elem x myShortenedWorkspaces then map toUpper (take 1 x) else x
 
