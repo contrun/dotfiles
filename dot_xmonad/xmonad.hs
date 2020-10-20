@@ -1,3 +1,5 @@
+{-# LANGUAGE FlexibleContexts #-}
+
 --
 -- xmonad example config file.
 --
@@ -9,6 +11,7 @@
 
 import Control.Monad (liftM2)
 import Data.Char
+import Data.Foldable (find)
 import qualified Data.Map as M
 import Data.Maybe
 import Data.Monoid
@@ -27,6 +30,7 @@ import XMonad.Actions.GroupNavigation
 import XMonad.Actions.PerWorkspaceKeys
 import qualified XMonad.Actions.Search as S
 import XMonad.Actions.WindowGo
+import XMonad.Core
 import XMonad.Hooks.DynamicLog
 import XMonad.Hooks.EwmhDesktops
 import XMonad.Hooks.ManageDocks (ToggleStruts (ToggleStruts))
@@ -392,13 +396,16 @@ myAddtionalKeys =
       powerMode key action = map (\k -> (unwords [myMod k, key], action)) ["<Delete>", "Pause", "XF86PowerOff"]
       myScratchpadSpawnAction = scratchpadSpawnAction defaults
    in searchBindings
-        ++ [ (myMod "w", runOrRaiseInHiddenWorkspace "web" "firefox" ((className =? "Nightly") <&&> (not <$> (title =? "Picture-in-Picture")))),
-             (myMod "S-w", runOrRaiseInHiddenWorkspace "web" "chromium" (className =? "Chromium-browser")),
-             (myMod "e", raiseMaybeInHiddenWorkspace "editor" (spawn "emacsclient --alternate-editor='' --no-wait --create-frame --frame-parameters='(quote (name . \"quick emacs frame\"))'") (title =? "quick emacs frame")),
-             (myMod "q", raiseMaybeInHiddenWorkspace "quickTerminal" (spawn "alacritty --class 'QuickTerminal' -e tmux new 'exec zsh'") (appName =? "QuickTerminal")),
-             -- (myMod "i", runOrRaiseInHiddenWorkspace "ide" myIdeaBinary (className =? myIdeaClassName)),
-             (myMod "i", toggleOrViewHiddenWorkspace' "ide"),
+        ++ [ (myMod "w", runInHiddenWorkspaceIfEmpty "web" "firefox"),
+             (myMod "C-w", (windows . W.shift) "web"),
+             (myMod "e", runInHiddenWorkspaceIfEmpty "editor" "emacsclient --alternate-editor='' --no-wait --create-frame"),
+             (myMod "C-e", (windows . W.shift) "editor"),
+             (myMod "q", runInHiddenWorkspaceIfEmpty "quickTerminal" "alacritty --class 'QuickTerminal' -e tmux new 'exec zsh'"),
+             (myMod "C-q", (windows . W.shift) "quickTerminal"),
+             (myMod "i", runInHiddenWorkspaceIfEmpty "ide" myIdeaBinary),
+             (myMod "C-i", (windows . W.shift) "ide"),
              (myMod "p", runOrRaiseInHiddenWorkspace "password" "keepassxc" (className =? "KeePassXC")),
+             (myMod "C-p", (windows . W.shift) "password"),
              (myMod "z", toggleOrViewHiddenWorkspace' "zstash"),
              (myMod "C-z", (windows . W.shift) "zstash"),
              (myMod "c", toggleOrViewHiddenWorkspace' "chat"),
@@ -488,6 +495,7 @@ myLayout = hiddenWindows (tiled ||| Mirror tiled ||| Full ||| Column 1.6)
 myFilterOutWorkspace :: String -> [WindowSpace] -> [WindowSpace]
 myFilterOutWorkspace wsname = filter (\(W.Workspace tag _ _) -> tag /= wsname)
 
+-- Return True if current workspace tag is tag
 toggleOrViewHiddenWorkspace :: String -> X Bool
 toggleOrViewHiddenWorkspace tag = do
   addHiddenWorkspace tag
@@ -504,6 +512,13 @@ raiseMaybeInHiddenWorkspace tag action query =
 runOrRaiseInHiddenWorkspace :: String -> String -> Query Bool -> X ()
 runOrRaiseInHiddenWorkspace tag command query =
   whenX (toggleOrViewHiddenWorkspace tag) (runOrRaise command query)
+
+windowsInCurrentWorkspace :: WindowSet -> [Window]
+windowsInCurrentWorkspace = W.integrate' . W.stack . W.workspace . W.current
+
+runInHiddenWorkspaceIfEmpty :: String -> String -> X ()
+runInHiddenWorkspaceIfEmpty tag command =
+  whenX (toggleOrViewHiddenWorkspace tag) (whenX (withWindowSet (return . null . windowsInCurrentWorkspace)) (spawn command))
 
 myGetTerminalCommand :: Maybe String -> Maybe String -> [String] -> (String, [String])
 myGetTerminalCommand title cls command = ("alacritty", (maybe [] (\x -> ["--title", x]) title) ++ (maybe [] (\x -> ["--class", x]) cls) ++ (if null command then [] else ["-e"] ++ command))
