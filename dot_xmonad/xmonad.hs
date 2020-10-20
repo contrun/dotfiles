@@ -47,6 +47,7 @@ import XMonad.Util.Paste
 import XMonad.Util.Run
 import XMonad.Util.Scratchpad
 import XMonad.Util.WindowProperties
+import XMonad.Util.XUtils (hideWindows)
 
 -- The preferred terminal program, which is used in a binding below and by
 -- certain contrib modules.
@@ -207,10 +208,10 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) =
          ]
 
 -- toggleOrView for people who prefer view to greedyView
-toggleOrView' = toggleOrDoSkip ["NSP"] W.view
+toggleOrView' = toggleOrDoSkip myInvisibleWorkspaces W.view
 
 -- toggleOrView ignoring scratchpad and named scratchpad workspace
-toggleOrViewNoSP = toggleOrDoSkip ["NSP"] W.greedyView
+toggleOrViewNoSP = toggleOrDoSkip myInvisibleWorkspaces W.greedyView
 
 ------------------------------------------------------------------------
 -- Mouse bindings: default actions bound to mouse events
@@ -410,6 +411,8 @@ myAddtionalKeys =
              (myMod "C-z", (windows . W.shift) "zstash"),
              (myMod "c", toggleOrViewHiddenWorkspace' "chat"),
              (myMod "C-c", (windows . W.shift) "chat"),
+             (myMod "h", toggleOrViewHiddenWorkspace' "hidden"),
+             (myMod "C-h", (windows . W.shift) "hidden"),
              (myMod "r", toggleOrViewHiddenWorkspace' "reading"),
              (myMod "C-r", (windows . W.shift) "reading"),
              (myMod "v", toggleOrViewHiddenWorkspace' "video"),
@@ -434,6 +437,7 @@ myAddtionalKeys =
              (launcherMode1 "r", runOrRaiseInHiddenWorkspace "reading" "koreader" (fmap (=~ ".*KOReader$") title)),
              (launcherMode1 "f", spawn "doublecmd"),
              (launcherMode1 "z", spawn "zotero"),
+             (launcherMode1 "t", spawn "noti --title home-manager --message test"),
              (launcherMode1 "i", runOrRaiseInHiddenWorkspace "ide" myIdeaBinary (className =? myIdeaClassName)),
              (launcherMode1 "v", spawn "codium"),
              (launcherMode1 "p", runOrRaiseInHiddenWorkspace "reading" "zathura" (className =? "Zathura")),
@@ -492,8 +496,8 @@ myLayout = hiddenWindows (tiled ||| Mirror tiled ||| Full ||| Column 1.6)
     -- Percent of screen to increment by when resizing panes
     delta = 3 / 100
 
-myFilterOutWorkspace :: String -> [WindowSpace] -> [WindowSpace]
-myFilterOutWorkspace wsname = filter (\(W.Workspace tag _ _) -> tag /= wsname)
+viewHiddenWorkspace :: String -> X ()
+viewHiddenWorkspace tag = whenX (withWindowSet $ return . (tag /=) . W.currentTag) (addHiddenWorkspace tag >> windows (W.view tag))
 
 -- Return True if current workspace tag is tag
 toggleOrViewHiddenWorkspace :: String -> X Bool
@@ -510,8 +514,7 @@ raiseMaybeInHiddenWorkspace tag action query =
   whenX (toggleOrViewHiddenWorkspace tag) (raiseMaybe action query)
 
 runOrRaiseInHiddenWorkspace :: String -> String -> Query Bool -> X ()
-runOrRaiseInHiddenWorkspace tag command query =
-  whenX (toggleOrViewHiddenWorkspace tag) (runOrRaise command query)
+runOrRaiseInHiddenWorkspace tag command query = viewHiddenWorkspace tag >> runOrRaise command query
 
 windowsInCurrentWorkspace :: WindowSet -> [Window]
 windowsInCurrentWorkspace = W.integrate' . W.stack . W.workspace . W.current
@@ -583,7 +586,8 @@ myManageHook =
           (className =? "keepassxc") --> doShiftHiddenWorkspace "password",
           (appName =? "QuickTerminal") --> doShiftHiddenWorkspace "quickTerminal",
           (appName =? "wechat.exe") --> doShiftHiddenWorkspace "chat",
-          (title =? "Wine System Tray") --> liftX (allWithProperty (Title "Wine System Tray") >>= mapM hideWindow) >> idHook,
+          -- TODO: doHideWindows currently does not work for wine system tray. Can't figure out why.
+          (title =? "Wine System Tray") --> doShift "hidden" <+> doHideWindows (Title "Wine System Tray"),
           (className =? "discord") --> doShiftHiddenWorkspace "chat",
           (className =? "zoom") --> doShiftHiddenWorkspace "chat",
           (className =? "telegram-desktop") --> doShiftHiddenWorkspace "chat",
@@ -603,6 +607,9 @@ myManageHook =
     myClassIgnores = ["desktop_window"]
     myTitleIgnores = ["kdesktop"]
     myBrowserClasses2 = ["Chromium-browser"]
+    doHideWindows property =
+      let hide = allWithProperty property >>= hideWindows
+       in (liftX hide) >> idHook
     doShiftHiddenWorkspace ws = (liftX $ addHiddenWorkspace ws) >> doShift ws
     doShiftAndViewHiddenWorkspace ws = (liftX $ addHiddenWorkspace ws) >> doShiftAndView ws
     doShiftAndView = doF . liftM2 (.) W.greedyView W.shift
@@ -639,6 +646,7 @@ myLogHook = return ()
 myStartupHook = do
   -- setWMName "LG3D"
   io $ setEnv "_JAVA_AWT_WM_NONREPARENTING" "1"
+  mapM_ addHiddenWorkspace $ filter (\x -> x /= "NSP") myInvisibleWorkspaces
   return () -- workaround for checkKeymap!
   -- workaround to integrate Java Swing/GUI apps into XMonad layouts;
   -- otherwise they just float around.
@@ -658,7 +666,7 @@ myToggleStruts XConfig {XMonad.modMask = modm} = (modm, xK_b)
 
 myStatusBar = "xmobar"
 
-myHiddenWorkspaces = ["NSP", "chat", "reading", "web", "password", "ide", "quickTerminal", "editor", "vscode", "zstash", "video"]
+myInvisibleWorkspaces = ["NSP", "hidden"]
 
 myPP =
   xmobarPP
@@ -672,8 +680,9 @@ myPP =
       ppUrgent = xmobarColor "red" "yellow"
     }
   where
-    ignoreWorkspaces = \x -> if elem x ["NSP"] then "" else x
-    justAcronym = \x -> if elem x myHiddenWorkspaces then map toUpper (take 1 x) else x
+    myShortenedWorkspaces = ["chat", "reading", "web", "password", "ide", "quickTerminal", "editor", "vscode", "zstash", "video"]
+    ignoreWorkspaces = \x -> if elem x myInvisibleWorkspaces then "" else x
+    justAcronym = \x -> if elem x myShortenedWorkspaces then map toUpper (take 1 x) else x
 
 -- The main function.
 main = xmonad =<< statusBar myStatusBar myPP myToggleStruts (ewmh defaults)
