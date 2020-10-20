@@ -762,6 +762,7 @@ let
         # multitail
         "neovim"
         "kakoune"
+        "kak-lsp"
         # netsurf
         # # # net-tools
         # # networkmanagerapplet

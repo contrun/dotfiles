@@ -41,10 +41,10 @@
         "homepage": "",
         "owner": "nix-community",
         "repo": "emacs-overlay",
-        "rev": "5856e3224314285d974b9b5f521d0a3dfc2b4220",
-        "sha256": "0ym6lfqcrd1fzj6hmmxzpsh2p44sx8nprijxcrfnm841bgj1w3vk",
+        "rev": "3c649677294bdedb776ec69b14719b7171666a8a",
+        "sha256": "0jm6rvpsgrijhah9k36b58rndrgb44v29df4mff8vq19yh061gw9",
         "type": "tarball",
-        "url": "https://github.com/nix-community/emacs-overlay/archive/5856e3224314285d974b9b5f521d0a3dfc2b4220.tar.gz",
+        "url": "https://github.com/nix-community/emacs-overlay/archive/3c649677294bdedb776ec69b14719b7171666a8a.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "ghcide-nix": {
@@ -77,10 +77,10 @@
         "homepage": null,
         "owner": "gibiansky",
         "repo": "ihaskell",
-        "rev": "ef698157f44960566687a308e3455b5ba031eb43",
-        "sha256": "1y054m6fndsjiypsjgmipmhbpp3spj3fw1x53z4qrixkl43mz3mi",
+        "rev": "a4a36ae643382d3a37ae3317734dd0a7e54822a8",
+        "sha256": "000b4ra4hsa7x5pj1330ky936q52l8d5chv5c78pps17wnnl34h7",
         "type": "tarball",
-        "url": "https://github.com/gibiansky/ihaskell/archive/ef698157f44960566687a308e3455b5ba031eb43.tar.gz",
+        "url": "https://github.com/gibiansky/ihaskell/archive/a4a36ae643382d3a37ae3317734dd0a7e54822a8.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "jupyterWith": {
@@ -137,10 +137,10 @@
         "homepage": "https://github.com/nix-community/NUR",
         "owner": "nix-community",
         "repo": "nur-combined",
-        "rev": "162b511464c5fd55bb52658536260f45270df8dd",
-        "sha256": "0g4iw18bz9y6qbw9ds24rmp99zp6k5q72k2b3b1xbmmy0qzdn554",
+        "rev": "983265bbe0ae9cd367d538a73f436cf1bd377dbf",
+        "sha256": "185dcrnp3djyy10bkxkgjnbzykjy11nz7vdcsm6wbvqskgsvb5fy",
         "type": "tarball",
-        "url": "https://github.com/nix-community/nur-combined/archive/162b511464c5fd55bb52658536260f45270df8dd.tar.gz",
+        "url": "https://github.com/nix-community/nur-combined/archive/983265bbe0ae9cd367d538a73f436cf1bd377dbf.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "old-ghc-nix": {

@@ -123,6 +123,7 @@ let
           requests
           python-dotenv
           pyyaml
+          pyperclip
           # jupyter
           # ipykernel
           # ipywidgets
