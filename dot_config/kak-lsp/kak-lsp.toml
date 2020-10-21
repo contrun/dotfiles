@@ -180,3 +180,8 @@ filetypes = ["terraform"]
 roots = ["*.tf"]
 command = "terraform-ls"
 args = ["serve"]
+
+[language.scala]
+filetypes = ["scala"]
+roots = ["build.sbt"]
+command = "metals"

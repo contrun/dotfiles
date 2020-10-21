@@ -44,6 +44,7 @@ let
       speed-check-mode = "ping,tcp:80";
       log-level = "info";
     };
+    enableTailScale = false;
     enableDnsmasq = false;
     enableDebugInfo = false;
     dnsmasqListenAddress = "127.0.0.233";
@@ -244,6 +245,7 @@ let
     consoleFont = "${pkgs.terminus_font}/share/consolefonts/ter-g20n.psf.gz";
     hostId = "80d17333";
     kernelPackages = pkgs.linuxPackages_5_7;
+    enableTailScale = true;
     # kernelPatches = [{
     #   # See https://github.com/NixOS/nixpkgs/issues/91367
     #   name = "anbox-kernel-config";

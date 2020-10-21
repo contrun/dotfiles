@@ -176,133 +176,136 @@ in {
     };
 
     extraOutputsToInstall = extraOutputsToInstall;
-    systemPackages = with pkgs; [
-      manpages
-      fuse
-      iptables
-      nftables
-      ipset
-      dnsmasq
-      nixFlakes
-      nix-info
-      nixos-generators
-      niv
-      nix-serve
-      home-manager
-      # nix-linter
-      nixfmt
-      (nix-du.overrideAttrs (oldAttr: { doCheck = false; }))
-      nix-index
-      nix-top
-      # gnome3.adwaita-icon-theme
-      gnome3.dconf
-      gnome3.gsettings-desktop-schemas
-      gnome3.zenity
-      font-manager
-      udiskie
-      fzf
-      jq
-      wine
-      fdm
-      mailutils
-      notify-osd-customizable
-      libnotify
-      (pkgs.myPackages.lua or lua)
-      gcc
-      usbutils
-      powertop
-      fail2ban
-      qemu
-      aqemu
-      ldns
-      bind
-      nix-prefetch-scripts
-      pulsemixer
-      acpilight
-      xorg.xev
-      xorg.libX11
-      xorg.libXft
-      xorg.libXpm
-      xorg.libXinerama
-      xorg.libXext
-      xorg.libXrandr
-      xorg.libXrender
-      xorg.xorgproto
-      openjdk
-      (pkgs.myPackages.python or python3)
-      (pkgs.myPackages.python2 or python2)
-      rofi
-      ruby
-      perl
-      neovim
-      libffi
-      pciutils
-      utillinux
-      ntfs3g
-      gparted
-      gnupg
-      pinentry
-      atool
-      atop
-      bash
-      zsh
-      ranger
-      gptfdisk
-      curl
-      at
-      git
-      chezmoi
-      coreutils
-      sudo
-      gettext
-      sxhkd
-      mimeo
-      libsecret
-      gnome3.seahorse
-      mlocate
-      htop
-      iotop
-      iftop
-      iw
-      lsof
-      hardinfo
-      dmenu
-      dmidecode
-      dunst
-      (cachix.overrideAttrs (oldAttr: { doCheck = false; }))
-      e2fsprogs
-      efibootmgr
-      dbus
-      linuxHeaders
-      cryptsetup
-      compton
-      btrbk
-      blueman
-      bluez
-      bluez-tools
-      btrfs-progs
-      exfat
-      i3blocks
-      i3-gaps
-      i3lock
-      i3status
-      xmobar
-      firefox
-      rsync
-      sshfs
-      termite
-      xbindkeys
-      xcape
-      xautolock
-      xdotool
-      xlibs.xmodmap
-      xmacro
-      autokey
-      xsel
-      xvkbd
-      fcron
-      gmp
-    ];
+    systemPackages = with pkgs;
+      ([
+        manpages
+        fuse
+        iptables
+        iproute
+        ethtool
+        nftables
+        ipset
+        dnsmasq
+        nixFlakes
+        nix-info
+        nixos-generators
+        niv
+        nix-serve
+        home-manager
+        # nix-linter
+        nixfmt
+        (nix-du.overrideAttrs (oldAttr: { doCheck = false; }))
+        nix-index
+        nix-top
+        # gnome3.adwaita-icon-theme
+        gnome3.dconf
+        gnome3.gsettings-desktop-schemas
+        gnome3.zenity
+        font-manager
+        udiskie
+        fzf
+        jq
+        wine
+        fdm
+        mailutils
+        notify-osd-customizable
+        libnotify
+        (pkgs.myPackages.lua or lua)
+        gcc
+        usbutils
+        powertop
+        fail2ban
+        qemu
+        aqemu
+        ldns
+        bind
+        nix-prefetch-scripts
+        pulsemixer
+        acpilight
+        xorg.xev
+        xorg.libX11
+        xorg.libXft
+        xorg.libXpm
+        xorg.libXinerama
+        xorg.libXext
+        xorg.libXrandr
+        xorg.libXrender
+        xorg.xorgproto
+        openjdk
+        (pkgs.myPackages.python or python3)
+        (pkgs.myPackages.python2 or python2)
+        rofi
+        ruby
+        perl
+        neovim
+        libffi
+        pciutils
+        utillinux
+        ntfs3g
+        gparted
+        gnupg
+        pinentry
+        atool
+        atop
+        bash
+        zsh
+        ranger
+        gptfdisk
+        curl
+        at
+        git
+        chezmoi
+        coreutils
+        sudo
+        gettext
+        sxhkd
+        mimeo
+        libsecret
+        gnome3.seahorse
+        mlocate
+        htop
+        iotop
+        iftop
+        iw
+        lsof
+        hardinfo
+        dmenu
+        dmidecode
+        dunst
+        (cachix.overrideAttrs (oldAttr: { doCheck = false; }))
+        e2fsprogs
+        efibootmgr
+        dbus
+        linuxHeaders
+        cryptsetup
+        compton
+        btrbk
+        blueman
+        bluez
+        bluez-tools
+        btrfs-progs
+        exfat
+        i3blocks
+        i3-gaps
+        i3lock
+        i3status
+        xmobar
+        firefox
+        rsync
+        sshfs
+        termite
+        xbindkeys
+        xcape
+        xautolock
+        xdotool
+        xlibs.xmodmap
+        xmacro
+        autokey
+        xsel
+        xvkbd
+        fcron
+        gmp
+      ] ++ (pkgs.lib.optional enableTailScale [ tailscale ]));
     enableDebugInfo = enableDebugInfo;
     shellAliases = {
       ssh = "ssh -C";
@@ -642,6 +645,7 @@ in {
       enable = enablePrinting;
       drivers = [ pkgs.hplip ];
     };
+    tailscale = { enable = enableTailScale; };
     system-config-printer.enable = enablePrinting;
     logind.extraConfig = ''
       HandlePowerKey=suspend

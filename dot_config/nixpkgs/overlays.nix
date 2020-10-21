@@ -140,6 +140,7 @@ let
           # nbformat
           # nbsphinx
           # nbstripout
+          pyspark
           matplotlib
           bokeh
           plotly
@@ -157,7 +158,6 @@ let
           cookiecutter
           pillow
           elasticsearch-dsl
-          pyyaml
         ];
       makeEmacsPkg = emacsPkg:
         (super.emacsPackagesGen emacsPkg).emacsWithPackages
