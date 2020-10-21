@@ -761,7 +761,7 @@ let
         # # mujs-git
         # multitail
         "neovim"
-        "kakoune"
+        "kakoune-unwrapped"
         "kak-lsp"
         # netsurf
         # # # net-tools
