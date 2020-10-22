@@ -108,8 +108,9 @@ let
         "gcc"
         # "glibc"
         "vscodium"
-        "hadoop_3_1"
+        # "hadoop_3_1"
         "gnumake"
+        "gitAndTools.git-sync"
       ];
     }
     {
@@ -504,7 +505,7 @@ let
         "gnome3.seahorse"
         "mlocate"
         "htop"
-        "ytop"
+        "bottom"
         "iotop"
         "inotifyTools"
         "noti"
@@ -556,7 +557,7 @@ let
         "wordnet"
         "stable.haskellPackages.patat"
         "myPackages.hunspell"
-        "myPackages.aspell"
+        # "myPackages.aspell"
         "pdfgrep"
         "pdfpc"
         "djview"
@@ -810,6 +811,7 @@ let
         # # # selfspy-git
         # # speedcrunch
         "sshfs"
+        "remmina"
         "rsync"
         "filezilla"
         "rclone"

@@ -45,6 +45,7 @@ let
       log-level = "info";
     };
     enableTailScale = false;
+    enableX2goServer = false;
     enableDnsmasq = false;
     enableDebugInfo = false;
     dnsmasqListenAddress = "127.0.0.233";
@@ -261,6 +262,7 @@ let
   } else if hostname == "ssg" then {
     hostId = "034d2ba3";
     dpi = 128;
+    enableX2goServer = true;
     enableHidpi = false;
     enableWireless = true;
     consoleFont = "${pkgs.terminus_font}/share/consolefonts/ter-g20n.psf.gz";

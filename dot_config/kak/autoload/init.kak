@@ -1,3 +1,5 @@
+map global normal <a-q> ':write-all-quit<ret>'
+
 hook global BufCreate .*[.](sbt) %{
     set-option buffer filetype scala
 }
@@ -7,7 +9,7 @@ hook global RegisterModified '"' %{ nop %sh{
 }}
 
 nop %sh{
-    [[ -d "%val{config}/plugins/plug.kak/" ]] || git clone https://github.com/robertmeta/plug.kak.git "%val{config}/plugins/plug.kak/"
+    git clone https://github.com/robertmeta/plug.kak.git "$kak_config/plugins/plug.kak/" || true
 }
 source "%val{config}/plugins/plug.kak/rc/plug.kak"
 
@@ -86,4 +88,8 @@ plug "danr/kakoune-easymotion" config %{
     map global user w :easy-motion-w<ret>
     map global user W :easy-motion-W<ret>
     map global user j :easy-motion-j<ret>
+}
+
+plug "eraserhd/kak-ansi" do %{
+    make
 }

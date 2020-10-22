@@ -646,6 +646,7 @@ in {
       drivers = [ pkgs.hplip ];
     };
     tailscale = { enable = enableTailScale; };
+    x2goserver = { enable = enableX2goServer; };
     system-config-printer.enable = enablePrinting;
     logind.extraConfig = ''
       HandlePowerKey=suspend

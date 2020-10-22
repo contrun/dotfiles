@@ -461,13 +461,6 @@ let
       '';
     };
 
-    # Usage: nix-shell -E 'with import <nixpkgs> {}; myDropIntoBuildShell hello'
-    myDropIntoBuildShell = pkg:
-      pkg.overrideAttrs ({ nativeBuildInputs ? [ ], ... }: {
-        nativeBuildInputs = nativeBuildInputs
-          ++ [ self.my-drop-into-build-shell ];
-      });
-
     my-drop-into-build-shell = super.stdenv.mkDerivation {
       # Copied from https://discourse.nixos.org/t/nix-shell-and-output-path/4043/5
       # Usage: nix-shell -E 'with import <nixpkgs> {}; hello.overrideAttrs ({ nativeBuildInputs ? [], ...} : { nativeBuildInputs = nativeBuildInputs ++ [ dropIntoBuildShellHook ]; })'
@@ -501,6 +494,13 @@ let
         addEnvHooks "$hostOffset" dropIntoBuildShell
       '';
     };
+
+    # Usage: nix-shell -E 'with import <nixpkgs> {}; myDropIntoBuildShell hello'
+    myDropIntoBuildShell = pkg:
+      pkg.overrideAttrs ({ nativeBuildInputs ? [ ], ... }: {
+        nativeBuildInputs = nativeBuildInputs
+          ++ [ self.my-drop-into-build-shell ];
+      });
 
     myBuildEnv = super.stdenv.mkDerivation {
       name = "my-build-env";
