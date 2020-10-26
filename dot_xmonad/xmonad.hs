@@ -131,7 +131,7 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) =
       ((modm .|. shiftMask, xK_k), spawn "keymap.sh"),
       -- close focused window
       ((modm, xK_Escape), kill),
-      ((mod4Mask, xK_Escape), kill),
+      ((mod1Mask, xK_F4), kill),
       -- ((modm .|. shiftMask, xK_c), kill),
       -- ((modm .|. controlMask, xK_q), kill),
       -- Rotate through the available layout algorithms

@@ -21,7 +21,10 @@ autopush:
 
 upload: pull push
 
-update: pull install
+update: pull update-upstreams install
+
+update-upstreams:
+	if cd "$HOME/.local/share/chezmoi/dot_config/nixpkgs/"; then niv update; fi
 
 home-install:
 	cp ~/.config/Code/User/settings.json $(DIR)/dot_config/Code/User/settings.json

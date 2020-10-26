@@ -44,7 +44,6 @@ let
           binaries = [
             # stylish-haskell
             # hindent
-            hlint
             # floskell
             # hfmt
             # brittany

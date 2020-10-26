@@ -369,6 +369,7 @@ in {
     adb.enable = enableADB;
     slock.enable = enableSlock;
     bash = { enableCompletion = true; };
+    x2goserver = { enable = enableX2goServer; };
     zsh = {
       enable = enableZSH;
       enableCompletion = true;
@@ -646,7 +647,6 @@ in {
       drivers = [ pkgs.hplip ];
     };
     tailscale = { enable = enableTailScale; };
-    x2goserver = { enable = enableX2goServer; };
     system-config-printer.enable = enablePrinting;
     logind.extraConfig = ''
       HandlePowerKey=suspend

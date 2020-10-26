@@ -143,6 +143,7 @@ let
         # rls
         "astyle"
         "postgresql"
+        "caddy"
         # "mariadb"
         "dbeaver"
         "flyway"
@@ -263,6 +264,7 @@ let
         "automake"
         "autossh"
         "mosh"
+        "eternal-terminal"
         "sshpass"
         "dfeet"
         "sqlitebrowser"
@@ -287,6 +289,10 @@ let
         # vscode-extensions.ms-python.python
         "hadolint"
         "haskellPackages.ormolu"
+        "haskellPackages.hlint"
+        "haskellPackages.cabal-fmt"
+        "haskellPackages.ghcid"
+        "haskellPackages.implicit-hie"
         "solargraph"
         "nodePackages.dockerfile-language-server-nodejs"
         "nodePackages.bash-language-server"
