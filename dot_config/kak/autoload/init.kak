@@ -1,4 +1,4 @@
-map global normal <a-q> ':write-all-quit<ret>'
+map global normal <a-s> ': write<ret>'
 
 hook global BufCreate .*[.](sbt) %{
     set-option buffer filetype scala
@@ -9,9 +9,11 @@ hook global RegisterModified '"' %{ nop %sh{
 }}
 
 nop %sh{
-    git clone https://github.com/robertmeta/plug.kak.git "$kak_config/plugins/plug.kak/" || true
+    git clone https://github.com/robertmeta/plug.kak.git "$kak_config/plugins/plug.kak/" || :
 }
 source "%val{config}/plugins/plug.kak/rc/plug.kak"
+
+plug plug.kak https://github.com/alexherbo2/plug.kak
 
 plug "lePerdu/kakboard" %{
     hook global WinCreate .* %{ kakboard-enable }
@@ -82,6 +84,8 @@ plug "kak-lsp/kak-lsp" do %{
 
 plug "andreyorst/fzf.kak" config %{
     map global normal <c-p> ': fzf-mode<ret>'
+    set-option global fzf_file_command 'rg'
+    set-option global fzf_highlight_command 'bat'
 }
 
 plug "danr/kakoune-easymotion" config %{
@@ -92,4 +96,22 @@ plug "danr/kakoune-easymotion" config %{
 
 plug "eraserhd/kak-ansi" do %{
     make
+}
+
+plug "alexherbo2/prelude.kak"
+plug "alexherbo2/auto-pairs.kak"
+plug "alexherbo2/surround.kak"
+plug "andreyorst/smarttab.kak"
+plug "alexherbo2/split-object.kak"
+
+plug "delapouite/kakoune-text-objects" %{
+    text-object-map
+}
+
+plug "occivink/kakoune-vertical-selection"
+
+plug "occivink/kakoune-expand"
+
+plug "jdugan6240/powerline.kak" config %{
+        powerline-start
 }

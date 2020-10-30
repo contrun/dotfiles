@@ -24,10 +24,10 @@ upload: pull push
 update: pull update-upstreams install
 
 update-upstreams:
-	if cd "$HOME/.local/share/chezmoi/dot_config/nixpkgs/"; then niv update; fi
+	if cd ~/.local/share/chezmoi/dot_config/nixpkgs/; then niv update; fi
 
 home-install:
-	cp ~/.config/Code/User/settings.json $(DIR)/dot_config/Code/User/settings.json
+	cp ~/.config/Code/User/settings.json $(DIR)/dot_config/Code/User/settings.json || :
 	chezmoi apply -v
 
 home-manager: home-install

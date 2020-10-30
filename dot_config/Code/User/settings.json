@@ -10,11 +10,16 @@
         "**/.factorypath": true
     },
     "editor.suggestSelection": "first",
-    "workbench.colorTheme": "Monokai Dimmed",
-    "vs-kubernetes": {
-        "vs-kubernetes.minikube-path.linux": "minikube"
-    },
     "workbench.activityBar.visible": false,
     "workbench.editor.enablePreview": false,
-    "workbench.editor.highlightModifiedTabs": true
+    "workbench.editor.highlightModifiedTabs": true,
+    "vsintellicode.modify.editor.suggestSelection": "automaticallyOverrodeDefaultValue",
+    "workbench.statusBar.visible": true,
+    "workbench.colorTheme": "Monokai Dimmed",
+    "remote.SSH.remotePlatform": {
+        "uzq": "linux"
+    },
+    "editor.multiCursorModifier": "alt",
+    "editor.wordWrap": "on",
+    "editor.minimap.enabled": false
 }

@@ -1,6 +1,6 @@
 ;; -*- coding: utf-8; no-byte-compile: t; lexical-binding: t -*-
 ;;; This init file only loads config.el in its parent directory
-;;; or the EMACS_CONFIG file from environmena variable.
+;;; or the EMACS_CONFIG file from environment variable.
 
 ;;* Base directory
 (defconst my/home

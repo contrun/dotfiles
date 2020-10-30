@@ -123,10 +123,6 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) =
         spawn
           "rofi -show combi -combi-modi window,drun,run -modi combi"
       ),
-      ( (mod4Mask, xK_s),
-        spawn
-          "rofi -show combi -combi-modi window,drun,run -modi combi"
-      ),
       ((mod4Mask .|. shiftMask, xK_k), spawn "keymap.sh"),
       ((modm .|. shiftMask, xK_k), spawn "keymap.sh"),
       -- close focused window
