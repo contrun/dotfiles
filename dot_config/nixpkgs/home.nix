@@ -19,12 +19,24 @@ let
       if acc ? ${x} then
         acc.${x}
       else
-        pkgs.lib.warn "${path} does not exists" null) attrset
+        pkgs.lib.warn "Package ${path} does not exists" null) attrset
     (pkgs.lib.splitString "." path);
-  getPkg = attrset: path: dontCheckPkg (getAttr attrset path);
+  getMyPkgOrPkg = attrset: path:
+    let
+      p = getAttr attrset path;
+      newPath = builtins.replaceStrings [ "myPackages." ] [ "" ] path;
+      shouldTryNewPath = newPath != path;
+    in if p != null then
+      p
+    else if shouldTryNewPath then
+      pkgs.lib.warn "Package ${path} does not exists, trying ${newPath}"
+      (getAttr attrset newPath)
+    else
+      null;
+  # Emits a warning when package does not exist, instead of quitting immediately
+  getPkg = attrset: path: dontCheckPkg (getMyPkgOrPkg attrset path);
   getPackages = list:
     (builtins.filter (x: x != null) (builtins.map (x: getPkg pkgs x) list));
-  # To report an error when package does not exist, instead of quit immediately
   allPackages = builtins.foldl' (acc: collection:
     acc ++ (builtins.map (pkg: changePkgPriority pkg collection.priority)
       collection.packages)) [ ] packageCollection;
@@ -59,6 +71,7 @@ let
         "nnn"
         "glib"
         "broot"
+        "navi"
         "ncdu"
         "links"
         "mustache-go"
@@ -81,7 +94,7 @@ let
         "w3m-full"
         "ueberzug"
         "autorandr"
-        # "xournal"
+        "xournal"
         "wgetpaste"
         "tmux"
         "traceroute"
@@ -90,7 +103,7 @@ let
         "fbterm"
         "fasd"
         "fortune"
-        # fpp
+        "fpp"
         "fzf"
         "cowsay"
         "bashInteractive"
@@ -129,7 +142,7 @@ let
         "rust-analyzer"
         "cargo-edit"
         "cargo-xbuild"
-        # cargo-update
+        "cargo-update"
         "cargo-generate"
         "racket"
         "myPackages.ruby"
@@ -137,10 +150,9 @@ let
         "vagrant"
         "shellcheck"
         # "zig"
-        # stdman
-        # stdmanpages
+        # "stdman"
+        "stdmanpages"
         "ccls"
-        # rls
         "astyle"
         "postgresql"
         "caddy"
@@ -207,7 +219,7 @@ let
         "jetbrains.pycharm-professional"
         "go2nix"
         "gnum4"
-        # "cudatoolkit"
+        "cudatoolkit"
         "linuxPackages_latest.bcc"
         "rr"
         "gdbgui"
@@ -216,8 +228,7 @@ let
         "stable.emscripten"
         "arrow-cpp"
         "wasm-pack"
-        # wasm-strip
-        # "wasm-bindgen-cli"
+        "wasm-bindgen-cli"
         "hexyl"
         "fd"
         "bat"
@@ -236,9 +247,8 @@ let
         "autoconf"
         "libtool"
         "geany"
-        # gettext
-        # # gkeyring
-        # # glances
+        "gettext"
+        "glances"
         "distcc"
         "remake"
         "cntr"
@@ -255,7 +265,7 @@ let
         "k9s"
         "minikube"
         "k3s"
-        # "libguestfs-with-appliance"
+        "libguestfs-with-appliance"
         "python3Packages.binwalk"
         "binutils"
         "bison"
@@ -269,14 +279,11 @@ let
         "sshpass"
         "dfeet"
         "sqlitebrowser"
-        # awesome
-        # axel
+        "axel"
         "baobab"
         "neovim-remote"
         "android-file-transfer"
-        # androidenv.platformTools
-        # adoptopenjdk-jre-openj9-bin-11
-        # android-platform-tools
+        "androidenv.androidPkgs_9_0.platform-tools"
         "colordiff"
         "androidStudioPackages.dev"
         "jq"
@@ -285,7 +292,6 @@ let
         "buildah"
         "ansible"
         "gomplate"
-        # "myPackages.hie"
         "nodejs_latest"
         "nodePackages.prettier"
         # vscode-extensions.ms-python.python
@@ -311,7 +317,6 @@ let
         "gradle"
         "maven"
         "ant"
-        # "openjdk14"
         "coursier"
         "leiningen"
         "clojure"
@@ -329,7 +334,6 @@ let
         "haskellPackages.haskell-language-server"
         # "myPackages.almond"
         "myPackages.jupyter"
-        # ihaskell
         "shfmt"
         "erlang"
         "elixir"
@@ -344,7 +348,7 @@ let
         "libunwind"
         "gmp"
         "libpng"
-        # "libjpeg"
+        "libjpeg"
         "openssl"
         "glib-networking"
         "myPackages.python"
@@ -359,7 +363,7 @@ let
       priority = 60;
       packages = getPackages [
         "gifsicle"
-        # gimp
+        "gimp"
         "ncpamixer"
         "maim"
         "pavucontrol"
@@ -381,7 +385,6 @@ let
         "feh"
         "sxiv"
         "arandr"
-        # "virtualbox"
         "vlc"
         "pyradio"
         "myPackages.kodi"
@@ -401,7 +404,8 @@ let
         "httpie"
         "wireshark"
         "nmap"
-        # slirp4netns
+        "zmap"
+        "slirp4netns"
         "proxychains"
         "speedtest-cli"
         "privoxy"
@@ -413,9 +417,8 @@ let
         "iperf"
         "openssh"
         "insomnia"
-        # "mitmproxy"
+        "mitmproxy"
         "ettercap"
-        "openssl"
         "redsocks"
         "wget"
         "asciidoctor"
@@ -424,9 +427,9 @@ let
         "uget"
         "udptunnel"
         "wireguard"
-        # qutebrowser
+        "qutebrowser"
         # telegram-cli
-        # spectral
+        "spectral"
         "tdesktop"
         "stable.nheko"
         "irssi"
@@ -434,7 +437,6 @@ let
         "brave"
         "aria2"
         "timewarrior"
-        # tigervnc
         "tinc"
         "tcpdump"
         "geoipWithDatabase"
@@ -448,19 +450,21 @@ let
         "shadowsocks-libev"
         "v2ray"
         "clash"
-        # # simplescreenrecorder
-        # sloccount
-        # # slop
-        # # smartmontools
-        # # soapui
+        "simplescreenrecorder"
+        "cloc"
+        "sloc"
+        "sloccount"
+        "slop"
+        "smartmontools"
+        "soapui"
         "telnet"
         "socat"
         "websocat"
         "neomutt"
         "mu"
         "midori"
-        # palemoon
-        # "luakit"
+        "palemoon"
+        "luakit"
         "firefox"
         "tridactyl-native"
         "sshuttle"
@@ -486,7 +490,6 @@ let
         "udisks"
         "smbclient"
         "cifs-utils"
-        # filezilla
         "nix-review"
         "nix-prefetch-scripts"
         "nix-prefetch-github"
@@ -504,7 +507,7 @@ let
         "exercism"
         "coreutils"
         "coreutils-prefixed"
-        # notify-osd
+        "notify-osd"
         "sxhkd"
         "mimeo"
         "libsecret"
@@ -518,7 +521,7 @@ let
         "inotifyTools"
         "noti"
         "gnutls"
-        # iw
+        "iw"
         "lsof"
         "hardinfo"
         "dmenu"
@@ -529,17 +532,14 @@ let
         "ldns"
         "smartdns"
         "bridge-utils"
-        # dnstracer
-        # # doublecmd-gtk2
-        # dropbox
-        # dropbox-cli
-        # dstat
+        "dnstracer"
+        # doublecmd-gtk2
+        "dstat"
         "dunst"
         "e2fsprogs"
-        # # ebook-tools
-        # # eclipse-java
+        "eclipses.eclipse-java"
+        "codeblocks"
         "efibootmgr"
-        # "dbus"
         "linuxHeaders"
         "cryptsetup"
         "compton"
@@ -556,9 +556,14 @@ let
       name = "document";
       priority = 45;
       packages = getPackages [
+        "bibtex2html"
+        "bibtool"
+        "briss"
         "pdf2djvu"
         "calibre"
         "fbreader"
+        "ebook_tools"
+        "coolreader"
         "languagetool"
         "proselint"
         "sigil"
@@ -570,12 +575,11 @@ let
         "pdfpc"
         "djview"
         "gnumeric"
-        # qpdfview
         "plantuml"
         "texmacs"
         "texlab"
         "myPackages.texLive"
-        # "texlab"
+        "texlab"
         "auctex"
         "mupdf"
         "graphviz"
@@ -589,9 +593,9 @@ let
         "myPackages.koreader"
         "abiword"
         "libreoffice"
-        # zile
+        "zile"
         "freemind"
-        # "xmind"
+        "xmind"
         "zotero"
         "k2pdfopt"
         "pdftk"
@@ -610,8 +614,7 @@ let
       name = "utilities";
       priority = 35;
       packages = getPackages [
-        # ack
-        # aha
+        "aha"
         "lzma"
         "libuchardet"
         "recode"
@@ -632,192 +635,127 @@ let
         "qalculate-gtk"
         "bc"
         "go-2fa"
-        # audacious
+        "audacious"
         "sshlatex"
         "tectonic"
         "patchelf"
         "libelf"
-        # cachix
-        # barcode
-        # # bfg
-        # bibtex2html
-        # bibtool
-        # bitlbee
-        # blueberry
-        # # bookworm
-        # briss
-        # byzanz
-        # cadaver
-        # calcurse
-        # # castget
-        # catfish
-        # # ccat
-        # # cclive
-        # # cfv
-        # cheat
-        # # cinelerra-cv
-        # clamav
-        # cloc
-        # cmst
-        # codeblocks
-        # # coolreader
-        # coreutils
-        # # cower
-        # # cpanminus
-        # # create_ap
-        # # cronie
-        # ctags
-        # dash
-        # davfs2
-        # # dbus-cpp
-        # # dconf-editor
-        # # debtap
-        # deluge # bittorrent
-        # # d-feet
-        # dhcpcd
-        # dialog
-        # # dictd
-        # diffuse
-        # diffutils
-        # dillo
-        # # elvish-git
-        # # emms
-        # entr
-        # epdfview
-        # # etckeeper
-        # evince
-        # evtest
-        # exfat-utils
-        # # exo
-        # fakeroot
-        # falkon
-        # # fbgrab
-        # fbida
-        # # fbpad-git
-        # # fbv
-        # fdupes
-        # feedreader
-        # ffcast
-        # figlet
-        # file
-        # # finch
-        # findutils
-        # fish
-        # # flashfocus
-        # flex
-        # # garcon
-        # # gaupol
-        # gnunet
-        # # gpick
-        # gpsd
-        # groff
-        # guvcview
-        # gv
-        # gvfs
-        # gzip
-        # # hamster-time-tracker
-        # handbrake
-        # hardinfo
-        # # hashdeep
-        # haveged
-        # hdparm
-        # hugo
-        # hwinfo
-        # i7z
-        # icdiff
+        "cachix"
+        "barcode"
+        "bitlbee"
+        "blueberry"
+        "bookworm"
+        "byzanz"
+        "calcurse"
+        "castget"
+        "catfish"
+        # ccat
+        # cfv
+        "cheat"
+        # cower
+        "davfs2"
+        "deluge"
+        # d-feet
+        "dialog"
+        # dictd
+        "diffutils"
+        # emms
+        "entr"
+        "epdfview"
+        "evince"
+        "evtest"
+        "exfat-utils"
+        "xfce.exo"
+        "fakeroot"
+        # fbgrab
+        "fbida"
+        # fbpad-git
+        "fbv"
+        "fdupes"
+        "feedreader"
+        "ffcast"
+        "figlet"
+        # finch
+        "findutils"
+        "flex"
+        # gaupol
+        "groff"
+        "gv"
+        "gvfs"
+        "hamster"
+        "handbrake"
+        "hashdeep"
+        "haveged"
+        "hdparm"
+        "hwinfo"
+        "icdiff"
         "iftop"
         "flamegraph"
-        # ifuse
-        # inetutils
-        # inkscape
-        # inotify-tools
-        # iputils
-        # ispell
-        # jfsutils
-        # jp2a
-        # # katarakt-git
-        # khal
-        # kitty
-        # kodi
-        # krop
-        # ksysguard
-        # libgnome-keyring
-        # libinput-gestures
-        # libtool
-        # libudev0-shim
-        # libva-utils
-        # libvdpau-va-gl
-        # liferea
-        # logrotate
+        "ifuse"
+        "inetutils"
+        "inkscape"
+        "iputils"
+        "jp2a"
+        "khal"
+        "krop"
+        "libgnome-keyring3"
+        "libinput"
+        "libinput-gestures"
+        "logrotate"
         "lolcat"
         "copyq"
         "kpcli"
-        # "bitwarden-cli"
+        "bitwarden-cli"
         "keepassxc"
         "mkpasswd"
         "scrot"
-        # lynx
-        # mcabber
-        # mcomix
-        # # mconnect-git
-        # mdadm
-        # mg
-        # mongodb
-        # monit
-
-        # most
-        # mtpaint
-        # # mujs-git
-        # multitail
+        "mcabber"
+        # mconnect-git
+        "mdadm"
+        "mg"
+        "mongodb"
+        "monit"
+        "mujs"
+        "multitail"
         "neovim"
         "kakoune-unwrapped"
         "kak-lsp"
-        # netsurf
-        # # # net-tools
-        # # networkmanagerapplet
-        # # nitrogen
-        # # ntp
-        # # numlockx
-        # # # nyancat
-        # okular
-        # # openconnect
-        # openvpn
-        # # osmo
-        # # parcellite
-        # # pass
-        # # pastebinit
-        # # peek
-        # # # persepolis
-        # # pidgin
-        # rustracer
-        # # plan9port
-        # # pngquant
-        # # polybar
-        # # procps-ng
-        # # profanity
-        # # psmisc
-        # # pulseaudio
-        # # pv
-        # pwgen
-        # pwsafe
-        # # qalculate-gtk
-        # qdirstat
-        # # qpdf
+        "netsurf-browser"
+        # net-tools
+        # nitrogen
+        "ntp"
+        "nyancat"
+        "openconnect"
+        "openvpn"
+        "osmo"
+        # pass
+        "pastebinit"
+        "peek"
+        "persepolis"
+        "pidgin"
+        "plan9port"
+        "pngquant"
+        "polybar"
+        "procps-ng"
+        "profanity"
+        "psmisc"
+        "pv"
+        "pwgen"
+        "pwsafe"
+        "qdirstat"
+        "qpdf"
         "qrencode"
         "zbar"
-        # # reiserfsprogs
-        # # rmlint
+        # reiserfsprogs
+        "rmlint"
         "rofi"
-        # # rsibreak
-        # # scite
+        "rsibreak"
+        "scite"
         "screen"
         "neofetch"
-        # # screenfetch
-        # # screenkey
-        # # scrot
-        # # # seahorse
-        # # # selfspy-git
-        # # speedcrunch
+        "screenkey"
+        # seahorse
+        "speedcrunch"
         "sshfs"
         "remmina"
         "rsync"
@@ -833,35 +771,31 @@ let
         "subdl"
         "subtitleeditor"
         "espeak"
-        # # surf
-        # # sxiv
-        # # synapse
-        # # sysfsutils
-        # # sysstat
-        # # tabbed
-        # # tasksh
+        "surf"
+        "synapse"
+        "sysfsutils"
+        "sysstat"
+        "tabbed"
+        "tasksh"
         "taskwarrior"
+        "vit"
         "dstask"
-        # # tcllib
+        "tcl"
+        "tcllib"
         "termite"
         # "termonad-with-packages"
-        # # tesseract
-        # # texinfo
+        "tesseract"
+        "texinfo"
         "thefuck"
-        # # tk
-        # # tlp
-        # # unified-remote-server
-        # unoconv
+        "tk"
+        "tlp"
+        "unoconv"
         "unzip"
         "urlscan"
-        # usbutils
-        # uzbl
-        # vault
-        # viewnior
-        # vit
-        # watson
-        # workrave
-        # xarchiver
+        "vault"
+        "viewnior"
+        "watson"
+        "workrave"
       ];
     }
   ];
