@@ -246,7 +246,7 @@ let
     consoleFont = "${pkgs.terminus_font}/share/consolefonts/ter-g20n.psf.gz";
     hostId = "80d17333";
     enableX2goServer = true;
-    kernelPackages = pkgs.linuxPackages_5_7;
+    # kernelPackages = pkgs.linuxPackages_5_7;
     enableTailScale = true;
     # kernelPatches = [{
     #   # See https://github.com/NixOS/nixpkgs/issues/91367

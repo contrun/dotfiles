@@ -4365,6 +4365,7 @@ With arg N, insert N newlines."
   :hook
   (after-init . reapply-themes)
   :init
+  (global-visual-line-mode 1)
   (defun reapply-themes ()
     "Forcibly load the themes listed in `custom-enabled-themes'."
     (dolist (theme custom-enabled-themes)
@@ -4456,7 +4457,7 @@ Selectively runs either `after-make-console-frame-hooks' or
     (after-make-console-frame . my/console-frame-setup)
     (after-make-window-system-frame . my/window-system-frame-setup)
     (after-init . (lambda () (when my/initial-frame
-                          (run-after-make-frame-hooks my/initial-frame))))
+                               (run-after-make-frame-hooks my/initial-frame))))
     )
   )
 

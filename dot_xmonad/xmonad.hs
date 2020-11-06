@@ -179,11 +179,8 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) =
       ((modm .|. controlMask, xK_g), workspacePrompt def (windows . W.shift)),
       ((modm .|. controlMask, xK_c), withWorkspace def (windows . copy)),
       -- What the fuck. Firefox just does not allow me to disable control-q, control-b. Below is to slow.
-      -- (keyPassThrough (controlMask, xK_q) (focusedHasProperty $ foldr1 Or $ map ClassName firefoxClasses, return ())),
-      -- (keyPassThrough (controlMask, xK_b) (focusedHasProperty $ foldr1 Or $ map ClassName firefoxClasses, return ())),
-      (keyPassThrough (controlMask, xK_q) (focusedHasProperty $ ClassName "Nightly", return ())),
       -- Tow slow for emacs
-      -- (keyPassThrough (controlMask, xK_b) (focusedHasProperty $ ClassName "Nightly", return ())),
+      (keyPassThrough (controlMask, xK_q) (focusedHasProperty $ foldr1 Or $ map ClassName firefoxClasses, return ())),
       ((modm .|. shiftMask, xK_r), spawn "noti --title xmonad --message recompiling; chezmoi apply; xmonad --recompile; xmonad --restart")
       -- Run xmessage with a summary of the default keybindings (useful for beginners)
       -- , ((modm .|. controlMask, xK_slash ), spawn ("echo \"" ++ help ++ "\" | xmessage -file -"))

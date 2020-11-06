@@ -582,7 +582,7 @@ in {
       userlistEnable = true;
     };
     fcron = {
-      enable = true;
+      enable = false;
       maxSerialJobs = 5;
       systab = "";
     };
@@ -762,6 +762,7 @@ in {
       # desktopManager.xfce.enableXfwm = false;
       windowManager = {
         i3.enable = true;
+        awesome.enable = true;
         xmonad = {
           enable = true;
           enableContribAndExtras = true;
@@ -1140,6 +1141,9 @@ in {
     in builtins.foldl' (a: e: pkgs.lib.recursiveUpdate a e) { } all;
   };
   nix = {
+    package = pkgs.nixFlakes;
+    extraOptions = lib.optionalString (config.nix.package == pkgs.nixFlakes)
+      "experimental-features = nix-command flakes";
     binaryCaches = [
       "https://mirrors.tuna.tsinghua.edu.cn/nix-channels/store"
       "https://cache.nixos.org"
