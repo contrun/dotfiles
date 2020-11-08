@@ -610,6 +610,35 @@ in {
       permitRootLogin = "yes";
       startWhenNeeded = true;
     };
+    samba = {
+      enable = enableSamba;
+      extraConfig = ''
+        workgroup = WORKGROUP
+        security = user
+      '';
+      shares = {
+        owner = {
+          comment = "home folder";
+          path = home;
+          public = "no";
+          writable = "yes";
+          printable = "no";
+          "create mask" = "0644";
+          "force user" = owner;
+          "force group" = "users";
+        };
+        data = {
+          comment = "data folder";
+          path = "/data";
+          public = "no";
+          writable = "yes";
+          printable = "no";
+          "create mask" = "0644";
+          "force user" = owner;
+          "force group" = "users";
+        };
+      };
+    };
     privoxy = {
       enable = true;
       listenAddress = "0.0.0.0:8118";
@@ -621,6 +650,21 @@ in {
     avahi = {
       enable = enableAvahi;
       nssmdns = true;
+      extraServiceFiles = {
+        ssh = "${pkgs.avahi}/etc/avahi/services/ssh.service";
+        smb = ''
+          <?xml version="1.0" standalone='no'?><!--*-nxml-*-->
+          <!DOCTYPE service-group SYSTEM "avahi-service.dtd">
+          <service-group>
+            <name replace-wildcards="yes">%h</name>
+            <service>
+              <type>_smb._tcp</type>
+              <port>445</port>
+            </service>
+          </service-group>
+        '';
+      };
+
     };
     nfs.server.enable = true;
     autossh = {

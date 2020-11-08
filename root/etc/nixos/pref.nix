@@ -107,6 +107,7 @@ let
     enableFail2ban = true;
     davfs2Secrets = "${home}/.davfs2/secrets";
     enableDavfs2 = true;
+    enableSamba = true;
     enableK3s = true;
     systemdMounts = let
       enableNextcloud = false;
