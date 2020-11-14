@@ -1098,9 +1098,10 @@ in {
           if [[ -n "$1" ]] && grep -Eq '[0-9]+-[0-9]+' <<< "$1"; then instance="$1"; fi
           externalPort="$(awk -F- '{print $2}' <<< "$instance")"
           internalPort="$(awk -F- '{print $1}' <<< "$instance")"
-          interfaces="$(ip link show up | awk -F'[ :]' '/MULTICAST/&&/LOWER_UP/ {print $3}')"
+          interfaces="$(ip link show up | awk -F'[ :]' '/MULTICAST/&&/LOWER_UP/ {print $3}' | grep -v veth)"
+          ipAddresses="$(parallel -k ip addr show dev {1} ::: $interfaces | grep -Po 'inet \K[\d.]+')"
           protocols="tcp udp"
-          result="$(parallel -r -v upnpc -m {1} -r $internalPort $externalPort {2} ::: $interfaces ::: $protocols || true)"
+          result="$(parallel -r -v upnpc -m {1} -a {2} $internalPort $externalPort {3} ::: $interfaces :::+ $ipAddresses ::: $protocols || true)"
           awk -v OFS=, '/is redirected to/ {print $2, $8, $3}' <<< "$result"
         '';
       in {
