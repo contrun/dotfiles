@@ -36,8 +36,11 @@ import XMonad.Hooks.EwmhDesktops
 import XMonad.Hooks.ManageDocks (ToggleStruts (ToggleStruts))
 import XMonad.Hooks.SetWMName (setWMName)
 import XMonad.Layout.AutoMaster
+import XMonad.Layout.CenteredMaster
 import XMonad.Layout.Column
+import XMonad.Layout.Grid
 import XMonad.Layout.Hidden
+import XMonad.Layout.ThreeColumns
 import XMonad.Prompt
 import XMonad.Prompt.FuzzyMatch (fuzzyMatch, fuzzySort)
 import XMonad.Prompt.Shell (safePrompt, shellPrompt)
@@ -157,7 +160,7 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) =
       -- Swap the focused window with the previous window
       ((modm .|. controlMask, xK_k), windows W.swapUp),
       -- Shrink the master area
-      ((modm, xK_h), sendMessage Shrink),
+      ((modm .|. controlMask, xK_l), sendMessage Shrink),
       -- Expand the master area
       ((modm, xK_l), sendMessage Expand),
       -- Push window back into tiling
@@ -175,8 +178,8 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) =
       ((modm .|. shiftMask .|. controlMask, xK_BackSpace), removeWorkspace),
       ((modm, xK_F4), withFocused hideWindow),
       ((modm .|. controlMask, xK_F4), popOldestHiddenWindow),
-      ((modm, xK_g), workspacePrompt def (windows . W.view)),
-      ((modm .|. controlMask, xK_g), workspacePrompt def (windows . W.shift)),
+      ((modm, xK_g), workspacePrompt myXPConfig (windows . W.view)),
+      ((modm .|. controlMask, xK_g), workspacePrompt myXPConfig (windows . W.shift)),
       ((modm .|. controlMask, xK_c), withWorkspace def (windows . copy)),
       -- What the fuck. Firefox just does not allow me to disable control-q, control-b. Below is to slow.
       -- Tow slow for emacs
@@ -238,23 +241,16 @@ myMouseBindings (XConfig {XMonad.modMask = modm}) =
 myPromptKeymap =
   M.union (emacsLikeXPKeymap' (\c -> isSpace c || elem c ['/', '-'])) $
     M.fromList
-      [ ((controlMask, xK_g), quit),
-        ((controlMask, xK_m), setSuccess True >> setDone True),
+      [ ((controlMask, xK_m), setSuccess True >> setDone True),
         ((controlMask, xK_j), setSuccess True >> setDone True),
         ((controlMask, xK_h), deleteString Prev),
-        ((controlMask, xK_f), moveCursor Next),
-        ((controlMask, xK_b), moveCursor Prev),
         ((controlMask, xK_p), moveHistory W.focusDown'),
-        ((controlMask, xK_n), moveHistory W.focusUp'),
-        ((mod1Mask, xK_p), moveHistory W.focusDown'),
-        ((mod1Mask, xK_n), moveHistory W.focusUp'),
-        ((mod1Mask, xK_b), moveWord Prev),
-        ((mod1Mask, xK_f), moveWord Next)
+        ((controlMask, xK_n), moveHistory W.focusUp')
       ]
 
 myXPConfig =
   def
-    { font = "xft:DejaVu Sans Mono:pixelsize=16",
+    { font = "xft:Source Han Sans:pixelsize=14:antialias=true:hinting=true",
       bgColor = "#0c1021",
       fgColor = "#f8f8f8",
       fgHLight = "#f8f8f8",
@@ -483,7 +479,7 @@ myAddtionalKeys =
 -- The available layouts.  Note that each layout is separated by |||,
 -- which denotes layout choice.
 --
-myLayout = hiddenWindows (tiled ||| Mirror tiled ||| Full ||| Column 1.6)
+myLayout = hiddenWindows (tiled ||| Mirror tiled ||| Full ||| Column 1.6 ||| ThreeColMid 1 (3 / 100) (1 / 2))
   where
     -- default tiling algorithm partitions the screen into two panes
     tiled = Tall nmaster delta ratio
@@ -604,7 +600,7 @@ myManageHook =
       ]
   where
     myTitleFloats = ["Transferring"] -- for the KDE "open link" popup from konsole
-    myClassFloats = ["Pinentry"] -- for gpg passphrase entry
+    myClassFloats = ["Pinentry", "copyq"]
     myClassIgnores = ["desktop_window"]
     myTitleIgnores = ["kdesktop"]
     myBrowserClasses2 = ["Chromium-browser"]
