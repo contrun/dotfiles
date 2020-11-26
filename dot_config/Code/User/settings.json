@@ -21,5 +21,7 @@
     },
     "editor.multiCursorModifier": "alt",
     "editor.wordWrap": "on",
-    "editor.minimap.enabled": false
+    "editor.minimap.enabled": false,
+    "remote.SSH.showLoginTerminal": true,
+    "remote.SSH.remoteServerListenOnSocket": true
 }

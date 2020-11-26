@@ -31,6 +31,7 @@ let
     enableIwd = wirelessBackend == "iwd";
     enableBumblebee = false;
     enableMediaKeys = true;
+    enableEternalTerminal = true;
     enableSmartdns = true;
     smartdnsSettings = {
       bind = ":5533 -no-rule -group example";

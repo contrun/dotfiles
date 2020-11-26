@@ -686,6 +686,7 @@ in {
           in pkgs.lib.imap1 getConf autosshPorts;
       in pkgs.lib.flatten (map go autosshServers));
     };
+    eternal-terminal = { enable = enableEternalTerminal; };
     printing = {
       enable = enablePrinting;
       drivers = [ pkgs.hplip ];
