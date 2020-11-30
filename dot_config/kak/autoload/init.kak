@@ -1,4 +1,5 @@
 map global normal <a-s> ': write<ret>'
+addhl global wrap
 
 hook global BufCreate .*[.](sbt) %{
     set-option buffer filetype scala

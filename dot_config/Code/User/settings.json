@@ -1,5 +1,5 @@
 {
-    "window.menuBarVisibility": "default",
+    "window.menuBarVisibility": "toggle",
     "editor.fontSize": 13,
     "window.zoomLevel": 1,
     "java.project.importOnFirstTimeStartup": "automatic",
@@ -17,11 +17,13 @@
     "workbench.statusBar.visible": true,
     "workbench.colorTheme": "Monokai Dimmed",
     "remote.SSH.remotePlatform": {
-        "uzq": "linux"
+        "uzq": "linux",
+        "cef": "linux"
     },
     "editor.multiCursorModifier": "alt",
     "editor.wordWrap": "on",
     "editor.minimap.enabled": false,
     "remote.SSH.showLoginTerminal": true,
-    "remote.SSH.remoteServerListenOnSocket": true
+    "remote.SSH.remoteServerListenOnSocket": true,
+    "workbench.editor.showTabs": false
 }

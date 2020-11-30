@@ -1734,6 +1734,8 @@ With arg N, insert N newlines."
 
 (use-package scala-mode)
 
+(use-package cuda-mode)
+
 (use-package dhall-mode
   :config
   (setq
