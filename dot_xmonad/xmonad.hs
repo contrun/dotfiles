@@ -433,7 +433,7 @@ myAddtionalKeys =
              (launcherMode1 "z", spawn "zotero"),
              (launcherMode1 "t", spawn "noti --title home-manager --message test"),
              (launcherMode1 "i", runOrRaiseInHiddenWorkspace "ide" myIdeaBinary (className =? myIdeaClassName)),
-             (launcherMode1 "v", spawn "codium"),
+             (launcherMode1 "v", spawn "code"),
              (launcherMode1 "p", runOrRaiseInHiddenWorkspace "reading" "zathura" (className =? "Zathura")),
              (launcherMode1 "l", spawn "calibre"),
              (launcherMode1 "w", spawn "wireshark"),
