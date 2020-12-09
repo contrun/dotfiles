@@ -499,8 +499,7 @@ in {
       };
     } // {
       mkCcacheDirs = {
-        text =
-          "mkdir -p -m0777 /var/cache/ccache && chown root:nixbld /var/cache/ccache";
+        text = "install -d -m 0777 -o root -g nixbld /var/cache/ccache";
         deps = [ ];
       };
       usrlocalbin = {
@@ -522,6 +521,11 @@ in {
       binbash = {
         text = "ln -sfn ${pkgs.bash}/bin/bash /bin/bash";
         deps = [ "binsh" ];
+      };
+
+      # sftpman
+      mntsshfs = {
+        text = "install -d -m 0700 -o ${owner} -g ${ownerGroup} /mnt/sshfs";
       };
 
       # Fuck pre-built dynamic binaries
@@ -1195,7 +1199,6 @@ in {
       "https://mirrors.tuna.tsinghua.edu.cn/nix-channels/store"
       "https://cache.nixos.org"
       "https://hydra.iohk.io"
-      "https://nixcache.reflex-frp.org"
     ];
     binaryCachePublicKeys = [
       "hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ=" # cardano
@@ -1253,5 +1256,8 @@ in {
     "net.ipv4.tcp_mtu_probing" = 1;
     "net.ipv4.tcp_congestion_control" = "bbr";
     "net.core.default_qdisc" = "fq";
+    "vfs.usermount" = 1;
+    "kernel.kptr_restrict" = 0;
+    "kernel.perf_event_paranoid" = 1;
   };
 }

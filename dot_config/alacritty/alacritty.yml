@@ -416,8 +416,7 @@ key_bindings:
   - { key: Insert,   mods: Shift,                   action: PasteSelection   }
   - { key: Key0,     mods: Control,                 action: ResetFontSize    }
   - { key: Equals,   mods: Control,                 action: IncreaseFontSize }
-  - { key: Add,      mods: Control,                 action: IncreaseFontSize }
-  - { key: Subtract, mods: Control,                 action: DecreaseFontSize }
+  - { key: Plus,     mods: Control,                 action: IncreaseFontSize }
   - { key: Minus,    mods: Control,                 action: DecreaseFontSize }
 
   # (Windows only)
@@ -427,7 +426,7 @@ key_bindings:
   - { key: K,      mods: Command, mode: ~Vi, chars: "\x0c"            }
   - { key: Key0,   mods: Command,            action: ResetFontSize    }
   - { key: Equals, mods: Command,            action: IncreaseFontSize }
-  - { key: Add,    mods: Command,            action: IncreaseFontSize }
+  - { key: Plus,   mods: Command,            action: IncreaseFontSize }
   - { key: Minus,  mods: Command,            action: DecreaseFontSize }
   - { key: K,      mods: Command,            action: ClearHistory     }
   - { key: V,      mods: Command,            action: Paste            }

@@ -1607,13 +1607,8 @@ With arg N, insert N newlines."
   (setq projectile-globally-ignored-file-suffixes
         (delq nil (delete-dups
                    (append
-                    '("DS_Store" "cache" "class" "elc" "eld" "jar")
+                    '("DS_Store" "cache" "class" "elc" "eld" "jar" ".ccls-cache")
                     projectile-globally-ignored-file-suffixes))))
-  (setq projectile-globally-ignored-directories
-        (delq nil (delete-dups
-                   (append
-                    '(".ccls-cache")
-                    projectile-globally-ignored-directories))))
   )
 
 (use-package helm-projectile
@@ -1628,12 +1623,6 @@ With arg N, insert N newlines."
 
 
 (use-package helm-gitignore)
-
-(use-package ccls
-  :hook ((c-mode c++-mode objc-mode) .
-         (lambda () (require 'ccls) (lsp)))
-  :custom
-  (ccls-args (list "--log-file=/tmp/ccls.log")))
 
 (use-package clang-format
   :config
@@ -1752,7 +1741,12 @@ With arg N, insert N newlines."
   :commands lsp
   :hook
   ;; (prog-major-mode . lsp)
+  (c-mode . lsp)
+  (cuda-mode . lsp)
+  (c++-mode . lsp)
+  (objc-mode . lsp)
   (dhall-mode . lsp)
+  (nix-mode . lsp)
   (haskell-mode . lsp)
   (elixir-mode . lsp)
   (typescript-mode . lsp)

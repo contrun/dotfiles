@@ -690,6 +690,8 @@ let
         "groff"
         "gv"
         "gvfs"
+        "bindfs"
+        "proot"
         "hamster"
         "handbrake"
         "hashdeep"

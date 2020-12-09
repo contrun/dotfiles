@@ -25,5 +25,8 @@
     "editor.minimap.enabled": false,
     "remote.SSH.showLoginTerminal": true,
     "remote.SSH.remoteServerListenOnSocket": true,
-    "workbench.editor.showTabs": false
+    "workbench.editor.showTabs": false,
+    "[rust]": {
+        "editor.defaultFormatter": "matklad.rust-analyzer"
+    }
 }
