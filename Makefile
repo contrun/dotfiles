@@ -6,7 +6,7 @@ ROOTDIR = $(DIR)/root
 .PHONY: install uninstall update pull push autopush upload update home-install root-install home-uninstall root-uninstall
 
 pull:
-	git diff --exit-code && git pull --rebase=true || (git stash; git pull --rebase=true; git stash pop;)
+	git pull --rebase --autostash
 
 push:
 	git status
@@ -27,7 +27,7 @@ update-upstreams:
 	if cd ~/.local/share/chezmoi/dot_config/nixpkgs/; then niv update; fi
 
 home-install:
-	cp ~/.config/Code/User/settings.json $(DIR)/dot_config/Code/User/settings.json || :
+	diff ~/.config/Code/User/settings.json $(DIR)/dot_config/Code/User/settings.json || nvim -d ~/.config/Code/User/settings.json $(DIR)/dot_config/Code/User/settings.json
 	chezmoi apply -v
 
 home-manager: home-install

@@ -15,7 +15,7 @@
     "workbench.editor.highlightModifiedTabs": true,
     "vsintellicode.modify.editor.suggestSelection": "automaticallyOverrodeDefaultValue",
     "workbench.statusBar.visible": true,
-    "workbench.colorTheme": "Monokai Dimmed",
+    "workbench.colorTheme": "Kimbie Dark",
     "remote.SSH.remotePlatform": {
         "uzq": "linux",
         "cef": "linux"
@@ -29,5 +29,8 @@
     "[rust]": {
         "editor.defaultFormatter": "matklad.rust-analyzer"
     },
-    "terminal.integrated.scrollback": 100000
+    "terminal.integrated.scrollback": 100000,
+    "terminal.integrated.commandsToSkipShell": [
+        "language-julia.interrupt"
+    ]
 }
