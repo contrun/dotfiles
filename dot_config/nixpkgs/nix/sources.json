@@ -41,10 +41,10 @@
         "homepage": "",
         "owner": "nix-community",
         "repo": "emacs-overlay",
-        "rev": "f991f225059871eb9f01f3044b5b30b7733cced7",
-        "sha256": "0rasmy966jnjj0rx1h9jjnh2dczk5m8ydzyyl6hjpf6wk2cz6wkv",
+        "rev": "f92c5a60570cdce391746c6158a49581140b0adb",
+        "sha256": "1lndxrs6cn21bd884h5r8d0dl8z62glqwyc4ncysajhiwp186iz3",
         "type": "tarball",
-        "url": "https://github.com/nix-community/emacs-overlay/archive/f991f225059871eb9f01f3044b5b30b7733cced7.tar.gz",
+        "url": "https://github.com/nix-community/emacs-overlay/archive/f92c5a60570cdce391746c6158a49581140b0adb.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "ghcide-nix": {
@@ -137,10 +137,10 @@
         "homepage": "https://github.com/nix-community/NUR",
         "owner": "nix-community",
         "repo": "nur-combined",
-        "rev": "862fa78400d4aade46984e504d02d6c89a8ead3d",
-        "sha256": "0b848bx4hhsahqwpacxb297y1k0jqgmldrcxzzadznwrph9b5180",
+        "rev": "9113cb8111c772fca0277f49861f4795c8ad1fc3",
+        "sha256": "1q0l5sv046z3x8hj76zx1rs30l9f0425257l32sh6qxivxsjdmh6",
         "type": "tarball",
-        "url": "https://github.com/nix-community/nur-combined/archive/862fa78400d4aade46984e504d02d6c89a8ead3d.tar.gz",
+        "url": "https://github.com/nix-community/nur-combined/archive/9113cb8111c772fca0277f49861f4795c8ad1fc3.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "old-ghc-nix": {
@@ -149,10 +149,10 @@
         "homepage": null,
         "owner": "mpickering",
         "repo": "old-ghc-nix",
-        "rev": "674d459c7376af6641c94e91cd7d36214661b481",
-        "sha256": "1w3d5dm9v7ms1s7xp39wncgwvh3kclp2bkdqa2kxn3x5dyayfm61",
+        "rev": "75632f684de06fcd604109b4ddbf28dfd04f9b2c",
+        "sha256": "186j36idapllxllwcw8svkzf8zvadvls2y4kw0mx4syc6ap4glrx",
         "type": "tarball",
-        "url": "https://github.com/mpickering/old-ghc-nix/archive/674d459c7376af6641c94e91cd7d36214661b481.tar.gz",
+        "url": "https://github.com/mpickering/old-ghc-nix/archive/75632f684de06fcd604109b4ddbf28dfd04f9b2c.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "pboy": {

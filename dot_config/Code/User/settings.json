@@ -28,5 +28,6 @@
     "workbench.editor.showTabs": false,
     "[rust]": {
         "editor.defaultFormatter": "matklad.rust-analyzer"
-    }
+    },
+    "terminal.integrated.scrollback": 100000
 }
