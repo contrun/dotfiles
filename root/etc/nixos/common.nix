@@ -177,7 +177,7 @@ in {
 
     extraOutputsToInstall = extraOutputsToInstall;
     systemPackages = with pkgs;
-      ([
+      [
         manpages
         fuse
         iptables
@@ -305,7 +305,12 @@ in {
         xvkbd
         fcron
         gmp
-      ] ++ (pkgs.lib.optional enableTailScale [ tailscale ]));
+      ] ++ [
+        pkgs.myPackages.nvimpager
+      ]
+      # TODO: Should be something like this
+      # ++ (pkgs.lib.optional (pkgs ? myPackages) [ pkgs.myPackages.nvimpager ])
+      ++ (pkgs.lib.optional enableTailScale [ tailscale ]);
     enableDebugInfo = enableDebugInfo;
     shellAliases = {
       ssh = "ssh -C";
@@ -349,6 +354,7 @@ in {
       # export PYTHONPATH="$MYPYTHONPATH:$PYTHONPATH"
       MYPYTHONPATH = "${pkgs.myPackages.pythonPackages.makePythonPath
         [ pkgs.myPackages.python ]}";
+      PAGER = "nvimpager";
     });
     variables = {
       # systemctl --user does not work without this
@@ -1020,6 +1026,19 @@ in {
             '';
           in update-channels + update-my-packages + update-home-manager
           + upgrade-system;
+      };
+    } // pkgs.lib.optionalAttrs (enableK3s) {
+      "k3s" = {
+        serviceConfig = {
+          ExecStartPost = [
+            ''
+              ${pkgs.coreutils}/bin/chown ${owner} /var/lib/rancher/k3s/agent/etc/crictl.yaml
+            ''
+            ''
+              ${pkgs.coreutils}/bin/chown ${owner} /etc/rancher/k3s/k3s.yaml
+            ''
+          ];
+        };
       };
     };
 

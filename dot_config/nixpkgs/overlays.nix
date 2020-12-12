@@ -350,6 +350,26 @@ let
           };
         };
 
+      nvimpager = with super;
+        stdenv.mkDerivation rec {
+          pname = "vimpager";
+          version = "unstable";
+          src = mySources.nvimpager;
+
+          nativeBuildInputs = [ pandoc ];
+
+          makeFlags = [ "PREFIX=$(out)" "DESTDIR=" ];
+
+          meta = with stdenv.lib; {
+            description =
+              "Use nvim as a pager to view manpages, diffs, etc with nvim's syntax highlighting";
+            homepage = "https://github.com/lucc/nvimpager";
+            license = licenses.bsd2;
+            platforms = platforms.all;
+            maintainers = with maintainers; [ contrun ];
+          };
+        };
+
       authinfo = with super;
         stdenv.mkDerivation rec {
           version = "HEAD";

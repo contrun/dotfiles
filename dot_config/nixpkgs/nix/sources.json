@@ -41,10 +41,10 @@
         "homepage": "",
         "owner": "nix-community",
         "repo": "emacs-overlay",
-        "rev": "f92c5a60570cdce391746c6158a49581140b0adb",
-        "sha256": "1lndxrs6cn21bd884h5r8d0dl8z62glqwyc4ncysajhiwp186iz3",
+        "rev": "d64238ca77452adb3c568e6ab29bdff455a6b34d",
+        "sha256": "0x682fhkpxfk06lf6h31r3agcfgj58a3rmvmmcxlk9ijpnrqcgib",
         "type": "tarball",
-        "url": "https://github.com/nix-community/emacs-overlay/archive/f92c5a60570cdce391746c6158a49581140b0adb.tar.gz",
+        "url": "https://github.com/nix-community/emacs-overlay/archive/d64238ca77452adb3c568e6ab29bdff455a6b34d.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "ghcide-nix": {
@@ -137,10 +137,22 @@
         "homepage": "https://github.com/nix-community/NUR",
         "owner": "nix-community",
         "repo": "nur-combined",
-        "rev": "9113cb8111c772fca0277f49861f4795c8ad1fc3",
-        "sha256": "1q0l5sv046z3x8hj76zx1rs30l9f0425257l32sh6qxivxsjdmh6",
+        "rev": "ba10448d487043a493fb51aa2e18df0654f14ebf",
+        "sha256": "1kayqhk2384kq39jh0qn7zjny05d3fkg620l759g2zqqf8qi564k",
         "type": "tarball",
-        "url": "https://github.com/nix-community/nur-combined/archive/9113cb8111c772fca0277f49861f4795c8ad1fc3.tar.gz",
+        "url": "https://github.com/nix-community/nur-combined/archive/ba10448d487043a493fb51aa2e18df0654f14ebf.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
+    "nvimpager": {
+        "branch": "develop",
+        "description": "Use nvim as a pager to view manpages, diffs, etc with nvim's syntax highlighting",
+        "homepage": "",
+        "owner": "lucc",
+        "repo": "nvimpager",
+        "rev": "c2f3259de438377710532d7ac6e4fd59502630a2",
+        "sha256": "0w76pr8cxkr594qbi7yq42m2ivvi47mz27zfkly1x7yw1b8z7qda",
+        "type": "tarball",
+        "url": "https://github.com/lucc/nvimpager/archive/c2f3259de438377710532d7ac6e4fd59502630a2.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "old-ghc-nix": {

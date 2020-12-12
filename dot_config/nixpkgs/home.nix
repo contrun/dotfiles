@@ -434,7 +434,7 @@ let
         "uget"
         "udptunnel"
         "wireguard"
-        "qutebrowser"
+        # "qutebrowser"
         # telegram-cli
         "spectral"
         "tdesktop"
@@ -790,7 +790,7 @@ let
         "tabbed"
         "tasksh"
         "taskwarrior"
-        "vit"
+        # "vit"
         "dstask"
         "tcl"
         "tcllib"

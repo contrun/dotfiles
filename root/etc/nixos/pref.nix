@@ -23,8 +23,8 @@ let
     dpi = 144;
     enableHidpi = true;
     enableIPv6 = true;
-    wirelessBackend = "wpa_supplicant";
-    # wirelessBackend = "iwd";
+    # wirelessBackend = "wpa_supplicant";
+    wirelessBackend = "iwd";
     enableSupplicant = wirelessBackend == "wpa_supplicant";
     enableConnman = false;
     enableWireless = enableSupplicant;
