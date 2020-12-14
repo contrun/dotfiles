@@ -184,7 +184,7 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) =
       -- What the fuck. Firefox just does not allow me to disable control-q, control-b. Below is to slow.
       -- Tow slow for emacs
       (keyPassThrough (controlMask, xK_q) (focusedHasProperty $ foldr1 Or $ map ClassName firefoxClasses, return ())),
-      ((modm .|. shiftMask, xK_r), spawn "noti --title xmonad --message recompiling; chezmoi apply; xmonad --recompile; xmonad --restart")
+      ((modm .|. shiftMask, xK_r), spawn "noti --title xmonad --message recompiling; make -C ~/.local/share/chezmoi/ home-install; xmonad --recompile; xmonad --restart")
       -- Run xmessage with a summary of the default keybindings (useful for beginners)
       -- , ((modm .|. controlMask, xK_slash ), spawn ("echo \"" ++ help ++ "\" | xmessage -file -"))
     ]
@@ -399,10 +399,12 @@ myAddtionalKeys =
              (myMod "C-e", (windows . W.shift) "editor"),
              (myMod "q", runInHiddenWorkspaceIfEmpty "quick" "alacritty --class 'QuickTerminal' -e tmux new 'exec zsh'"),
              (myMod "C-q", (windows . W.shift) "quick"),
+             (myMod "z", toggleOrViewHiddenWorkspace' "zstash"),
+             (myMod "C-z", (windows . W.shift) "zstash"),
              (myMod "i", runInHiddenWorkspaceIfEmpty "ide" myIdeaBinary),
              (myMod "C-i", (windows . W.shift) "ide"),
-             (myMod "p", runInHiddenWorkspaceIfEmpty "password" "keepassxc"),
-             (myMod "C-p", (windows . W.shift) "password"),
+             (myMod "p", runInHiddenWorkspaceIfEmpty "private" "keepassxc"),
+             (myMod "C-p", (windows . W.shift) "private"),
              (myMod "c", toggleOrViewHiddenWorkspace' "chat"),
              (myMod "C-c", (windows . W.shift) "chat"),
              (myMod "h", toggleOrViewHiddenWorkspace' "hidden"),
@@ -439,7 +441,7 @@ myAddtionalKeys =
              (launcherMode1 "w", spawn "wireshark"),
              (launcherMode1 "s", spawn "screenshot.sh"),
              (launcherMode1 "m", safeSpawn "emacsclient" ["-c", "-e", "(mu4e)"]),
-             (launcherMode1 "k", runOrRaiseInHiddenWorkspace "password" "keepassxc" (className =? "KeePassXC")),
+             (launcherMode1 "k", runOrRaiseInHiddenWorkspace "private" "keepassxc" (className =? "KeePassXC")),
              (launcherMode1 "c", uncurryN safeSpawn $ myGetTerminalCommand Nothing Nothing ["mc"])
            ]
         ++ [ (launcherMode2 "e", safeSpawn "emacsclient" ["-c", "-e", "(elfeed)"]),
@@ -451,7 +453,7 @@ myAddtionalKeys =
              (launcherMode2 "d", runOrRaiseInHiddenWorkspace "chat" "discord" (className =? "discord")),
              (launcherMode2 "t", runOrRaiseInHiddenWorkspace "chat" "telegram-desktop" (className =? "telegram-desktop")),
              (launcherMode2 "w", runOrRaiseInHiddenWorkspace "chat" "txsb" (appName =? "wechat.exe")),
-             (launcherMode2 "u", spawn "noti --title home-manager --message updating; chezmoi apply; noti home-manager switch"),
+             (launcherMode2 "u", spawn "noti --title home-manager --message updating; make -C ~/.local/share/chezmoi/ home-install; noti home-manager switch"),
              (launcherMode2 "k", spawn "keymap.sh"),
              (launcherMode2 "v", runOrRaiseInHiddenWorkspace "video" "vlc" (className =? "vlc")),
              (launcherMode2 "f", spawn "pcmanfm")
@@ -580,7 +582,7 @@ myManageHook =
         [namedScratchpadManageHook myScratchpads],
         [ (className =? myIdeaClassName) --> doShiftHiddenWorkspace "ide",
           (title =? "quick emacs frame") --> doShiftHiddenWorkspace "editor",
-          (className =? "keepassxc") --> doShiftHiddenWorkspace "password",
+          (className =? "keepassxc") --> doShiftHiddenWorkspace "private",
           (appName =? "QuickTerminal") --> doShiftHiddenWorkspace "quick",
           (appName =? "wechat.exe") --> doShiftHiddenWorkspace "chat",
           -- TODO: doHideWindows currently does not work for wine system tray. Can't figure out why.
@@ -677,7 +679,7 @@ myPP =
       ppUrgent = xmobarColor "red" "yellow"
     }
   where
-    myShortenedWorkspaces = ["chat", "reading", "web", "password", "ide", "quick", "editor", "vscode", "zstash", "video"]
+    myShortenedWorkspaces = ["chat", "reading", "web", "private", "ide", "quick", "editor", "vscode", "zstash", "video", "hidden"]
     ignoreWorkspaces = \x -> if elem x myInvisibleWorkspaces then "" else x
     justAcronym = \x -> if elem x myShortenedWorkspaces then map toUpper (take 1 x) else x
 

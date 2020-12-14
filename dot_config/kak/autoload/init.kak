@@ -1,5 +1,11 @@
 map global normal <a-s> ': write<ret>'
-addhl global wrap
+
+addhl global/ wrap
+
+hook global WinSetOption filetype=mail %{
+    set window autowrap_column 72
+    autowrap-enable
+}
 
 hook global BufCreate .*[.](sbt) %{
     set-option buffer filetype scala

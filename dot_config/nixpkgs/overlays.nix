@@ -288,6 +288,12 @@ let
 
       emacsUnstable = makeEmacsPkg super.emacsUnstable;
 
+      nvimdiff = with super;
+        writeScriptBin "nvimdiff" ''
+          #! ${stdenv.shell}
+          exec ${neovim}/bin/nvim -d "$@"
+        '';
+
       almond = let
         scalaVersion = "2.12.8";
         almondVersion = "0.10.8";

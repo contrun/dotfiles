@@ -238,6 +238,7 @@ in {
         ruby
         perl
         neovim
+        vim
         libffi
         pciutils
         utillinux
@@ -307,6 +308,7 @@ in {
         gmp
       ] ++ [
         pkgs.myPackages.nvimpager
+        pkgs.myPackages.nvimdiff
       ]
       # TODO: Should be something like this
       # ++ (pkgs.lib.optional (pkgs ? myPackages) [ pkgs.myPackages.nvimpager ])
@@ -532,6 +534,11 @@ in {
       # sftpman
       mntsshfs = {
         text = "install -d -m 0700 -o ${owner} -g ${ownerGroup} /mnt/sshfs";
+      };
+
+      # rclone
+      mntrclone = {
+        text = "install -d -m 0700 -o ${owner} -g ${ownerGroup} /mnt/rclone";
       };
 
       # Fuck pre-built dynamic binaries
@@ -1031,9 +1038,6 @@ in {
       "k3s" = {
         serviceConfig = {
           ExecStartPost = [
-            ''
-              ${pkgs.coreutils}/bin/chown ${owner} /var/lib/rancher/k3s/agent/etc/crictl.yaml
-            ''
             ''
               ${pkgs.coreutils}/bin/chown ${owner} /etc/rancher/k3s/k3s.yaml
             ''
