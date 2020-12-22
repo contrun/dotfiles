@@ -119,6 +119,7 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) =
         -- launch a terminal
         spawn $ XMonad.terminal conf
       ),
+      ((mod4Mask, xK_Return), spawn $ XMonad.terminal conf),
       ((modm, xK_Return), spawn $ XMonad.terminal conf),
       ((modm .|. shiftMask, xK_Return), spawn "urxvt"),
       -- launch dmenu
@@ -126,8 +127,8 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) =
         spawn
           "rofi -show combi -combi-modi window,drun,run -modi combi"
       ),
-      ((mod4Mask .|. shiftMask, xK_k), spawn "keymap.sh"),
-      ((modm .|. shiftMask, xK_k), spawn "keymap.sh"),
+      ((mod4Mask .|. shiftMask, xK_k), spawn "noti --title keymap keymap.sh"),
+      ((modm .|. shiftMask, xK_k), spawn "noti --title keymap keymap.sh"),
       -- close focused window
       ((modm, xK_Escape), kill),
       ((mod1Mask, xK_F4), kill),
@@ -454,7 +455,7 @@ myAddtionalKeys =
              (launcherMode2 "t", runOrRaiseInHiddenWorkspace "chat" "telegram-desktop" (className =? "telegram-desktop")),
              (launcherMode2 "w", runOrRaiseInHiddenWorkspace "chat" "txsb" (appName =? "wechat.exe")),
              (launcherMode2 "u", spawn "noti --title home-manager --message updating; make -C ~/.local/share/chezmoi/ home-install; noti home-manager switch"),
-             (launcherMode2 "k", spawn "keymap.sh"),
+             (launcherMode2 "k", spawn "noti --title keymap keymap.sh"),
              (launcherMode2 "v", runOrRaiseInHiddenWorkspace "video" "vlc" (className =? "vlc")),
              (launcherMode2 "f", spawn "pcmanfm")
            ]

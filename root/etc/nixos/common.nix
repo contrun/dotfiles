@@ -209,6 +209,7 @@ in {
         fdm
         mailutils
         notify-osd-customizable
+        noti
         libnotify
         (pkgs.myPackages.lua or lua)
         gcc
@@ -232,7 +233,6 @@ in {
         xorg.libXrandr
         xorg.libXrender
         xorg.xorgproto
-        openjdk
         (pkgs.myPackages.python or python3)
         (pkgs.myPackages.python2 or python2)
         (pkgs.myPackages.nvimpager or null)
@@ -366,7 +366,6 @@ in {
     ccache = { enable = true; };
     java = {
       enable = enableJava;
-      package = pkgs.openjdk11;
     };
     gnupg.agent = { enable = enableGPGAgent; };
     ssh = { startAgent = true; };
