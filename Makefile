@@ -2,8 +2,12 @@
 
 DIR := $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 ROOTDIR = $(DIR)/root
+IGNOREDDIR = $(DIR)/ignored
 
 .PHONY: install uninstall update pull push autopush upload update home-install root-install home-uninstall root-uninstall
+
+script = $(firstword $(subst -, ,$1))
+action = $(word 2,$(subst -, ,$1))
 
 pull:
 	git pull --rebase --autostash
@@ -21,7 +25,7 @@ autopush:
 
 upload: pull push
 
-update: pull update-upstreams install
+update: pull update-upstreams deps-install install
 
 update-upstreams:
 	if cd ~/.local/share/chezmoi/dot_config/nixpkgs/; then niv update; fi
@@ -39,6 +43,9 @@ root-install:
 
 install: home-install root-install
 
+deps-install deps-uninstall deps-reinstall:
+	test -f "$(IGNOREDDIR)/$(call script,$@).sh" && "$(IGNOREDDIR)/$(call script,$@).sh" "$(call action,$@)" || true
+
 nixos-rebuild: install
 	sudo nixos-rebuild switch --show-trace
 
@@ -52,4 +59,4 @@ home-uninstall:
 root-uninstall:
 	(cd; sudo chezmoi -c $(ROOTDIR)/chezmoi.toml purge -v)
 
-uninstall: home-uninstall root-uninstall
+uninstall: deps-uninstall home-uninstall root-uninstall
