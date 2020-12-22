@@ -22,7 +22,7 @@ let
         pkgs.lib.warn "Package ${path} does not exists" null) attrset
     (pkgs.lib.splitString "." path);
   getMyPkgOrPkg = attrset: path:
-    let
+    builtins.trace "Installing ${path}" (let
       p = getAttr attrset path;
       newPath = builtins.replaceStrings [ "myPackages." ] [ "" ] path;
       shouldTryNewPath = newPath != path;
@@ -32,7 +32,7 @@ let
       pkgs.lib.warn "Package ${path} does not exists, trying ${newPath}"
       (getAttr attrset newPath)
     else
-      null;
+      null);
   # Emits a warning when package does not exist, instead of quitting immediately
   getPkg = attrset: path: dontCheckPkg (getMyPkgOrPkg attrset path);
   getPackages = list:
@@ -260,6 +260,7 @@ let
         "cntr"
         "docker"
         "docker_compose"
+        # "lens"
         "kubernix"
         "terraform"
         "flink"
@@ -439,6 +440,7 @@ let
         "spectral"
         "tdesktop"
         "jitsi-meet"
+        "jitsi-meet-electron"
         "stable.nheko"
         "irssi"
         "chromium"
@@ -484,7 +486,7 @@ let
       name = "system";
       priority = 20;
       packages = getPackages [
-        "myPackages.nur-combined.repos.kalbasit.nixify"
+        # "myPackages.nur-combined.repos.kalbasit.nixify"
         "udiskie"
         "acpi"
         "wine"
@@ -525,7 +527,7 @@ let
         "gnome3.seahorse"
         "mlocate"
         "htop"
-        "bottom"
+        # "bottom"
         "iotop"
         "inotifyTools"
         "noti"
@@ -732,7 +734,7 @@ let
         "kakoune-unwrapped"
         "kak-lsp"
         "rnix-lsp"
-        "netsurf-browser"
+        # "netsurf-browser"
         # net-tools
         # nitrogen
         "ntp"
@@ -769,7 +771,7 @@ let
         # seahorse
         "speedcrunch"
         "sshfs"
-        "sftpman"
+        # "sftpman"
         "remmina"
         "rsync"
         "filezilla"

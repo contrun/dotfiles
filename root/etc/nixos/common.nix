@@ -1,6 +1,6 @@
 { config, pkgs, ... }:
 
-with import /etc/nixos/pref.nix { inherit config pkgs; };
+with import ./pref.nix { inherit config pkgs; };
 let
   importWithConfig = x: import x { config = config.nixpkgs.config; };
   importNixChannel = channel: importWithConfig (fetchNixChannel channel);
@@ -396,7 +396,7 @@ in {
 
   fonts = {
     enableDefaultFonts = true;
-    fontDir.enable = true;
+    # fontDir.enable = true;
     fontconfig = { enable = true; };
     fonts = with pkgs; [
       wqy_microhei
@@ -589,10 +589,10 @@ in {
     };
     compton = { enable = true; };
     connman = { enable = enableConnman; };
-    calibre-server = {
-      enable = enableCalibreServer;
-      libraries = calibreServerLibraries;
-    };
+    # calibre-server = {
+    #   enable = enableCalibreServer;
+    #   libraries = calibreServerLibraries;
+    # };
     vsftpd = {
       enable = true;
       userlist = [ owner ];
@@ -1037,11 +1037,9 @@ in {
     } // pkgs.lib.optionalAttrs (enableK3s) {
       "k3s" = {
         serviceConfig = {
-          ExecStartPost = [
-            ''
-              ${pkgs.coreutils}/bin/chown ${owner} /etc/rancher/k3s/k3s.yaml
-            ''
-          ];
+          ExecStartPost = [''
+            ${pkgs.coreutils}/bin/chown ${owner} /etc/rancher/k3s/k3s.yaml
+          ''];
         };
       };
     };

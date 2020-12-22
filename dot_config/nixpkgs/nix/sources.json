@@ -41,10 +41,10 @@
         "homepage": "",
         "owner": "nix-community",
         "repo": "emacs-overlay",
-        "rev": "d64238ca77452adb3c568e6ab29bdff455a6b34d",
-        "sha256": "0x682fhkpxfk06lf6h31r3agcfgj58a3rmvmmcxlk9ijpnrqcgib",
+        "rev": "2dc80edc44a76f3a067737a1c545c39a2b8e0028",
+        "sha256": "1lkr8jx7hc19k3vf3igzsjfsrb6a6kfh0lpg9aphcwiq2zafnhwk",
         "type": "tarball",
-        "url": "https://github.com/nix-community/emacs-overlay/archive/d64238ca77452adb3c568e6ab29bdff455a6b34d.tar.gz",
+        "url": "https://github.com/nix-community/emacs-overlay/archive/2dc80edc44a76f3a067737a1c545c39a2b8e0028.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "ghcide-nix": {
@@ -137,10 +137,10 @@
         "homepage": "https://github.com/nix-community/NUR",
         "owner": "nix-community",
         "repo": "nur-combined",
-        "rev": "ba10448d487043a493fb51aa2e18df0654f14ebf",
-        "sha256": "1kayqhk2384kq39jh0qn7zjny05d3fkg620l759g2zqqf8qi564k",
+        "rev": "cd30e59ee68126b059356f9e95d0701faaec9686",
+        "sha256": "1j0j66vsl27dchrw4jg6jpfs5p9rqv85k5jakmzs2zal1d72p4vz",
         "type": "tarball",
-        "url": "https://github.com/nix-community/nur-combined/archive/ba10448d487043a493fb51aa2e18df0654f14ebf.tar.gz",
+        "url": "https://github.com/nix-community/nur-combined/archive/cd30e59ee68126b059356f9e95d0701faaec9686.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "nvimpager": {
@@ -149,10 +149,10 @@
         "homepage": "",
         "owner": "lucc",
         "repo": "nvimpager",
-        "rev": "c2f3259de438377710532d7ac6e4fd59502630a2",
-        "sha256": "0w76pr8cxkr594qbi7yq42m2ivvi47mz27zfkly1x7yw1b8z7qda",
+        "rev": "fd9406408214d50a0b8b34489edd32ecbffdc6fa",
+        "sha256": "19l5rcrfjw31wq9hycqsa9dfvybgcd7lx6clprfjxhn3wdknx3a3",
         "type": "tarball",
-        "url": "https://github.com/lucc/nvimpager/archive/c2f3259de438377710532d7ac6e4fd59502630a2.tar.gz",
+        "url": "https://github.com/lucc/nvimpager/archive/fd9406408214d50a0b8b34489edd32ecbffdc6fa.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "old-ghc-nix": {

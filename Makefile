@@ -27,6 +27,7 @@ update-upstreams:
 	if cd ~/.local/share/chezmoi/dot_config/nixpkgs/; then niv update; fi
 
 home-install:
+	[[ -f ~/.config/Code/User/settings.json ]] || install -DT $(DIR)/dot_config/Code/User/settings.json ~/.config/Code/User/settings.json
 	diff ~/.config/Code/User/settings.json $(DIR)/dot_config/Code/User/settings.json || nvim -d ~/.config/Code/User/settings.json $(DIR)/dot_config/Code/User/settings.json
 	chezmoi apply -v
 

@@ -247,7 +247,7 @@ let
         };
 
         jupyterEnvironment = jupyterWith.jupyterlabWith {
-          kernels = [ iPython iHaskell ];
+          kernels = [ iPython ];
           extraPackages = p: [ super.python3.pkgs.notebook super.pandoc ];
         };
       in jupyterEnvironment;
@@ -358,7 +358,7 @@ let
 
       nvimpager = with super;
         stdenv.mkDerivation rec {
-          pname = "vimpager";
+          pname = "nvimpager";
           version = "unstable";
           src = mySources.nvimpager;
 

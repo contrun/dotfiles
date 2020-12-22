@@ -232,14 +232,17 @@ let
   hostSpecific = let
     hostname = let
       # LC_CTYPE=C tr -dc 'a-z' < /dev/urandom | head -c3 | tee /tmp/hostname
-      hostNameFiles = [ /etc/hostname /tmp/hostname ];
+      hostNameFiles =
+        [ /tmp/etc/hostname /mnt/etc/hostname /tmp/hostname /etc/hostname ];
       fs = builtins.filter (x: builtins.pathExists x) hostNameFiles;
       f = builtins.elemAt fs 0;
       c = builtins.readFile f;
       l = builtins.match "([[:alnum:]]+)[[:space:]]*" c;
     in builtins.elemAt l 0;
-    hash = builtins.hashString "sha512" "hostname: ${hostname}";
-    hostId = builtins.substring 0 7 hash;
+    hash = builtins.trace "Hashing for ${hostname}"
+      (builtins.hashString "sha512" "hostname: ${hostname}");
+    hostId = builtins.trace "Obtaining hash result ${hash}"
+      (builtins.substring 0 8 hash);
   in {
     inherit hostname hostId;
   } // (if hostname == "uzq" then rec {
@@ -269,11 +272,16 @@ let
     enableHidpi = false;
     enableWireless = true;
     consoleFont = "${pkgs.terminus_font}/share/consolefonts/ter-g20n.psf.gz";
+  } else if hostname == "jxt" then {
+    hostId = "5ee92b8d";
+    enableVirtualboxHost = false;
   } else
     { });
   prefFiles = [ "/etc/nixos/override.nix" ];
   effectiveFiles = builtins.filter (x: builtins.pathExists x) prefFiles;
   readPref = path: (import (builtins.toPath path)) myArgs;
-in defaults // hostSpecific
+in defaults // (builtins.trace
+  "Host specific configuration: Id: ${hostSpecific.hostId}, name: ${hostSpecific.hostname}"
+  hostSpecific)
 // (builtins.foldl' (accumulator: path: accumulator // readPref path) { }
   effectiveFiles)
