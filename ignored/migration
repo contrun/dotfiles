@@ -1,0 +1,11 @@
+~/.bin
+~/.config/chezmoi
+~/.config/keepassxc
+~/.config/nixpkgs
+~/.gnupg
+~/.local/share/chezmoi
+~/.ssh
+~/Sync
+~/.xmonad
+
+/etc/nixos
