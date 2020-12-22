@@ -584,6 +584,7 @@ myManageHook =
           (title =? "quick emacs frame") --> doShiftHiddenWorkspace "editor",
           (className =? "keepassxc") --> doShiftHiddenWorkspace "private",
           (appName =? "QuickTerminal") --> doShiftHiddenWorkspace "quick",
+          (className =? "Microsoft Teams - Preview") --> doShiftHiddenWorkspace "chat",
           (appName =? "wechat.exe") --> doShiftHiddenWorkspace "chat",
           -- TODO: doHideWindows currently does not work for wine system tray. Can't figure out why.
           (title =? "Wine System Tray") --> doShift "hidden" <+> doHideWindows (Title "Wine System Tray"),

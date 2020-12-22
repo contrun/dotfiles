@@ -439,6 +439,7 @@ let
         # telegram-cli
         "spectral"
         "tdesktop"
+        "teams"
         "jitsi-meet"
         "jitsi-meet-electron"
         "stable.nheko"

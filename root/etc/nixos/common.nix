@@ -177,7 +177,7 @@ in {
 
     extraOutputsToInstall = extraOutputsToInstall;
     systemPackages = with pkgs;
-      [
+      builtins.filter (x: x != null) [
         manpages
         fuse
         iptables
@@ -194,7 +194,7 @@ in {
         home-manager
         # nix-linter
         nixfmt
-        (nix-du.overrideAttrs (oldAttr: { doCheck = false; }))
+        nix-du
         nix-index
         nix-top
         # gnome3.adwaita-icon-theme
@@ -212,6 +212,7 @@ in {
         libnotify
         (pkgs.myPackages.lua or lua)
         gcc
+        gnumake
         usbutils
         powertop
         fail2ban
@@ -234,6 +235,8 @@ in {
         openjdk
         (pkgs.myPackages.python or python3)
         (pkgs.myPackages.python2 or python2)
+        (pkgs.myPackages.nvimpager or null)
+        (pkgs.myPackages.nvimdiff or null)
         rofi
         ruby
         perl
@@ -273,7 +276,7 @@ in {
         dmenu
         dmidecode
         dunst
-        (cachix.overrideAttrs (oldAttr: { doCheck = false; }))
+        cachix
         e2fsprogs
         efibootmgr
         dbus
@@ -306,13 +309,7 @@ in {
         xvkbd
         fcron
         gmp
-      ] ++ [
-        pkgs.myPackages.nvimpager
-        pkgs.myPackages.nvimdiff
-      ]
-      # TODO: Should be something like this
-      # ++ (pkgs.lib.optional (pkgs ? myPackages) [ pkgs.myPackages.nvimpager ])
-      ++ (pkgs.lib.optional enableTailScale [ tailscale ]);
+      ] ++ (pkgs.lib.optional enableTailScale [ tailscale ]);
     enableDebugInfo = enableDebugInfo;
     shellAliases = {
       ssh = "ssh -C";
@@ -354,8 +351,8 @@ in {
       EDITOR = "nvim";
     } // pkgs.lib.optionalAttrs (pkgs ? myPackages) {
       # export PYTHONPATH="$MYPYTHONPATH:$PYTHONPATH"
-      MYPYTHONPATH = "${pkgs.myPackages.pythonPackages.makePythonPath
-        [ pkgs.myPackages.python ]}";
+      MYPYTHONPATH = pkgs.myPackages.pythonPackages.makePythonPath
+        [ pkgs.myPackages.python ];
       PAGER = "nvimpager";
     });
     variables = {
@@ -534,32 +531,37 @@ in {
       # sftpman
       mntsshfs = {
         text = "install -d -m 0700 -o ${owner} -g ${ownerGroup} /mnt/sshfs";
+        deps = [ ];
       };
 
       # rclone
       mntrclone = {
         text = "install -d -m 0700 -o ${owner} -g ${ownerGroup} /mnt/rclone";
+        deps = [ ];
       };
 
       # Fuck pre-built dynamic binaries
       # copied from https://github.com/NixOS/nixpkgs/pull/69057
-      ldlinux = with pkgs.lib;
-        concatStrings (mapAttrsToList (target: source: ''
-          mkdir -m 0755 -p $(dirname ${target})
-          ln -sfn ${escapeShellArg source} ${target}.tmp
-          mv -f ${target}.tmp ${target} # atomically replace
-        '') {
-          "i686-linux"."/lib/ld-linux.so.2" =
-            "${pkgs.glibc.out}/lib/ld-linux.so.2";
-          "x86_64-linux"."/lib/ld-linux.so.2" =
-            "${pkgs.pkgsi686Linux.glibc.out}/lib/ld-linux.so.2";
-          "x86_64-linux"."/lib64/ld-linux-x86-64.so.2" =
-            "${pkgs.glibc.out}/lib64/ld-linux-x86-64.so.2";
-          "aarch64-linux"."/lib/ld-linux-aarch64.so.1" =
-            "${pkgs.glibc.out}/lib/ld-linux-aarch64.so.1";
-          "armv7l-linux"."/lib/ld-linux-armhf.so.3" =
-            "${pkgs.glibc.out}/lib/ld-linux-armhf.so.3";
-        }.${pkgs.stdenv.system} or { });
+      ldlinux = {
+        text = with pkgs.lib;
+          concatStrings (mapAttrsToList (target: source: ''
+            mkdir -m 0755 -p $(dirname ${target})
+            ln -sfn ${escapeShellArg source} ${target}.tmp
+            mv -f ${target}.tmp ${target} # atomically replace
+          '') {
+            "i686-linux"."/lib/ld-linux.so.2" =
+              "${pkgs.glibc.out}/lib/ld-linux.so.2";
+            "x86_64-linux"."/lib/ld-linux.so.2" =
+              "${pkgs.pkgsi686Linux.glibc.out}/lib/ld-linux.so.2";
+            "x86_64-linux"."/lib64/ld-linux-x86-64.so.2" =
+              "${pkgs.glibc.out}/lib64/ld-linux-x86-64.so.2";
+            "aarch64-linux"."/lib/ld-linux-aarch64.so.1" =
+              "${pkgs.glibc.out}/lib/ld-linux-aarch64.so.1";
+            "armv7l-linux"."/lib/ld-linux-armhf.so.3" =
+              "${pkgs.glibc.out}/lib/ld-linux-armhf.so.3";
+          }.${pkgs.stdenv.system} or { });
+        deps = [ ];
+      };
 
       # make some symlinks to /bin, just for convenience
       binShortcuts = {
