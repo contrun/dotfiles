@@ -18,7 +18,8 @@
     "workbench.colorTheme": "Kimbie Dark",
     "remote.SSH.remotePlatform": {
         "uzq": "linux",
-        "cef": "linux"
+        "cef": "linux",
+        "ceft": "linux"
     },
     "editor.multiCursorModifier": "alt",
     "editor.wordWrap": "on",

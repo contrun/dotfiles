@@ -1,4 +1,4 @@
-{ hostname, serverName ? "autossh1", ... }:
+{ hostname, serverName, ... }:
 let
   basePort = 32768;
   bias = 4096;

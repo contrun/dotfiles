@@ -695,7 +695,7 @@ in {
             };
             getConf = n: port: {
               extraArguments =
-                "-o ServerAliveInterval=30 -o ServerAliveCountMax=3 -o ExitOnForwardFailure=yes -N -R :${
+                "-o ServerAliveInterval=15 -o ServerAliveCountMax=4 -o ExitOnForwardFailure=yes -N -R :${
                   builtins.toString port
                 }:localhost:443 ${server}";
               name = "${server}conf${builtins.toString n}";
