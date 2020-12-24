@@ -159,8 +159,11 @@ let
           elasticsearch-dsl
         ];
       makeEmacsPkg = emacsPkg:
-        (super.emacsPackagesGen emacsPkg).emacsWithPackages
-        (epkgs: [ super.mu super.notmuch ]);
+        (super.emacsPackagesGen emacsPkg).emacsWithPackages (epkgs:
+          [
+            super.mu
+            # super.notmuch
+          ]);
     in rec {
       aspell = with super;
         aspellWithDicts (ps: with ps; [ en fr de en-science en-computers ]);
@@ -252,9 +255,13 @@ let
         };
       in jupyterEnvironment;
 
-      pythonPackages = stable.python3Packages;
+      pythonPackages = super.python3Packages;
 
-      python = stable.python3Full.withPackages getPython3Packages;
+      python = super.python3Full.withPackages getPython3Packages;
+
+      pythonPackagesStabe = stable.python3Packages;
+
+      pythonStable = stable.python3Full.withPackages getPython3Packages;
 
       python-rocksdb = with self;
         python2Packages.buildPythonPackage rec {

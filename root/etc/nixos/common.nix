@@ -233,8 +233,9 @@ in {
         xorg.libXrandr
         xorg.libXrender
         xorg.xorgproto
-        (pkgs.myPackages.python or python3)
-        (pkgs.myPackages.python2 or python2)
+        # python3
+        (pkgs.myPackages.pythonStable or python3)
+        # (pkgs.myPackages.python2 or python2)
         (pkgs.myPackages.nvimpager or null)
         (pkgs.myPackages.nvimdiff or null)
         rofi
@@ -364,9 +365,7 @@ in {
 
   programs = {
     ccache = { enable = true; };
-    java = {
-      enable = enableJava;
-    };
+    java = { enable = enableJava; };
     gnupg.agent = { enable = enableGPGAgent; };
     ssh = { startAgent = true; };
     # vim.defaultEditor = true;
@@ -585,8 +584,8 @@ in {
 
   services = {
     arbtt = {
-      package = stable.haskellPackages.arbtt or pkgs.haskellPackages.arbtt;
-      enable = enableArbtt;
+      enable = false;
+      # enable = enableArbtt;
     };
     compton = { enable = true; };
     connman = { enable = enableConnman; };
@@ -737,20 +736,6 @@ in {
     flatpak.enable = enableFlatpak;
     thermald = { enable = enableThermald; };
     gnome3 = { gnome-keyring.enable = enableGnomeKeyring; };
-    jupyter = let
-      package = pkgs.myPackages.jupyter or pkgs.jupyter;
-      command = if (pkgs ? myPackages && pkgs.myPackages ? jupyter) then
-        "jupyter-lab"
-      else
-        "jupyter-notebook";
-    in {
-      inherit package command;
-      enable = enableJupyter;
-      port = 8899;
-      user = owner;
-      password =
-        "open('${home}/.customized/jupyter/jupyter_password', 'r', encoding='utf8').read().strip()";
-    };
 
     locate = {
       enable = enableLocate;
@@ -871,6 +856,7 @@ in {
       "wheel"
       "video"
       "kvm"
+      "libvirt"
       "audio"
       "disk"
       "networkmanager"
