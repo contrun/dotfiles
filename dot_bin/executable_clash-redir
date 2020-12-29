@@ -1,0 +1,116 @@
+#!/usr/bin/env bash
+
+set -e
+
+if [[ $EUID -ne 0 ]]; then
+    exec sudo /usr/bin/env bash "$0" "$@"
+fi
+
+TAG="CLASH"
+CLASH_DIR="/etc/clash-redir"
+CLASH_USER="clash"
+CLASH_DNS_LISTENING_PORT="${CLASH_DNS_LISTENING_PORT:-7853}"
+CLASH_TCP_REDIRCT_PORT="${CLASH_DNS_LISTENING_PORT:-7892}"
+PID_FILE="/tmp/clash-redir.pid"
+
+start() {
+    if [[ -f "$PID_FILE" ]]; then
+        PID="$(cat "$PID_FILE")"
+        if ps "$PID" >/dev/null 2>&1; then
+            echo "clash($PID) already running"
+            return 0
+        else
+            rm "$PID_FILE"
+        fi
+    fi
+    run_clash
+    setup_iptables
+}
+
+run_clash() {
+    useradd --system --no-create-home "$CLASH_USER" >/dev/null 2>&1 || true
+    mkdir -p "$CLASH_DIR"
+    chown -R "$CLASH_USER" "$CLASH_DIR"
+    sudo capsh --user="$CLASH_USER" --caps='cap_net_admin+eip cap_setpcap,cap_setuid,cap_setgid+ep' --addamb=cap_net_admin -- -c "env HOME=$CLASH_DIR $(realpath "$(which clash)") -d $CLASH_DIR -f $CLASH_DIR/config.yaml >> /tmp/clash-redir.log" &
+    PID=$!
+    printf '%s' "$PID" >"$PID_FILE"
+}
+
+setup_iptables() {
+    CLASH_UID="$(id -u "$CLASH_USER")"
+    iptables -t nat -N CLASH_LOCAL
+    iptables -t nat -N CLASH_EXTERNAL
+
+    iptables -t nat -A CLASH_LOCAL -m owner --uid-owner $CLASH_UID -j RETURN
+    iptables -t nat -A CLASH_LOCAL -d 0.0.0.0/8 -j RETURN
+    iptables -t nat -A CLASH_LOCAL -d 127.0.0.0/8 -j RETURN
+    iptables -t nat -A CLASH_LOCAL -d 224.0.0.0/4 -j RETURN
+    iptables -t nat -A CLASH_LOCAL -d 172.16.0.0/12 -j RETURN
+    iptables -t nat -A CLASH_LOCAL -d 127.0.0.0/8 -j RETURN
+    iptables -t nat -A CLASH_LOCAL -d 169.254.0.0/16 -j RETURN
+    iptables -t nat -A CLASH_LOCAL -d 240.0.0.0/4 -j RETURN
+    iptables -t nat -A CLASH_LOCAL -d 192.168.0.0/16 -j RETURN
+    iptables -t nat -A CLASH_LOCAL -d 10.0.0.0/8 -j RETURN
+    iptables -t nat -A CLASH_LOCAL -d 255.255.255.255 -j RETURN
+    iptables -t nat -A CLASH_LOCAL -p tcp -j REDIRECT --to-ports 7892
+
+    iptables -t nat -A CLASH_EXTERNAL -d 0.0.0.0/8 -j RETURN
+    iptables -t nat -A CLASH_EXTERNAL -d 127.0.0.0/8 -j RETURN
+    iptables -t nat -A CLASH_EXTERNAL -d 224.0.0.0/4 -j RETURN
+    iptables -t nat -A CLASH_EXTERNAL -d 172.16.0.0/12 -j RETURN
+    iptables -t nat -A CLASH_EXTERNAL -d 127.0.0.0/8 -j RETURN
+    iptables -t nat -A CLASH_EXTERNAL -d 169.254.0.0/16 -j RETURN
+    iptables -t nat -A CLASH_EXTERNAL -d 240.0.0.0/4 -j RETURN
+    iptables -t nat -A CLASH_EXTERNAL -d 192.168.0.0/16 -j RETURN
+    iptables -t nat -A CLASH_EXTERNAL -d 10.0.0.0/8 -j RETURN
+    iptables -t nat -A CLASH_EXTERNAL -d 255.255.255.255 -j RETURN
+    iptables -t nat -A CLASH_EXTERNAL -p tcp -j REDIRECT --to-ports 7892
+
+    iptables -t nat -I OUTPUT -p tcp -j CLASH_LOCAL
+    iptables -t nat -I PREROUTING -p tcp -j CLASH_EXTERNAL
+
+    iptables -t nat -N CLASH_DNS_LOCAL
+    iptables -t nat -N CLASH_DNS_EXTERNAL
+
+    iptables -t nat -A CLASH_DNS_LOCAL -p udp ! --dport 53 -j RETURN
+    iptables -t nat -A CLASH_DNS_LOCAL -m owner --uid-owner $CLASH_UID -j RETURN
+    iptables -t nat -A CLASH_DNS_LOCAL -p udp -j REDIRECT --to-ports "$CLASH_DNS_LISTENING_PORT"
+
+    iptables -t nat -A CLASH_DNS_EXTERNAL -p udp ! --dport 53 -j RETURN
+    iptables -t nat -A CLASH_DNS_EXTERNAL -p udp -j REDIRECT --to-ports "$CLASH_DNS_LISTENING_PORT"
+
+    iptables -t nat -I OUTPUT -p udp -j CLASH_DNS_LOCAL
+    iptables -t nat -I PREROUTING -p udp -j CLASH_DNS_EXTERNAL
+}
+
+stop() {
+    if ! [[ -f "$PID_FILE" ]]; then
+        echo "clash already exited"
+    else
+        PID="$(cat "$PID_FILE")"
+        if ps "$PID" >/dev/null 2>&1; then
+            kill "$PID"
+        else
+            echo "clash already exited"
+        fi
+    fi
+    cleanup_iptables
+}
+
+cleanup_iptables() {
+    iptables-save -c | grep -v "$TAG" | iptables-restore -c
+}
+
+restart() {
+    stop
+    start
+}
+
+case "$1" in
+start | stop | restart | setup_iptables | cleanup_iptables)
+    "$@"
+    ;;
+*)
+    echo "$0 start|stop|restart|setup_iptables|cleanup_iptables"
+    ;;
+esac
