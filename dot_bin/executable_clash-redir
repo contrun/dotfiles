@@ -16,6 +16,10 @@ PID_FILE="/tmp/clash-redir.pid"
 LOG_FILE="/tmp/clash-redir.log"
 
 start() {
+    if [[ $# -ne 0 ]]; then
+        config="$1"
+        ln -sf "$CLASH_DIR/$config.yaml" "$CLASH_DIR/$CLASH_DEFAULT_CONFIG_FILE"
+    fi
     if [[ -f "$PID_FILE" ]]; then
         PID="$(cat "$PID_FILE")"
         if ps "$PID" >/dev/null 2>&1; then
@@ -102,13 +106,24 @@ cleanup_iptables() {
 }
 
 restart() {
-    stop
-    start
+    stop "$@"
+    start "$@"
 }
 
-case "$1" in
+usage() {
+    echo "$0 start|stop|restart|setup_iptables|cleanup_iptables"
+}
+
+if [[ $# -eq 0 ]]; then
+    usage
+    exit
+fi
+
+action="$1"
+case "$action" in
 start | stop | restart | setup_iptables | cleanup_iptables)
-    "$@"
+    shift
+    "$action" "$@"
     ;;
 *)
     echo "$0 start|stop|restart|setup_iptables|cleanup_iptables"
