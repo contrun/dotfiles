@@ -8,10 +8,12 @@ fi
 
 TAG="CLASH"
 CLASH_DIR="/etc/clash-redir"
+CLASH_DEFAULT_CONFIG_FILE=config.yaml
 CLASH_USER="clash"
 CLASH_DNS_LISTENING_PORT="${CLASH_DNS_LISTENING_PORT:-7853}"
 CLASH_TCP_REDIRCT_PORT="${CLASH_DNS_LISTENING_PORT:-7892}"
 PID_FILE="/tmp/clash-redir.pid"
+LOG_FILE="/tmp/clash-redir.log"
 
 start() {
     if [[ -f "$PID_FILE" ]]; then
@@ -29,11 +31,8 @@ start() {
 
 run_clash() {
     useradd --system --no-create-home "$CLASH_USER" >/dev/null 2>&1 || true
-    mkdir -p "$CLASH_DIR"
-    chown -R "$CLASH_USER" "$CLASH_DIR"
-    sudo capsh --user="$CLASH_USER" --caps='cap_net_admin+eip cap_setpcap,cap_setuid,cap_setgid+ep' --addamb=cap_net_admin -- -c "env HOME=$CLASH_DIR $(realpath "$(which clash)") -d $CLASH_DIR -f $CLASH_DIR/config.yaml >> /tmp/clash-redir.log" &
-    PID=$!
-    printf '%s' "$PID" >"$PID_FILE"
+    install -d -m 0777 -o clash "$CLASH_DIR"
+    capsh --user="$CLASH_USER" --caps='cap_net_admin+eip cap_setpcap,cap_setuid,cap_setgid+ep' --addamb=cap_net_admin -- -c "echo \$\$ > $PID_FILE; exec $(realpath "$(which clash)") -d $CLASH_DIR -f $CLASH_DIR/$CLASH_DEFAULT_CONFIG_FILE >> $LOG_FILE" &
 }
 
 setup_iptables() {
@@ -93,6 +92,7 @@ stop() {
         else
             echo "clash already exited"
         fi
+        rm -f "$PID_FILE"
     fi
     cleanup_iptables
 }
