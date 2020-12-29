@@ -1675,7 +1675,7 @@ With arg N, insert N newlines."
   )
 
 (use-package lsp-python-ms
-  :init (setq lsp-python-ms-executable (executable-find "python-language-server"))
+  :init (setq lsp-python-ms-executable (executable-find "python-language-server")))
 (use-package lsp-metals)
 (use-package lsp-java)
 (use-package caml)

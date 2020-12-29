@@ -29,10 +29,10 @@
         "homepage": "",
         "owner": "xzfc",
         "repo": "cached-nix-shell",
-        "rev": "48dbef37bec653e23c1801cea3979f053e10654b",
-        "sha256": "0w6khry1ncyqy5h6996xw1f6viw4wdrfji5m8lz9gm487xlq5v0b",
+        "rev": "7caf51760622ce7e43d3b9ee5b050ad047cebe81",
+        "sha256": "19kr8i71c9sz9vpilkdzqr1kkgm0lnaw2lz1h6lmw0q54hgsbm2p",
         "type": "tarball",
-        "url": "https://github.com/xzfc/cached-nix-shell/archive/48dbef37bec653e23c1801cea3979f053e10654b.tar.gz",
+        "url": "https://github.com/xzfc/cached-nix-shell/archive/7caf51760622ce7e43d3b9ee5b050ad047cebe81.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "emacs-overlay": {
@@ -41,10 +41,10 @@
         "homepage": "",
         "owner": "nix-community",
         "repo": "emacs-overlay",
-        "rev": "48efc8fea3491d51fa29cddbff5e78091378600c",
-        "sha256": "13bcfkcq3yr9lj3v1nld8xkn6j69s13lm2r05vvas1s1k0xnb442",
+        "rev": "56cc886960646da74190f565ba86026e003d6267",
+        "sha256": "03hvqyym8yhsbi3ah36p5a8l88dhyn6s0b8qfa9xjwzmj08bkdzr",
         "type": "tarball",
-        "url": "https://github.com/nix-community/emacs-overlay/archive/48efc8fea3491d51fa29cddbff5e78091378600c.tar.gz",
+        "url": "https://github.com/nix-community/emacs-overlay/archive/56cc886960646da74190f565ba86026e003d6267.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "ghcide-nix": {
@@ -137,10 +137,10 @@
         "homepage": "https://github.com/nix-community/NUR",
         "owner": "nix-community",
         "repo": "nur-combined",
-        "rev": "f87c64a165f64b6e8d09d3cdcaadc0f190a78d77",
-        "sha256": "0rnkz5n0v2nxb4fvq10v5j01kv8q5wiz80lrzdszs0zjzz8ypqvh",
+        "rev": "6e168524baf1afe99b342ae8c67aec4a8b9b324a",
+        "sha256": "0mgq3lwx87ngibi8fa636fx7pn3aqzqrs5m7ja5d7m4ra360xjvm",
         "type": "tarball",
-        "url": "https://github.com/nix-community/nur-combined/archive/f87c64a165f64b6e8d09d3cdcaadc0f190a78d77.tar.gz",
+        "url": "https://github.com/nix-community/nur-combined/archive/6e168524baf1afe99b342ae8c67aec4a8b9b324a.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "nvimpager": {
