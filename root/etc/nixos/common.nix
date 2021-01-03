@@ -173,6 +173,7 @@ in {
         mode = "0600";
         source = davfs2Secrets;
       };
+      hosts.mode = "0644";
     };
 
     extraOutputsToInstall = extraOutputsToInstall;
@@ -233,8 +234,8 @@ in {
         xorg.libXrandr
         xorg.libXrender
         xorg.xorgproto
-        # python3
-        (pkgs.myPackages.pythonStable or python3)
+        python3
+        # (pkgs.myPackages.pythonStable or python3)
         # (pkgs.myPackages.python2 or python2)
         (pkgs.myPackages.nvimpager or null)
         (pkgs.myPackages.nvimdiff or null)
@@ -667,6 +668,12 @@ in {
     avahi = {
       enable = enableAvahi;
       nssmdns = true;
+      publish = {
+        enable = true;
+        userServices = true;
+        addresses = true;
+        domain = true;
+      };
       extraServiceFiles = {
         ssh = "${pkgs.avahi}/etc/avahi/services/ssh.service";
         smb = ''
