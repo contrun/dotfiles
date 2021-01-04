@@ -311,7 +311,8 @@ in {
         xvkbd
         fcron
         gmp
-      ] ++ (pkgs.lib.optional enableTailScale [ tailscale ]);
+      ] ++ (if (enableTailScale) then [ tailscale ] else [ ])
+      ++ (if (enableCodeServer) then [ code-server ] else [ ]);
     enableDebugInfo = enableDebugInfo;
     shellAliases = {
       ssh = "ssh -C";
@@ -1034,6 +1035,24 @@ in {
           ExecStartPost = [''
             ${pkgs.coreutils}/bin/chown ${owner} /etc/rancher/k3s/k3s.yaml
           ''];
+        };
+      };
+    } // {
+      "code-server" = {
+        enable = enableCodeServer;
+        description = "Remote VSCode Server";
+        after = [ "network.target" ];
+        wantedBy = [ "multi-user.target" ];
+        path = [ pkgs.go pkgs.git pkgs.direnv ];
+
+        serviceConfig = {
+          Type = "simple";
+          ExecStart =
+            "${pkgs.code-server}/bin/code-server --user-data-dir ${home}/.vscode --disable-telemetry";
+          WorkingDirectory = home;
+          NoNewPrivileges = true;
+          User = owner;
+          Group = ownerGroup;
         };
       };
     };

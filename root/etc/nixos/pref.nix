@@ -192,6 +192,7 @@ let
     enableUdisks2 = true;
     enableAvahi = true;
     enableGvfs = true;
+    enableCodeServer = true;
     enablePrinting = true;
     enableBluetooth = true;
     enableAcpilight = true;
