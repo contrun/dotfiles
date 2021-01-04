@@ -1032,9 +1032,14 @@ in {
     } // pkgs.lib.optionalAttrs (enableK3s) {
       "k3s" = {
         serviceConfig = {
-          ExecStartPost = [''
-            ${pkgs.coreutils}/bin/chown ${owner} /etc/rancher/k3s/k3s.yaml
-          ''];
+          ExecStartPost = [
+            ''
+              ${pkgs.k3s}/bin/k3s kubectl patch -n kube-system services traefik -p '{"spec":{"ports":[{"name":"http","nodePort":30080,"port":80,"protocol":"TCP","targetPort":"http"},{"name":"https","nodePort":30443,"port":443,"protocol":"TCP","targetPort":"https"}]}}'
+                          ''
+            ''
+              ${pkgs.coreutils}/bin/chown ${owner} /etc/rancher/k3s/k3s.yaml
+            ''
+          ];
         };
       };
     } // {
