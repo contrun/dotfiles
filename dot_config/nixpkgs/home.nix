@@ -126,6 +126,7 @@ let
         "gnumake"
         "gitAndTools.git-sync"
         "opencl-headers"
+        "linuxPackages_latest.perf"
       ];
     }
     {
@@ -228,6 +229,7 @@ let
         "opencl-icd"
         # "cudatoolkit"
         "linuxPackages_latest.bcc"
+        "syslinux"
         "rr"
         "gdbgui"
         "valgrind"
@@ -254,7 +256,9 @@ let
         "pkgconfig"
         "autoconf"
         "libtool"
+        "autogen"
         "geany"
+        "cdrkit"
         "gettext"
         "glances"
         "distcc"
@@ -367,6 +371,7 @@ let
         "perlPackages.Appcpanminus"
         "perlPackages.locallib"
         "perlPackages.Appperlbrew"
+        "perlPackages.Po4a"
       ];
     }
     {
@@ -428,6 +433,7 @@ let
         "tor"
         # "resilio-sync"
         "iperf"
+        "gperf"
         "openssh"
         "insomnia"
         "mitmproxy"

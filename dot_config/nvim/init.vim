@@ -887,7 +887,7 @@ let g:coc_global_extensions = [
       \'coc-emoji',
       \'coc-calc',
       \'coc-xml',
-      \'coc-rls',
+      " \'coc-rls',
       \'coc-rust-analyzer',
       \'coc-java',
       \'coc-metals',
