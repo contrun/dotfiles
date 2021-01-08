@@ -2647,6 +2647,7 @@ With arg N, insert N newlines."
 (use-package simplenote2
   :commands simplenote2-list simplenote2-browse simplenote2-create-note-from-buffer
   :init
+  (require 'cl-lib)
   (require 'simplenote2)
   (simplenote2-setup)
   :config

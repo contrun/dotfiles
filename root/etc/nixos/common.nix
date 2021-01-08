@@ -206,6 +206,7 @@ in {
         udiskie
         fzf
         jq
+        virt-manager
         wine
         fdm
         mailutils
@@ -691,7 +692,12 @@ in {
       };
 
     };
-    nfs.server.enable = true;
+    nfs.server = {
+      enable = true;
+      extraNfsdConfig = ''
+        udp=y
+      '';
+    };
     autossh = {
       sessions = pkgs.lib.optionals (myLibs ? myAutossh) (let
         go = server:

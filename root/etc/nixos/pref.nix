@@ -109,7 +109,7 @@ let
     davfs2Secrets = "${home}/.davfs2/secrets";
     enableDavfs2 = true;
     enableSamba = true;
-    enableK3s = true;
+    enableK3s = false;
     systemdMounts = let
       enableNextcloud = false;
       enableYandex = false;
@@ -271,6 +271,7 @@ let
     dpi = 128;
     enableX2goServer = true;
     enableHidpi = false;
+    enableK3s = true;
     enableWireless = true;
     consoleFont = "${pkgs.terminus_font}/share/consolefonts/ter-g20n.psf.gz";
   } else if hostname == "jxt" then {

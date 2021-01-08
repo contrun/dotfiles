@@ -15,7 +15,7 @@
     "workbench.editor.highlightModifiedTabs": true,
     "vsintellicode.modify.editor.suggestSelection": "automaticallyOverrodeDefaultValue",
     "workbench.statusBar.visible": true,
-    "workbench.colorTheme": "Kimbie Dark",
+    "workbench.colorTheme": "Solarized Dark",
     "remote.SSH.remotePlatform": {
         "uzq": "linux",
         "cef": "linux",
@@ -39,5 +39,10 @@
     "clangd.onConfigChanged": "restart",
     "[cpp]": {
         "editor.defaultFormatter": "llvm-vs-code-extensions.vscode-clangd"
+    },
+    "files.watcherExclude": {
+        "**/.bloop": true,
+        "**/.metals": true,
+        "**/.ammonite": true
     }
 }
