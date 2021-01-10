@@ -186,6 +186,7 @@ in {
         ethtool
         nftables
         ipset
+        kernelPackages.perf
         dnsmasq
         nixFlakes
         nix-info
@@ -220,7 +221,7 @@ in {
         powertop
         fail2ban
         qemu
-        aqemu
+        # aqemu
         ldns
         bind
         nix-prefetch-scripts
@@ -488,13 +489,16 @@ in {
   };
 
   system = {
-    activationScripts = pkgs.lib.optionalAttrs enableJava {
+    activationScripts = let
+      jdks = builtins.filter (x: pkgs ? x) linkedJdks;
+      addjdk = jdk:
+        if pkgs ? jdk then
+          let p = pkgs.${jdk}.home; in "ln -sfn ${p} /local/jdks/${jdk}"
+        else
+          "";
+    in pkgs.lib.optionalAttrs (enableJava && jdks != [ ]) {
       jdks = {
-        text = ''
-          ln -sfn ${pkgs.openjdk14.home} /local/jdks/openjdk14
-          ln -sfn ${pkgs.openjdk11.home} /local/jdks/openjdk11
-          ln -sfn ${pkgs.openjdk8.home} /local/jdks/openjdk8
-        '';
+        text = pkgs.lib.concatMapStringsSep "\n" addjdk jdks;
         deps = [ "local" ];
       };
     } // pkgs.lib.optionalAttrs nixosAutoUpgrade.enableHomeManager {

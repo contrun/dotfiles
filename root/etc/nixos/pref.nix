@@ -177,6 +177,7 @@ let
     enableSlock = true;
     enableZSH = true;
     enableJava = true;
+    linkedJdks = [ "openjdk15" "openjdk14" "openjdk11" "openjdk8" ];
     enableNextcloudClient = false;
     enableTaskWarriorSync = true;
     enableHolePuncher = true;
