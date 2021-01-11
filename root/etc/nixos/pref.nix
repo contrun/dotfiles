@@ -45,6 +45,8 @@ let
       speed-check-mode = "ping,tcp:80";
       log-level = "info";
     };
+    enableSslh = true;
+    sslhPort = 44443;
     enableTailScale = false;
     enableX2goServer = false;
     enableDnsmasq = false;
@@ -199,6 +201,7 @@ let
     enableThermald = false;
     enableAutoUpgrade = true;
     autoUpgradeChannel = "https://nixos.org/channels/nixos-unstable";
+    enableAutossh = true;
     autosshServers = with pkgs.lib;
       let
         configFiles = [ "${home}/.ssh/config" ];
@@ -277,6 +280,8 @@ let
   } else if hostname == "jxt" then {
     hostId = "5ee92b8d";
     enableVirtualboxHost = false;
+    enableHolePuncher = false;
+    enableAutossh = false;
   } else
     { });
   prefFiles = [ "/etc/nixos/override.nix" ];

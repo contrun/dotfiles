@@ -699,9 +699,10 @@ in {
       '';
     };
     autossh = {
-      sessions = pkgs.lib.optionals (myLibs ? myAutossh) (let
+      sessions = pkgs.lib.optionals (enableAutossh && myLibs ? myAutossh) (let
         go = server:
           let
+            sshPort = if enableSslh then sslhPort else 22;
             autosshPorts = myLibs.myAutossh {
               hostname = hostname;
               serverName = server;
@@ -710,7 +711,7 @@ in {
               extraArguments =
                 "-o ServerAliveInterval=15 -o ServerAliveCountMax=4 -o ExitOnForwardFailure=yes -N -R :${
                   builtins.toString port
-                }:localhost:443 ${server}";
+                }:localhost:${builtins.toString sshPort} ${server}";
               name = "${server}conf${builtins.toString n}";
               user = owner;
             };
@@ -768,8 +769,8 @@ in {
     };
 
     sslh = {
-      enable = true;
-      port = 44443;
+      enable = enableSslh;
+      port = sslhPort;
       transparent = false;
       verbose = true;
     } // (let p = "${home}/.config/sslh/sslh.conf";
