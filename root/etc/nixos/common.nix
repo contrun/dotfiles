@@ -223,6 +223,7 @@ in {
         qemu
         # aqemu
         ldns
+        steam-run-native
         bind
         nix-prefetch-scripts
         pulsemixer
@@ -679,21 +680,35 @@ in {
         userServices = true;
         addresses = true;
         domain = true;
+        hinfo = true;
+        workstation = true;
       };
-      extraServiceFiles = {
-        ssh = "${pkgs.avahi}/etc/avahi/services/ssh.service";
-        smb = ''
-          <?xml version="1.0" standalone='no'?><!--*-nxml-*-->
-          <!DOCTYPE service-group SYSTEM "avahi-service.dtd">
-          <service-group>
-            <name replace-wildcards="yes">%h</name>
-            <service>
-              <type>_smb._tcp</type>
-              <port>445</port>
-            </service>
-          </service-group>
-        '';
-      };
+      extraServiceFiles = (builtins.foldl' (a: t:
+        a // {
+          "${t}" = ''
+            <?xml version="1.0" standalone='no'?><!--*-nxml-*-->
+            <!DOCTYPE service-group SYSTEM "avahi-service.dtd">
+            <service-group>
+              <name replace-wildcards="yes">${t} server at %h</name>
+              <service>
+                <type>_${t}._tcp</type>
+                <port>22</port>
+              </service>
+            </service-group>
+          '';
+        }) { } [ "ssh" "sftp-ssh" ]) // {
+          smb = ''
+            <?xml version="1.0" standalone='no'?><!--*-nxml-*-->
+            <!DOCTYPE service-group SYSTEM "avahi-service.dtd">
+            <service-group>
+              <name replace-wildcards="yes">samba server at %h</name>
+              <service>
+                <type>_smb._tcp</type>
+                <port>445</port>
+              </service>
+            </service-group>
+          '';
+        };
 
     };
     nfs.server = {
