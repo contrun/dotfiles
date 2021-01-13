@@ -726,16 +726,20 @@ in {
               hostname = hostname;
               serverName = server;
             };
-            getConf = n: port: {
-              extraArguments =
-                "-o ServerAliveInterval=15 -o ServerAliveCountMax=4 -o ExitOnForwardFailure=yes -N -R :${
-                  builtins.toString port
-                }:localhost:${builtins.toString sshPort} ${server}";
-              name = "${server}conf${builtins.toString n}";
-              user = owner;
-            };
-          in pkgs.lib.imap1 getConf autosshPorts;
-      in pkgs.lib.flatten (map go autosshServers));
+            extraArguments = let
+              getReverseArgument = port:
+                "-R :${builtins.toString port}:localhost:${
+                  builtins.toString sshPort
+                }";
+              reversePorts = builtins.concatStringsSep " "
+                (builtins.map (x: getReverseArgument x) autosshPorts);
+            in "-o ServerAliveInterval=15 -o ServerAliveCountMax=4 -o ExitOnForwardFailure=yes -N ${reversePorts} ${server}";
+          in {
+            extraArguments = extraArguments;
+            name = server;
+            user = owner;
+          };
+      in map go autosshServers);
     };
     eternal-terminal = { enable = enableEternalTerminal; };
     printing = {
