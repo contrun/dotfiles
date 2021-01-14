@@ -748,7 +748,7 @@ in {
                 }";
               reversePorts = builtins.concatStringsSep " "
                 (builtins.map (x: getReverseArgument x) autosshPorts);
-            in "-o ServerAliveInterval=15 -o ServerAliveCountMax=4 -o ExitOnForwardFailure=yes -N ${reversePorts} ${server}";
+            in "-M -o ServerAliveInterval=15 -o ServerAliveCountMax=4 -N ${reversePorts} ${server}";
           in {
             extraArguments = extraArguments;
             name = server;
