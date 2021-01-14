@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
-set -be
+set -ue
 
 machine="${machine:-}"
 serverName="${serverName:-1}"
 port=
 conf="${conf:-1}"
 user="${USER:-}"
+machine=
 dryrun=
-while getopts "s:c:p:u:d:" opt; do
+while getopts "s:c:p:u:m:dn-" opt; do
         case $opt in
         s)
                 serverName="$OPTARG"
@@ -21,8 +22,14 @@ while getopts "s:c:p:u:d:" opt; do
         u)
                 user="$OPTARG"
                 ;;
-        d)
+        m)
+                machine="$OPTARG"
+                ;;
+        d | n)
                 dryrun=y
+                ;;
+        -)
+                break
                 ;;
         \?)
                 echo "Invalid option: -$OPTARG" >&2
@@ -31,9 +38,12 @@ while getopts "s:c:p:u:d:" opt; do
         esac
 done
 
+if [[ -z "$machine" ]]; then
+        echo "machine hostname is not provided"
+        exit 1
+fi
+
 shift $(("$OPTIND" - 1))
-machine="$1"
-shift
 serverName="autossh$serverName"
 [[ -z "$port" ]] && port="$(($(printf '%i' "0x$(echo -n "$serverName->$machine->$conf" | sha512sum | head -c 3)") + 32768 + 4096 * $conf))"
 if [[ -n "$dryrun" ]]; then
