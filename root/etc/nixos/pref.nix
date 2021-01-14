@@ -51,6 +51,8 @@ let
     enableX2goServer = false;
     enableDnsmasq = false;
     enableDebugInfo = false;
+    enableZfs = true;
+    enableCrashDump = true;
     dnsmasqListenAddress = "127.0.0.233";
     dnsmasqResolveLocalQueries = false;
     dnsmasqExtraConfig = ''

@@ -187,6 +187,8 @@ in {
         nftables
         ipset
         kernelPackages.perf
+        kernelPackages.bpftrace
+        kernelPackages.bcc
         dnsmasq
         nixFlakes
         nix-info
@@ -717,6 +719,19 @@ in {
         udp=y
       '';
     };
+    zfs = {
+      autoScrub.enable = enableZfs;
+
+      autoSnapshot = {
+        enable = enableZfs;
+        frequent = 8;
+        hourly = 24;
+        daily = 0;
+        weekly = 0;
+        monthly = 0;
+      };
+    };
+
     autossh = {
       sessions = pkgs.lib.optionals (enableAutossh && myLibs ? myAutossh) (let
         go = server:
@@ -1284,6 +1299,9 @@ in {
     autoOptimiseStore = true;
   };
 
+  boot.supportedFilesystems = if (enableZfs) then [ "zfs" ] else [ ];
+
+  boot.crashDump = {enable = enableCrashDump;};
   boot.initrd.network = {
     enable = true;
     ssh = let

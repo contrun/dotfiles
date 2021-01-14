@@ -86,7 +86,6 @@ let
         "st"
         "stow"
         "strace"
-        "linuxPackages_latest.bpftrace"
         "mtr"
         "lynx"
         "elinks"
@@ -126,7 +125,6 @@ let
         "gnumake"
         "gitAndTools.git-sync"
         "opencl-headers"
-        "linuxPackages_latest.perf"
       ];
     }
     {
@@ -228,7 +226,6 @@ let
         "clinfo"
         "opencl-icd"
         # "cudatoolkit"
-        "linuxPackages_latest.bcc"
         "syslinux"
         # "rr"
         "gdbgui"
