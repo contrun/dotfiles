@@ -37,7 +37,7 @@ let
     importNixChannel "unstable";
 in {
   imports =
-    builtins.filter (x: builtins.pathExists x) [ /etc/nixos/cachix.nix ];
+    builtins.filter (x: builtins.pathExists x) [ ./machine.nix ./cachix.nix ];
   security = {
     sudo = { wheelNeedsPassword = false; };
     pki = {
@@ -444,8 +444,6 @@ in {
   };
 
   nixpkgs = let
-    # Don't use lib to avoid infinite recursion.
-    myOptionalAttrs = condition: attrs: if condition then attrs else { };
     configAttr = {
       config = {
         allowUnfree = true;
@@ -455,18 +453,25 @@ in {
       };
     };
     localPkgs = "${home}/Local/nixpkgs";
-    pkgsAttr = myOptionalAttrs (builtins.pathExists "${localPkgs}/.useme") {
+    pkgsAttr = if (builtins.pathExists "${localPkgs}/.useme") then {
       pkgs = import localPkgs { inherit (configAttr) config; };
-    };
+    } else
+      { };
     overlaysFile = "${home}/.config/nixpkgs/overlays.nix";
-    overlaysAttr = myOptionalAttrs (builtins.pathExists overlaysFile) {
+    overlaysAttr = if (builtins.pathExists overlaysFile) then {
       overlays = import overlaysFile;
-    };
+    } else
+      { };
   in overlaysAttr // pkgsAttr // configAttr;
 
   hardware = {
     enableAllFirmware = true;
     enableRedistributableFirmware = true;
+    opengl = {
+      enable = true;
+      driSupport = true;
+      driSupport32Bit = true;
+    };
     bumblebee = {
       enable = enableBumblebee;
       connectDisplay = true;
@@ -1301,7 +1306,7 @@ in {
 
   boot.supportedFilesystems = if (enableZfs) then [ "zfs" ] else [ ];
 
-  boot.crashDump = {enable = enableCrashDump;};
+  boot.crashDump = { enable = enableCrashDump; };
   boot.initrd.network = {
     enable = true;
     ssh = let
@@ -1320,31 +1325,39 @@ in {
     };
   };
 
-  boot.kernelParams = [ "boot.shell_on_fail" "iommu=pt" "iommu=1" ];
-  boot.kernelPackages = kernelPackages;
-  boot.kernelPatches = kernelPatches;
-  boot.kernel.sysctl = {
-    "fs.file-max" = 51200;
-    "net.core.rmem_max" = 67108864;
-    "net.core.wmem_max" = 67108864;
-    "net.core.netdev_max_backlog" = 250000;
-    "net.core.somaxconn" = 4096;
-    "net.ipv4.tcp_syncookies" = 1;
-    "net.ipv4.tcp_tw_reuse" = 1;
-    "net.ipv4.tcp_fin_timeout" = 30;
-    "net.ipv4.tcp_keepalive_time" = 1200;
-    "net.ipv4.ip_local_port_range" = "10000 65000";
-    "net.ipv4.tcp_max_syn_backlog" = 8192;
-    "net.ipv4.tcp_max_tw_buckets" = 5000;
-    "net.ipv4.tcp_fastopen" = 3;
-    "net.ipv4.tcp_mem" = "25600 51200 102400";
-    "net.ipv4.tcp_rmem" = "4096 87380 67108864";
-    "net.ipv4.tcp_wmem" = "4096 65536 67108864";
-    "net.ipv4.tcp_mtu_probing" = 1;
-    "net.ipv4.tcp_congestion_control" = "bbr";
-    "net.core.default_qdisc" = "fq";
-    "vfs.usermount" = 1;
-    "kernel.kptr_restrict" = 0;
-    "kernel.perf_event_paranoid" = 1;
+  boot = {
+    kernelParams = [ "boot.shell_on_fail" "iommu=pt" "iommu=1" ];
+    kernelPackages = kernelPackages;
+    kernelPatches = kernelPatches;
+    kernel.sysctl = {
+      "fs.file-max" = 51200;
+      "net.core.rmem_max" = 67108864;
+      "net.core.wmem_max" = 67108864;
+      "net.core.netdev_max_backlog" = 250000;
+      "net.core.somaxconn" = 4096;
+      "net.ipv4.tcp_syncookies" = 1;
+      "net.ipv4.tcp_tw_reuse" = 1;
+      "net.ipv4.tcp_fin_timeout" = 30;
+      "net.ipv4.tcp_keepalive_time" = 1200;
+      "net.ipv4.ip_local_port_range" = "10000 65000";
+      "net.ipv4.tcp_max_syn_backlog" = 8192;
+      "net.ipv4.tcp_max_tw_buckets" = 5000;
+      "net.ipv4.tcp_fastopen" = 3;
+      "net.ipv4.tcp_mem" = "25600 51200 102400";
+      "net.ipv4.tcp_rmem" = "4096 87380 67108864";
+      "net.ipv4.tcp_wmem" = "4096 65536 67108864";
+      "net.ipv4.tcp_mtu_probing" = 1;
+      "net.ipv4.tcp_congestion_control" = "bbr";
+      "net.core.default_qdisc" = "fq";
+      "vfs.usermount" = 1;
+      "kernel.kptr_restrict" = 0;
+      "kernel.perf_event_paranoid" = 1;
+    };
+    loader.grub.copyKernels = true;
+    loader.grub.efiSupport = true;
+    loader.efi.canTouchEfiVariables = false;
+    loader.grub.efiInstallAsRemovable = true;
+    loader.grub.enableCryptodisk = true;
+    loader.grub.useOSProber = true;
   };
 }
