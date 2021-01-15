@@ -516,6 +516,14 @@ in {
         deps = [ ];
       };
     } // {
+      addNixosChannel = {
+        text = if enableUnstableNixosChannel then
+          "${config.nix.package.out}/bin/nix-channel --add https://nixos.org/channels/nixos-unstable nixos"
+        else
+          "${config.nix.package.out}/bin/nix-channel --add https://nixos.org/channels/nixos-${nixosStableVersion} nixos";
+        deps = [ ];
+      };
+    } // {
       mkCcacheDirs = {
         text = "install -d -m 0777 -o root -g nixbld /var/cache/ccache";
         deps = [ ];
@@ -1001,9 +1009,9 @@ in {
     in getAllUnits usrLocalPrefix etcPrefix;
 
     timers = {
-      nixos-update = with nixosAutoUpgrade; {
+      nixos-update = {
         timerConfig = {
-          OnCalendar = onCalendar;
+          OnCalendar = nixosAutoUpgrade.onCalendar;
           Unit = "nixos-update@.service";
           Persistent = true;
         };
@@ -1040,15 +1048,7 @@ in {
         scriptArgs = "$ARGS";
         script = with nixosAutoUpgrade;
           let
-            add-channel = channel: ''
-              nix-channel --add ${nixChannelURL channel} ${channel}
-            '';
-            update-channels = let
-              home-manager = pkgs.lib.optionalString enableHomeManager ''
-                nix-channel --add ${homeManagerChannel} home-manager
-              '';
-            in home-manager
-            + (pkgs.lib.concatMapStrings add-channel nixosChannelList) + ''
+            update-channels = ''
               nix-channel --update
             '';
             update-my-packages = pkgs.lib.optionalString updateMyPackages ''
@@ -1360,4 +1360,5 @@ in {
     loader.grub.enableCryptodisk = true;
     loader.grub.useOSProber = true;
   };
+  system.stateVersion = nixosStableVersion;
 }

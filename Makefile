@@ -36,7 +36,7 @@ home-install:
 	chezmoi apply -v
 
 home-manager: home-install
-	home-manager switch -v
+	home-manager switch -v --keep-going
 
 root-install:
 	(cd; sudo chezmoi -c $(ROOTDIR)/chezmoi.toml apply -v)
@@ -47,11 +47,12 @@ deps-install deps-uninstall deps-reinstall:
 	test -f "$(IGNOREDDIR)/$(call script,$@).sh" && "$(IGNOREDDIR)/$(call script,$@).sh" "$(call action,$@)" || true
 
 nixos-rebuild: install
-	sudo nixos-rebuild switch --show-trace
+	sudo nixos-rebuild switch --show-trace --keep-going
 
-aio: install
-	home-manager switch -v
-	sudo nixos-rebuild switch --show-trace
+nixos-update-channels:
+	sudo nix-channel --update
+
+all-install: nixos-update-channels nixos-rebuild home-manager
 
 home-uninstall:
 	chezmoi purge -v

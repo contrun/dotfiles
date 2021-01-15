@@ -1765,6 +1765,7 @@ With arg N, insert N newlines."
     )
   :custom
   ;; (lsp-ui-doc-enable nil)
+  (lsp-clients-clangd-args '("-log=verbose"))
   (lsp-rust-racer-completion nil)
   (lsp-rust-server 'rust-analyzer)
   (lsp-prefer-flymake nil)
@@ -2647,7 +2648,6 @@ With arg N, insert N newlines."
 (use-package simplenote2
   :commands simplenote2-list simplenote2-browse simplenote2-create-note-from-buffer
   :init
-  (require 'cl-lib)
   (require 'simplenote2)
   (simplenote2-setup)
   :config
