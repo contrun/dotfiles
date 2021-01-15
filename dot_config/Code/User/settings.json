@@ -19,7 +19,8 @@
     "remote.SSH.remotePlatform": {
         "uzq": "linux",
         "cef": "linux",
-        "ceft": "linux"
+        "ceft": "linux",
+        "cef3": "linux"
     },
     "editor.multiCursorModifier": "alt",
     "editor.wordWrap": "on",

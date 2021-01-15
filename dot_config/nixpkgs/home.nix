@@ -23,14 +23,22 @@ let
     (pkgs.lib.splitString "." path);
   getMyPkgOrPkg = attrset: path:
     builtins.trace "Installing ${path}" (let
-      p = getAttr attrset path;
-      newPath = builtins.replaceStrings [ "myPackages." ] [ "" ] path;
-      shouldTryNewPath = newPath != path;
-    in if p != null then
-      p
-    else if shouldTryNewPath then
-      pkgs.lib.warn "Package ${path} does not exists, trying ${newPath}"
-      (getAttr attrset newPath)
+      vanillaPackage = getAttr attrset path;
+      tryNewPath = newPath:
+        if (newPath == path) then
+          null
+        else
+          pkgs.lib.warn "Package ${path} does not exists, trying ${newPath}"
+          (getAttr attrset newPath);
+      nixpkgsPackage =
+        tryNewPath (builtins.replaceStrings [ "myPackages." ] [ "" ] path);
+      unstablePackage = tryNewPath "unstable.${path}";
+    in if vanillaPackage != null then
+      vanillaPackage
+    else if nixpkgsPackage != null then
+      nixpkgsPackage
+    else if unstablePackage != null then
+      unstablePackage
     else
       null);
   # Emits a warning when package does not exist, instead of quitting immediately
@@ -43,8 +51,13 @@ let
   packageCollection = [
     {
       name = "command line tools (preferred)";
-      priority = 49;
+      priority = 48;
       packages = getPackages [ "parallel" ];
+    }
+    {
+      name = "command line tools (unstable)";
+      priority = 48;
+      packages = getPackages [ "unstable.alacritty" ];
     }
     {
       name = "command line tools";
@@ -66,7 +79,10 @@ let
         "silver-searcher"
         "ack"
         "patch"
-        # "pandoc"
+        "pandoc"
+        "doxygen"
+        "libxslt"
+        "xmlto"
         "moreutils"
         "nnn"
         "glib"
@@ -135,6 +151,7 @@ let
         "cmake"
         "meson"
         "ninja"
+        "bazel"
         "clang"
         "bashdb"
         "bear"
@@ -149,21 +166,19 @@ let
         "racket"
         "myPackages.ruby"
         "zeal"
-        # "vagrant"
+        "vagrant"
         "shellcheck"
-        # "zig"
-        # "stdman"
+        "zig"
+        "stdman"
         "stdmanpages"
         "ccls"
         "astyle"
-        "postgresql"
         "caddy"
-        # "mariadb"
         "dbeaver"
         "flyway"
         "libmysqlclient"
         "myPackages.idris"
-        # "myPackages.elba"
+        "myPackages.elba"
         "pydb"
         "protobuf"
         "capnproto"
@@ -177,6 +192,7 @@ let
         "meld"
         "ccache"
         "clang-tools"
+        "clang-analyzer"
         "html-tidy"
         "radare2"
         "myPackages.lua"
@@ -191,14 +207,14 @@ let
         "guile"
         "myPackages.emacs"
         "mu"
-        # "tsung"
+        "tsung"
         "wrk"
         "yq-go"
-        # "dhall"
-        # "dhall-bash"
-        # "dhall-json"
-        # "dhall-nix"
-        # "dhall-lsp-server"
+        "dhall"
+        "dhall-bash"
+        "dhall-json"
+        "dhall-nix"
+        "dhall-lsp-server"
         "rlwrap"
         "git-revise"
         "git-crypt"
@@ -208,7 +224,7 @@ let
         "gitAndTools.tig"
         "gitAndTools.git-extras"
         "gitAndTools.git-hub"
-        # "gitAndTools.git-annex"
+        "gitAndTools.git-annex"
         "gitAndTools.git-subrepo"
         "gitAndTools.diff-so-fancy"
         "vscode"
@@ -227,7 +243,7 @@ let
         "opencl-icd"
         # "cudatoolkit"
         "syslinux"
-        # "rr"
+        "rr"
         "gdbgui"
         "valgrind"
         "wabt"
@@ -263,7 +279,7 @@ let
         "cntr"
         "docker"
         "docker_compose"
-        # "lens"
+        "lens"
         "kubernix"
         "terraform"
         "flink"
@@ -275,7 +291,7 @@ let
         "k9s"
         "minikube"
         "k3s"
-        # "libguestfs-with-appliance"
+        "libguestfs-with-appliance"
         "python3Packages.binwalk"
         "binutils"
         "bison"
@@ -304,11 +320,10 @@ let
         "gomplate"
         "nodejs_latest"
         "nodePackages.prettier"
-        # vscode-extensions.ms-python.python
         "hadolint"
         "haskellPackages.ormolu"
         "haskellPackages.hlint"
-        # "haskellPackages.cabal-fmt"
+        "haskellPackages.cabal-fmt"
         "haskellPackages.ghcid"
         "haskellPackages.implicit-hie"
         "solargraph"
@@ -335,7 +350,7 @@ let
         "julia"
         "scala"
         "scalafmt"
-        # "graalvm8"
+        "graalvm8"
         "metals"
         "stack"
         "cabal-install"
@@ -361,8 +376,10 @@ let
         "boost17x"
         "libunwind"
         "gmp"
+        "libevdev"
         "libuuid"
         "libxml2"
+        "expat"
         "libpng"
         "libjpeg"
         "openssl"
@@ -395,7 +412,7 @@ let
         "pamixer"
         "imv"
         "cmus"
-        # "radiotray-ng"
+        "radiotray-ng"
         "clementine"
         "rhythmbox"
         "mplayer"
@@ -427,7 +444,7 @@ let
         "zmap"
         "slirp4netns"
         "squid"
-        # "proxychains"
+        "proxychains"
         "speedtest-cli"
         "privoxy"
         "badvpn"
@@ -450,7 +467,7 @@ let
         "uget"
         "udptunnel"
         "wireguard"
-        # "qutebrowser"
+        "qutebrowser"
         # telegram-cli
         "spectral"
         "tdesktop"
@@ -475,7 +492,7 @@ let
         "stunnel"
         "shadowsocks-libev"
         "v2ray"
-        "clash"
+        "unstable.clash"
         "simplescreenrecorder"
         "cloc"
         "sloc"
@@ -512,7 +529,7 @@ let
         "powertop"
         "fail2ban"
         "qemu"
-        # "aqemu"
+        "aqemu"
         "udisks"
         "smbclient"
         "cifs-utils"
@@ -545,7 +562,7 @@ let
         "gnome3.seahorse"
         "mlocate"
         "htop"
-        # "bottom"
+        "bottom"
         "iotop"
         "inotifyTools"
         "noti"
@@ -588,7 +605,7 @@ let
         "bibtex2html"
         "bibtool"
         "briss"
-        # "pdf2djvu"
+        "pdf2djvu"
         "calibre"
         "fbreader"
         "ebook_tools"
@@ -599,7 +616,7 @@ let
         "wordnet"
         # "haskellPackages.patat"
         "myPackages.hunspell"
-        # "myPackages.aspell"
+        "myPackages.aspell"
         "pdfgrep"
         "pdfpc"
         "djview"
@@ -610,7 +627,7 @@ let
         "myPackages.texLive"
         "texlab"
         "auctex"
-        "mupdf"
+        # "mupdf"
         "graphviz"
         "impressive"
         "gnuplot"
@@ -628,8 +645,8 @@ let
         "zotero"
         # "k2pdfopt"
         "pdftk"
-        # "jfbview"
-        # "jfbpdf"
+        # "unstable.jfbview"
+        # "unstable.jfbpdf"
         "djvulibre"
         "djvu2pdf"
       ];
@@ -669,7 +686,7 @@ let
         "tectonic"
         "patchelf"
         "libelf"
-        # "cachix"
+        "cachix"
         "barcode"
         "bitlbee"
         "blueberry"
@@ -698,7 +715,6 @@ let
         "fakeroot"
         # fbgrab
         "fbida"
-        # fbpad-git
         "fbv"
         "fdupes"
         "feedreader"
@@ -741,7 +757,6 @@ let
         "mkpasswd"
         "scrot"
         "mcabber"
-        # mconnect-git
         "mdadm"
         "mg"
         "mongodb"
@@ -752,15 +767,11 @@ let
         "kakoune-unwrapped"
         "kak-lsp"
         "rnix-lsp"
-        # "netsurf-browser"
-        # net-tools
-        # nitrogen
         "ntp"
         "nyancat"
         "openconnect"
         "openvpn"
         "osmo"
-        # pass
         "pastebinit"
         "peek"
         "persepolis"
@@ -778,18 +789,17 @@ let
         "qpdf"
         "qrencode"
         "zbar"
-        # reiserfsprogs
         "rmlint"
         "rofi"
         "rsibreak"
-        # "scite"
+        "scite"
         "screen"
         "neofetch"
         "screenkey"
         # seahorse
         "speedcrunch"
         "sshfs"
-        # "sftpman"
+        "unstable.sftpman"
         "remmina"
         "rsync"
         "filezilla"
@@ -811,12 +821,12 @@ let
         "tabbed"
         "tasksh"
         "taskwarrior"
-        # "vit"
+        "vit"
         "dstask"
         "tcl"
         "tcllib"
         "termite"
-        # "termonad-with-packages"
+        "termonad-with-packages"
         "tesseract"
         "texinfo"
         "thefuck"

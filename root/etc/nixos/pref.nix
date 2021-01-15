@@ -52,7 +52,7 @@ let
     enableDnsmasq = false;
     enableDebugInfo = false;
     enableZfs = true;
-    enableCrashDump = true;
+    enableCrashDump = false;
     dnsmasqListenAddress = "127.0.0.233";
     dnsmasqResolveLocalQueries = false;
     dnsmasqExtraConfig = ''

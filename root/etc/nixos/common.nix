@@ -196,7 +196,6 @@ in {
         niv
         nix-serve
         home-manager
-        # nix-linter
         nixfmt
         nix-du
         nix-index
@@ -223,7 +222,7 @@ in {
         powertop
         fail2ban
         qemu
-        # aqemu
+        aqemu
         ldns
         steam-run-native
         bind
@@ -239,6 +238,12 @@ in {
         xorg.libXrandr
         xorg.libXrender
         xorg.xorgproto
+        libxkbcommon
+        pixman
+        wlroots
+        libevdev
+        wayland
+        wayland-protocols
         python3
         # (pkgs.myPackages.pythonStable or python3)
         # (pkgs.myPackages.python2 or python2)
