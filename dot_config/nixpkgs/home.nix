@@ -350,7 +350,7 @@ let
         "julia"
         "scala"
         "scalafmt"
-        "graalvm8"
+        # "graalvm8"
         "metals"
         "stack"
         "cabal-install"
