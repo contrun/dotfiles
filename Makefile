@@ -3,6 +3,8 @@
 DIR := $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 ROOTDIR = $(DIR)/root
 IGNOREDDIR = $(DIR)/ignored
+DESTDIR ?= ${HOME}
+DESTROOTDIR ?= /
 
 .PHONY: install uninstall update pull push autopush upload update home-install root-install home-uninstall root-uninstall
 
@@ -28,23 +30,23 @@ upload: pull push
 update: pull update-upstreams deps-install install
 
 update-upstreams:
-	if cd ~/.local/share/chezmoi/dot_config/nixpkgs/; then niv update; fi
+	if cd $(DESTDIR)/.local/share/chezmoi/dot_config/nixpkgs/; then niv update; fi
 
 home-install:
-	[[ -f ~/.config/Code/User/settings.json ]] || install -DT $(DIR)/dot_config/Code/User/settings.json ~/.config/Code/User/settings.json
-	diff ~/.config/Code/User/settings.json $(DIR)/dot_config/Code/User/settings.json || nvim -d ~/.config/Code/User/settings.json $(DIR)/dot_config/Code/User/settings.json
-	chezmoi apply -v
+	[[ -f $(DESTDIR)/.config/Code/User/settings.json ]] || install -DT $(DIR)/dot_config/Code/User/settings.json $(DESTDIR)/.config/Code/User/settings.json
+	diff $(DESTDIR)/.config/Code/User/settings.json $(DIR)/dot_config/Code/User/settings.json || nvim -d $(DESTDIR)/.config/Code/User/settings.json $(DIR)/dot_config/Code/User/settings.json
+	chezmoi -c $(IGNOREDDIR)/chezmoi.toml -D $(DESTDIR) apply -v
 
 home-manager: home-install
 	home-manager switch -v --keep-going
 
 root-install:
-	(cd; sudo chezmoi -c $(ROOTDIR)/chezmoi.toml apply -v)
+	(mkdir -p $(DESTROOTDIR); sudo chezmoi -c $(IGNOREDDIR)/chezmoi.toml -D $(DESTROOTDIR) -S $(ROOTDIR) apply -v)
 
 install: home-install root-install
 
 deps-install deps-uninstall deps-reinstall:
-	test -f "$(IGNOREDDIR)/$(call script,$@).sh" && "$(IGNOREDDIR)/$(call script,$@).sh" "$(call action,$@)" || true
+	test -f "$(IGNOREDDIR)/$(call script,$@).sh" && DESTDIR=$(DESTDIR) "$(IGNOREDDIR)/$(call script,$@).sh" "$(call action,$@)" || true
 
 nixos-rebuild: install
 	sudo nixos-rebuild switch --show-trace --keep-going
@@ -55,9 +57,9 @@ nixos-update-channels:
 all-install: nixos-update-channels nixos-rebuild home-manager
 
 home-uninstall:
-	chezmoi purge -v
+	chezmoi -c $(IGNOREDDIR)/chezmoi.toml purge -v
 
 root-uninstall:
-	(cd; sudo chezmoi -c $(ROOTDIR)/chezmoi.toml purge -v)
+	(mkdir -p $(DESTROOTDIR); sudo chezmoi -c $(IGNOREDDIR)/chezmoi.toml -D $(DESTROOTDIR) -S $(ROOTDIR) purge -v)
 
 uninstall: deps-uninstall home-uninstall root-uninstall

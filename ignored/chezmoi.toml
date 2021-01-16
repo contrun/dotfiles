@@ -1,6 +1,3 @@
-destDir = "/"
-sourceDir = ".local/share/chezmoi/root"
-
 [genericSecret]
 command = "secretTool.py"
 
