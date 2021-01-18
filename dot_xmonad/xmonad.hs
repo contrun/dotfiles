@@ -185,9 +185,11 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) =
       -- What the fuck. Firefox just does not allow me to disable control-q, control-b. Below is to slow.
       -- Tow slow for emacs
       (keyPassThrough (controlMask, xK_q) (focusedHasProperty $ foldr1 Or $ map ClassName firefoxClasses, return ())),
-      ((modm .|. shiftMask, xK_r), spawn "noti --title xmonad --message recompiling; make -C ~/.local/share/chezmoi/ home-install; xmonad --recompile; xmonad --restart")
+      ((modm .|. shiftMask, xK_r), spawn "noti --title xmonad --message recompiling; make -C ~/.local/share/chezmoi/ home-install; xmonad --recompile; xmonad --restart"),
       -- Run xmessage with a summary of the default keybindings (useful for beginners)
       -- , ((modm .|. controlMask, xK_slash ), spawn ("echo \"" ++ help ++ "\" | xmessage -file -"))
+
+      ((mod4Mask .|. controlMask, xK_v), raiseMaybe (spawn "copyq" >> spawn "copyq show") (className =? "copyq"))
     ]
       ++ [ ((m .|. modm, k), f i) --
       -- mod-[1..9], Switch to workspace N

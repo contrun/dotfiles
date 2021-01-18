@@ -196,6 +196,7 @@ in {
         niv
         nix-serve
         home-manager
+        nixpkgs-fmt
         nixfmt
         nix-du
         nix-index
@@ -806,7 +807,6 @@ in {
     # accounts-daemon.enable = enableAccountsDaemon || enableFlatpak;
     flatpak.enable = enableFlatpak;
     thermald = { enable = enableThermald; };
-    gnome3 = { gnome-keyring.enable = enableGnomeKeyring; };
 
     locate = {
       enable = enableLocate;
@@ -876,7 +876,7 @@ in {
         nowlocker = locker;
       };
       # desktopManager.xfce.enable = true;
-      # desktopManager.gnome3.enable = true;
+      desktopManager.gnome3.enable = enableGnome;
       # desktopManager.plasma5.enable = true;
       # desktopManager.xfce.enableXfwm = false;
       windowManager = {
@@ -956,6 +956,7 @@ in {
       createHome = true;
       inherit extraGroups;
       isNormalUser = true;
+      useDefaultShell = true;
     };
   };
 

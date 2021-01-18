@@ -18,8 +18,8 @@
     "workbench.colorTheme": "Solarized Dark",
     "remote.SSH.remotePlatform": {
         "uzq": "linux",
-        "cef": "linux",
-        "ceft": "linux",
+        "cef1": "linux",
+        "cef2": "linux",
         "cef3": "linux"
     },
     "editor.multiCursorModifier": "alt",
