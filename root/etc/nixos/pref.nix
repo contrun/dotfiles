@@ -283,7 +283,6 @@ let
     enableWireless = true;
     consoleFont = "${pkgs.terminus_font}/share/consolefonts/ter-g20n.psf.gz";
   } else if hostname == "jxt" then {
-    enableGnome = true;
     hostId = "5ee92b8d";
     enableVirtualboxHost = false;
     enableHolePuncher = false;

@@ -45,5 +45,6 @@
         "**/.bloop": true,
         "**/.metals": true,
         "**/.ammonite": true
-    }
+    },
+    "python.languageServer": "Pylance"
 }

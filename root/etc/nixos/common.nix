@@ -807,6 +807,7 @@ in {
     # accounts-daemon.enable = enableAccountsDaemon || enableFlatpak;
     flatpak.enable = enableFlatpak;
     thermald = { enable = enableThermald; };
+    gnome3 = { gnome-keyring.enable = enableGnomeKeyring; };
 
     locate = {
       enable = enableLocate;
