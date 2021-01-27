@@ -767,7 +767,7 @@ in {
                 }";
               reversePorts = builtins.concatStringsSep " "
                 (builtins.map (x: getReverseArgument x) autosshPorts);
-            in "-M -o ServerAliveInterval=15 -o ServerAliveCountMax=4 -N ${reversePorts} ${server}";
+            in "-o ServerAliveInterval=15 -o ServerAliveCountMax=4 -N ${reversePorts} ${server}";
           in {
             extraArguments = extraArguments;
             name = server;
@@ -1200,8 +1200,8 @@ in {
         name = "hole-puncher";
         unitName = "${name}@";
         script = pkgs.writeShellScript "hole-puncher" ''
-          set -xe
-          instance="44443-44443"
+          set -eu
+          instance="${builtins.toString sslhPort}-${builtins.toString sslhPort}"
           if [[ -n "$1" ]] && grep -Eq '[0-9]+-[0-9]+' <<< "$1"; then instance="$1"; fi
           externalPort="$(awk -F- '{print $2}' <<< "$instance")"
           internalPort="$(awk -F- '{print $1}' <<< "$instance")"
@@ -1214,7 +1214,7 @@ in {
       in {
         services.${unitName} = {
           description = "NAT traversal worker";
-          enable = enableHolePuncher;
+          enable = enableHolePuncher && enableSslh;
           wantedBy = [ "default.target" ];
           path = [
             pkgs.coreutils
@@ -1317,27 +1317,6 @@ in {
     autoOptimiseStore = true;
   };
 
-  boot.supportedFilesystems = if (enableZfs) then [ "zfs" ] else [ ];
-
-  boot.crashDump = { enable = enableCrashDump; };
-  boot.initrd.network = {
-    enable = true;
-    ssh = let
-      f = "${home}/.ssh/authorized_keys";
-      authorizedKeys = pkgs.lib.optionals (builtins.pathExists f)
-        (builtins.filter (x: x != "")
-          (pkgs.lib.splitString "\n" (builtins.readFile f)));
-      hostKeys = builtins.filter (x: builtins.pathExists x) [
-        "${home}/.local/secrets/initrd/ssh_host_rsa_key"
-        "${home}/.local/secrets/initrd/ssh_host_ed25519_key"
-      ];
-    in {
-      inherit authorizedKeys hostKeys;
-      enable = false && enableBootSSH && authorizedKeys != [ ] && hostKeys
-        != [ ];
-    };
-  };
-
   boot = {
     kernelParams = [ "boot.shell_on_fail" "iommu=pt" "iommu=1" ];
     kernelPackages = kernelPackages;
@@ -1372,6 +1351,26 @@ in {
     loader.grub.efiInstallAsRemovable = true;
     loader.grub.enableCryptodisk = true;
     loader.grub.useOSProber = true;
+    supportedFilesystems = if (enableZfs) then [ "zfs" ] else [ ];
+    zfs = { enableUnstable = true; };
+    crashDump = { enable = enableCrashDump; };
+    initrd.network = {
+      enable = true;
+      ssh = let
+        f = "${home}/.ssh/authorized_keys";
+        authorizedKeys = pkgs.lib.optionals (builtins.pathExists f)
+          (builtins.filter (x: x != "")
+            (pkgs.lib.splitString "\n" (builtins.readFile f)));
+        hostKeys = builtins.filter (x: builtins.pathExists x) [
+          "${home}/.local/secrets/initrd/ssh_host_rsa_key"
+          "${home}/.local/secrets/initrd/ssh_host_ed25519_key"
+        ];
+      in {
+        inherit authorizedKeys hostKeys;
+        enable = false && enableBootSSH && authorizedKeys != [ ] && hostKeys
+          != [ ];
+      };
+    };
   };
   system.stateVersion = nixosStableVersion;
 }

@@ -46,5 +46,6 @@
         "**/.metals": true,
         "**/.ammonite": true
     },
-    "python.languageServer": "Pylance"
+    "python.languageServer": "Pylance",
+    "lldb.verboseLogging": true
 }

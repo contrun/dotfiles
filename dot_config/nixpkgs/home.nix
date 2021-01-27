@@ -382,6 +382,7 @@ let
         "libunwind"
         "gmp"
         "libevdev"
+        "unstable.libcap"
         "libuuid"
         "libxml2"
         "expat"
