@@ -743,6 +743,7 @@ let
         "haveged"
         "hdparm"
         "hwinfo"
+        "lshw"
         "icdiff"
         "iftop"
         "flamegraph"

@@ -677,9 +677,9 @@ myPP =
       ppHiddenNoWindows = const "",
       ppLayout = const "",
       ppSep = "  ",
+      ppVisible = xmobarColor "orange" "" . justAcronym,
       ppHidden = justAcronym . ignoreWorkspaces,
       ppCurrent = xmobarColor "violet" "" . justAcronym,
-      ppVisible = wrap "(" ")",
       ppUrgent = xmobarColor "red" "yellow"
     }
   where
