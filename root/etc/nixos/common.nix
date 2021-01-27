@@ -857,6 +857,7 @@ in {
 
     xserver = {
       enable = enableXserver;
+      verbose = 7;
       autorun = true;
       exportConfiguration = true;
       layout = "us";
@@ -865,6 +866,11 @@ in {
         enable = enableLibInput;
         tapping = true;
         disableWhileTyping = true;
+      };
+      # videoDrivers = [ "dummy" ] ++ [ "intel" ];
+      virtualScreen = {
+        x = 1200;
+        y = 1920;
       };
       xautolock = let
         locker = xautolockLocker;
