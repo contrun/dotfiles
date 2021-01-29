@@ -29,6 +29,7 @@ import XMonad.Actions.DynamicWorkspaces
 import XMonad.Actions.GroupNavigation
 import XMonad.Actions.PerWorkspaceKeys
 import qualified XMonad.Actions.Search as S
+import XMonad.Actions.UpdatePointer
 import XMonad.Actions.WindowGo
 import XMonad.Core
 import XMonad.Hooks.DynamicLog
@@ -40,6 +41,7 @@ import XMonad.Layout.CenteredMaster
 import XMonad.Layout.Column
 import XMonad.Layout.Grid
 import XMonad.Layout.Hidden
+import XMonad.Layout.IndependentScreens
 import XMonad.Layout.ThreeColumns
 import XMonad.Prompt
 import XMonad.Prompt.FuzzyMatch (fuzzyMatch, fuzzySort)
@@ -102,7 +104,7 @@ myModMaskStr = "M3"
 --
 -- > workspaces = ["web", "irc", "code" ] ++ map show [4..9]
 --
-myWorkspaces = ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
+myWorkspaces = ["1", "2", "3", "4", "5", "6", "7", "8", "9"] ++ myInvisibleWorkspaces ++ myShortenedWorkspaces
 
 -- Border colors for unfocused and focused windows, respectively.
 --
@@ -140,6 +142,7 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) =
       ( (modm .|. controlMask, xK_space),
         setLayout $ XMonad.layoutHook conf
       ),
+      ((modm, xK_o), nextScreen),
       -- Resize viewed windows to the correct size
       ((modm .|. mod1Mask, xK_r), refresh),
       -- Move focus to the next window
@@ -213,7 +216,7 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) =
 toggleOrView' = toggleOrDoSkip myInvisibleWorkspaces W.view
 
 -- toggleOrView ignoring scratchpad and named scratchpad workspace
-toggleOrViewNoSP = toggleOrDoSkip myInvisibleWorkspaces W.greedyView
+toggleOrGreedyViewNoSP = toggleOrDoSkip myInvisibleWorkspaces W.greedyView
 
 ------------------------------------------------------------------------
 -- Mouse bindings: default actions bound to mouse events
@@ -671,6 +674,8 @@ myStatusBar = "xmobar"
 
 myInvisibleWorkspaces = ["NSP", "hidden"]
 
+myShortenedWorkspaces = ["chat", "reading", "web", "private", "ide", "quick", "editor", "vscode", "zstash", "video", "hidden"]
+
 myPP =
   xmobarPP
     { ppTitle = xmobarColor "green" "",
@@ -683,7 +688,6 @@ myPP =
       ppUrgent = xmobarColor "red" "yellow"
     }
   where
-    myShortenedWorkspaces = ["chat", "reading", "web", "private", "ide", "quick", "editor", "vscode", "zstash", "video", "hidden"]
     ignoreWorkspaces = \x -> if elem x myInvisibleWorkspaces then "" else x
     justAcronym = \x -> if elem x myShortenedWorkspaces then map toUpper (take 1 x) else x
 

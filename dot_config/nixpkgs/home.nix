@@ -720,6 +720,8 @@ let
         "evtest"
         "exfat-utils"
         "xfce.exo"
+        "xorg.xwd"
+        "xorg.xwininfo"
         "fakeroot"
         # fbgrab
         "fbida"
@@ -759,7 +761,7 @@ let
         "libinput-gestures"
         "logrotate"
         "lolcat"
-        "copyq"
+        "unstable.copyq"
         "kpcli"
         "bitwarden-cli"
         "keepassxc"

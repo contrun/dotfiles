@@ -20,7 +20,10 @@
         "uzq": "linux",
         "cef1": "linux",
         "cef2": "linux",
-        "cef3": "linux"
+        "cef3": "linux",
+        "node1": "linux",
+        "node2": "linux",
+        "node3": "linux"
     },
     "editor.multiCursorModifier": "alt",
     "editor.wordWrap": "on",

@@ -120,7 +120,8 @@ let
           pyparsing
           black
           requests
-          # python-dotenv
+          docopt
+          python-dotenv
           pyyaml
           pyperclip
           # jupyter
