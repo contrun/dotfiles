@@ -592,14 +592,13 @@ myManageHook =
           (appName =? "QuickTerminal") --> doShiftHiddenWorkspace "quick",
           (className =? "Microsoft Teams - Preview") --> doShiftHiddenWorkspace "chat",
           (appName =? "wechat.exe") --> doShiftHiddenWorkspace "chat",
-          -- TODO: doHideWindows currently does not work for wine system tray. Can't figure out why.
-          (title =? "Wine System Tray") --> doShift "hidden" <+> doHideWindows (Title "Wine System Tray"),
+          (title =? "Wine System Tray") --> doHide,
           (className =? "discord") --> doShiftHiddenWorkspace "chat",
           (className =? "zoom") --> doShiftHiddenWorkspace "chat",
           (className =? "telegram-desktop") --> doShiftHiddenWorkspace "chat",
           (title =? "Picture-in-Picture") --> doShiftAndViewHiddenWorkspace "video",
           (className =? "mpv") --> doShiftAndViewHiddenWorkspace "video",
-          (className =? "vlc") --> doShiftAndViewHiddenWorkspace "video",
+          (className =? "vlc") --> doShiftAndViewHiddenWorkspace "video" <+> doHide,
           (className =? "Kodi") --> doShiftAndViewHiddenWorkspace "video",
           (className =? "MPlayer") --> doShiftAndViewHiddenWorkspace "video",
           (appName =? "calibre-ebook-viewer") --> doShiftAndViewHiddenWorkspace "reading",
@@ -613,9 +612,7 @@ myManageHook =
     myClassIgnores = ["desktop_window"]
     myTitleIgnores = ["kdesktop"]
     myBrowserClasses2 = ["Chromium-browser"]
-    doHideWindows property =
-      let hide = allWithProperty property >>= hideWindows
-       in (liftX hide) >> idHook
+    doHide = ask >>= \w -> liftX (hideWindow w) >> doF (W.delete w)
     doShiftHiddenWorkspace ws = (liftX $ addHiddenWorkspace ws) >> doShift ws
     doShiftAndViewHiddenWorkspace ws = (liftX $ addHiddenWorkspace ws) >> doShiftAndView ws
     doShiftAndView = doF . liftM2 (.) W.greedyView W.shift

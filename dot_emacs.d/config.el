@@ -1764,7 +1764,7 @@ With arg N, insert N newlines."
     (require 'lsp-python-ms)
     )
   :custom
-  ;; (lsp-ui-doc-enable nil)
+  (lsp-ui-doc-enable t)
   (lsp-clients-clangd-args '("-log=verbose"))
   (lsp-rust-racer-completion nil)
   (lsp-rust-server 'rust-analyzer)

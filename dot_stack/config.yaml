@@ -5,6 +5,5 @@ urls:
 allow-newer: true
 nix:
   pure: false
-# Not for now, https://github.com/haskell/c2hs/issues/229
-# ghc-options:
-#   "$everything": -haddock
+ghc-options:
+  "$everything": -haddock

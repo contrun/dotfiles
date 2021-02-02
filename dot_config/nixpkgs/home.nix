@@ -418,6 +418,7 @@ let
         "pamixer"
         "imv"
         "cmus"
+        "steam"
         # "radiotray-ng"
         "clementine"
         "rhythmbox"
