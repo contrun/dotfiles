@@ -15,7 +15,7 @@
 - name: Copy current configuration
   copy:
     src: /etc/nixos/
-    dest: "{{ tmp_mount_dir }}/etc/nixos/"
+    dest: "{{ tmp_mount_path }}/etc/nixos/"
     force: yes
     backup: yes
 

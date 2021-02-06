@@ -7,6 +7,8 @@
 - name: Umount {{ tmp_mount_path }} to make running idempotent
   shell: |
     umount -f -R {{ tmp_mount_path }} || true
+  args:
+    executable: "{{ remote_shell_executable }}"
 
 - name: Clean up disks
   shell: |
@@ -38,6 +40,8 @@
     sgdisk -n 3:2101248:"$(sgdisk -E "{{ item }}")" -c 3:"ZPOOL Partition" -t 3:8300 "{{ item }}"
     sgdisk -p "{{ item }}"
     partx -u "{{ item }}" || true
+  args:
+    executable: "{{ remote_shell_executable }}"
   with_items: "{{ zfs_pool_disks }}"
 
 - name: Get disks partitions
@@ -49,6 +53,8 @@
   shell: |
     set -xeu
     blkid -s UUID -o value {{ boot_partitions_glob_path }} | sed 's#^#/dev/disk/by-uuid/#'
+  args:
+    executable: "{{ remote_shell_executable }}"
   register: boot_partitions_blkid_result
 
 - name: Get boot partitions uuid
@@ -59,6 +65,8 @@
   shell:  |
     set -xeu
     blkid -s UUID -o value {{ zpool_partitions_glob_path }} | sed 's#^#/dev/disk/by-uuid/#'
+  args:
+    executable: "{{ remote_shell_executable }}"
   register: zpool_partitions_blkid_result
 
 - name: Get zpool partitions uuid
@@ -68,12 +76,16 @@
 - name: Destroy old zpool if overwrite_partition is set
   shell: |
     zpool destroy -f {{ zfs_pool_name }} || true
+  args:
+    executable: "{{ remote_shell_executable }}"
   when: overwrite_partitions == "yes"
 
 - name: Import old zpool if overwrite_partition is not set
   shell: |
     zpool import -f {{ zfs_pool_name }}
     zfs load-key -r {{ zfs_pool_name }} <<< "{{ zfs_passphrase }}"
+  args:
+    executable: "{{ remote_shell_executable }}"
   when: overwrite_partitions != "yes"
   ignore_errors: yes
 
@@ -85,6 +97,8 @@
         exit 0;
     fi
     {% if zfs_passphrase is defined %} (echo "{{ zfs_passphrase }}"; echo "{{ zfs_passphrase }}") | zpool create -O encryption=aes-256-gcm -O keyformat=passphrase {% else %} zpool create {% endif %} -O compression=zstd -O atime=on -O relatime=on -O normalization=formD -O aclinherit=passthrough -O acltype=posixacl -O xattr=sa -f -o ashift=12 -m none -R {{ tmp_mount_path }} {{ zfs_pool_name }} {% if zfs_pool_type is defined %} {{ zfs_pool_type }} {% endif %} {{ zpool_partitions | join(' ') }}
+  args:
+    executable: "{{ remote_shell_executable }}"
 
 - name: Create root dataset
   shell: |
@@ -98,6 +112,8 @@
     else
         mount -t zfs "{{ item.device }}" "{{ item.mountpoint }}"
     fi
+  args:
+    executable: "{{ remote_shell_executable }}"
   with_items:
     - { device: "{{ zfs_pool_name }}/ROOT/nixos", mountpoint: "{{ tmp_mount_path }}" }
 
@@ -109,6 +125,8 @@
         zfs create -o mountpoint=none -o canmount=off "$(dirname "{{ item.device }}")"
         zfs create -o mountpoint=legacy -o canmount=on "{{ item.device }}"
     fi
+  args:
+    executable: "{{ remote_shell_executable }}"
   with_items:
     - { device: "{{ zfs_pool_name }}/NIX/nix", mountpoint: "{{ tmp_mount_path }}/nix" }
     - { device: "{{ zfs_pool_name }}/HOME/home", mountpoint: "{{ tmp_mount_path }}/home" }
@@ -121,6 +139,8 @@
         zfs create -o mountpoint=none -o canmount=off "$(dirname "{{ item.device }}")"
         zfs create -o mountpoint=legacy -o canmount=on -o sync=disabled -o setuid=off -o devices=off "{{ item.device }}"
     fi
+  args:
+    executable: "{{ remote_shell_executable }}"
   with_items:
     - { device: "{{ zfs_pool_name }}/TMP/tmp", mountpoint: "{{ tmp_mount_path }}/tmp" }
 
@@ -128,6 +148,8 @@
   shell: |
     set -xeu
     mount -t zfs "{{ item.device }}" "{{ item.mountpoint }}"
+  args:
+    executable: "{{ remote_shell_executable }}"
   with_items:
     - { device: "{{ zfs_pool_name }}/NIX/nix", mountpoint: "{{ tmp_mount_path }}/nix" }
     - { device: "{{ zfs_pool_name }}/HOME/home", mountpoint: "{{ tmp_mount_path }}/home" }
@@ -151,10 +173,14 @@
         mount "$disk" "{{ tmp_mount_path }}/boot${count}"
         count=$(( ${count:-0} + 1 ))
     done
+  args:
+    executable: "{{ remote_shell_executable }}"
 
 - name: Umount {{ tmp_mount_path }} when umount_after_finishing is true
   shell: |
     umount -f -R {{ tmp_mount_path }} || true
+  args:
+    executable: "{{ remote_shell_executable }}"
   when: umount_after_finishing
 
 - meta: end_play

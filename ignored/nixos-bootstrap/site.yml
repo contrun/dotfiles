@@ -2,10 +2,11 @@
  # This playbook deploys the whole application stack in this site.
 
 - name: Make partitions
-  hosts: localhost
+  hosts: "{{ host }}"
   remote_user: root
   roles:
     - partition
+    # - installation
   become: yes
 
 - name: Debug partition paths
