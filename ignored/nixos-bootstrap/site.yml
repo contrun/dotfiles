@@ -7,3 +7,14 @@
   roles:
     - partition
   become: yes
+
+- name: Debug partition paths
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - debug:
+        var: "boot_partitions"
+    - debug:
+        var: "zpool_partitions"
+    - debug:
+        var: "tmp_mount_path"

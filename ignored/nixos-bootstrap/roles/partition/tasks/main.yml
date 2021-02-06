@@ -42,24 +42,28 @@
 
 - name: Get disks partitions
   set_fact:
-    boot_partitions: "{{ zfs_pool_disks | zip_longest([], fillvalue='*2') | map('join', '') | join(' ') }}"
-    zpool_partitions: "{{ zfs_pool_disks | zip_longest([], fillvalue='*3') | map('join', '') | join(' ') }}"
+    boot_partitions_glob_path: "{{ zfs_pool_disks | zip_longest([], fillvalue='*2') | map('join', '') | join(' ') }}"
+    zpool_partitions_glob_path: "{{ zfs_pool_disks | zip_longest([], fillvalue='*3') | map('join', '') | join(' ') }}"
 
 - name: Get boot partitions uuid stepstone
-  shell: blkid -s PARTUUID -o value {{ boot_partitions }} | sed 's#^#/dev/disk/by-partuuid/#'
-  register: boot_partitions_uuids_tmp
+  shell: |
+    set -xeu
+    blkid -s UUID -o value {{ boot_partitions_glob_path }} | sed 's#^#/dev/disk/by-uuid/#'
+  register: boot_partitions_blkid_result
 
 - name: Get boot partitions uuid
   set_fact:
-    boot_partitions_uuids: "{{ boot_partitions_uuids_tmp.stdout_lines }}"
+    boot_partitions: "{{ boot_partitions_blkid_result.stdout_lines }}"
 
 - name: Get zpool partitions uuid stepstone
-  shell: blkid -s PARTUUID -o value {{ zpool_partitions }} | sed 's#^#/dev/disk/by-partuuid/#'
-  register: zpool_partitions_uuids_tmp
+  shell:  |
+    set -xeu
+    blkid -s UUID -o value {{ zpool_partitions_glob_path }} | sed 's#^#/dev/disk/by-uuid/#'
+  register: zpool_partitions_blkid_result
 
 - name: Get zpool partitions uuid
   set_fact:
-    zpool_partitions_uuids: "{{ zpool_partitions_uuids_tmp.stdout_lines }}"
+    zpool_partitions: "{{ zpool_partitions_blkid_result.stdout_lines }}"
 
 - name: Destroy old zpool if overwrite_partition is set
   shell: |
@@ -73,11 +77,6 @@
   when: overwrite_partitions != "yes"
   ignore_errors: yes
 
-- name: Pause before creating zpool
-  pause:
-    prompt: You are going to execute create pool
-  when: pasue_before_creating_zpool is defined
-
 - name: Create zpool
   shell: |
     set -xeu
@@ -85,7 +84,7 @@
         echo "zpool {{ zfs_pool_name }} already exists, skipping creating."
         exit 0;
     fi
-    {% if zfs_passphrase is defined %} (echo "{{ zfs_passphrase }}"; echo "{{ zfs_passphrase }}") | zpool create -O encryption=aes-256-gcm -O keyformat=passphrase {% else %} zpool create {% endif %} -O compression=zstd -O atime=on -O relatime=on -O normalization=formD -O aclinherit=passthrough -O acltype=posixacl -O xattr=sa -f -o ashift=12 -m none -R {{ tmp_mount_path }} {{ zfs_pool_name }} {% if zfs_pool_type is defined %} {{ zfs_pool_type }} {% endif %} {{ zpool_partitions_uuids | join(' ') }}
+    {% if zfs_passphrase is defined %} (echo "{{ zfs_passphrase }}"; echo "{{ zfs_passphrase }}") | zpool create -O encryption=aes-256-gcm -O keyformat=passphrase {% else %} zpool create {% endif %} -O compression=zstd -O atime=on -O relatime=on -O normalization=formD -O aclinherit=passthrough -O acltype=posixacl -O xattr=sa -f -o ashift=12 -m none -R {{ tmp_mount_path }} {{ zfs_pool_name }} {% if zfs_pool_type is defined %} {{ zfs_pool_type }} {% endif %} {{ zpool_partitions | join(' ') }}
 
 - name: Create root dataset
   shell: |
@@ -138,10 +137,17 @@
   shell: |
     set -xeu
     count=
-    for disk in {{ boot_partitions }}; do
+    for disk in {{ boot_partitions_glob_path }}; do
         mkdir -p "{{ tmp_mount_path }}/boot${count}"
         umount -f "{{ tmp_mount_path }}/boot${count}" || true
-        mkfs.vfat -F32 $disk
+        if blkid $disk | grep 'TYPE="vfat"'; then
+            if [[ {{ overwrite_partitions }} == 'yes' ]]; then
+                echo "Reformatting disk $disk"
+                mkfs.vfat -F32 $disk
+            fi
+        else
+            mkfs.vfat -F32 $disk
+        fi
         mount "$disk" "{{ tmp_mount_path }}/boot${count}"
         count=$(( ${count:-0} + 1 ))
     done
@@ -150,3 +156,11 @@
   shell: |
     umount -f -R {{ tmp_mount_path }} || true
   when: umount_after_finishing
+
+- meta: end_play
+  when: umount_after_finishing
+
+- name: Save facts for later use
+  set_fact:
+    tmp_mount_path: "{{ tmp_mount_path }}"
+    zfs_pool_name: "{{ zfs_pool_name }}"
