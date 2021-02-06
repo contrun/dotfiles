@@ -1,0 +1,152 @@
+---
+# tasks file for partition
+
+- meta: end_play
+  when: zfs_pool_disks == []
+
+- name: Umount {{ tmp_mount_path }} to make running idempotent
+  shell: |
+    umount -f -R {{ tmp_mount_path }} || true
+
+- name: Clean up disks
+  shell: |
+    [[ "{{ use_sgdisk_clear }}" != "true" ]] || sgdisk --zap-all "{{ item }}"
+    [[ "{{ use_wipefs_all }}" != "true" ]] || wipefs -fa "{{ item }}"
+    [[ "{{ use_zero_disks }}" != "true" ]] || dd if=/dev/zero of="{{ item }}" bs=1M oflag=direct status=progress
+  with_items: "{{ zfs_pool_disks }}"
+  when: overwrite_partitions == "yes"
+
+- name: Create partitions
+  shell: |
+    set -xeu
+    disk_info="$(sgdisk -p {{ item }})"
+    if grep -E '^\s*1.*EF02\s+BIOS Boot Partition' <<< "$disk_info"; then
+        if grep -E '^\s*2.*EF00\s+Fat32 ESP Partition' <<< "$disk_info"; then
+            if grep -E '^\s*3.*8300\s+ZPOOL Partition' <<< "$disk_info"; then
+                if [[ {{ overwrite_partitions }} != 'yes' ]]; then
+                    echo "Disk {{ item }} already formatted, skipping formatting."
+                    exit 0
+                fi
+                echo "Overwriting already formatted disk {{ item }}"
+                echo "$disk_info"
+            fi
+        fi
+    fi
+    sgdisk -og "{{ item }}"
+    sgdisk -a 1 -n 1:48:2047 -c 1:"BIOS Boot Partition" -t 1:ef02 "{{ item }}"
+    sgdisk -n 2:4096:2101247 -c 2:"Fat32 ESP Partition" -t 2:ef00 "{{ item }}"
+    sgdisk -n 3:2101248:"$(sgdisk -E "{{ item }}")" -c 3:"ZPOOL Partition" -t 3:8300 "{{ item }}"
+    sgdisk -p "{{ item }}"
+    partx -u "{{ item }}" || true
+  with_items: "{{ zfs_pool_disks }}"
+
+- name: Get disks partitions
+  set_fact:
+    boot_partitions: "{{ zfs_pool_disks | zip_longest([], fillvalue='*2') | map('join', '') | join(' ') }}"
+    zpool_partitions: "{{ zfs_pool_disks | zip_longest([], fillvalue='*3') | map('join', '') | join(' ') }}"
+
+- name: Get boot partitions uuid stepstone
+  shell: blkid -s PARTUUID -o value {{ boot_partitions }} | sed 's#^#/dev/disk/by-partuuid/#'
+  register: boot_partitions_uuids_tmp
+
+- name: Get boot partitions uuid
+  set_fact:
+    boot_partitions_uuids: "{{ boot_partitions_uuids_tmp.stdout_lines }}"
+
+- name: Get zpool partitions uuid stepstone
+  shell: blkid -s PARTUUID -o value {{ zpool_partitions }} | sed 's#^#/dev/disk/by-partuuid/#'
+  register: zpool_partitions_uuids_tmp
+
+- name: Get zpool partitions uuid
+  set_fact:
+    zpool_partitions_uuids: "{{ zpool_partitions_uuids_tmp.stdout_lines }}"
+
+- name: Destroy old zpool if overwrite_partition is set
+  shell: |
+    zpool destroy -f {{ zfs_pool_name }} || true
+  when: overwrite_partitions == "yes"
+
+- name: Import old zpool if overwrite_partition is not set
+  shell: |
+    zpool import -f {{ zfs_pool_name }}
+    zfs load-key -r {{ zfs_pool_name }} <<< "{{ zfs_passphrase }}"
+  when: overwrite_partitions != "yes"
+  ignore_errors: yes
+
+- name: Pause before creating zpool
+  pause:
+    prompt: You are going to execute create pool
+  when: pasue_before_creating_zpool is defined
+
+- name: Create zpool
+  shell: |
+    set -xeu
+    if zpool list {{ zfs_pool_name }}; then
+        echo "zpool {{ zfs_pool_name }} already exists, skipping creating."
+        exit 0;
+    fi
+    {% if zfs_passphrase is defined %} (echo "{{ zfs_passphrase }}"; echo "{{ zfs_passphrase }}") | zpool create -O encryption=aes-256-gcm -O keyformat=passphrase {% else %} zpool create {% endif %} -O compression=zstd -O atime=on -O relatime=on -O normalization=formD -O aclinherit=passthrough -O acltype=posixacl -O xattr=sa -f -o ashift=12 -m none -R {{ tmp_mount_path }} {{ zfs_pool_name }} {% if zfs_pool_type is defined %} {{ zfs_pool_type }} {% endif %} {{ zpool_partitions_uuids | join(' ') }}
+
+- name: Create root dataset
+  shell: |
+    set -xeu
+    mkdir -p {{ item.mountpoint }}
+    if ! zfs list "{{ item.device }}"; then
+        zfs create -o mountpoint=none -o canmount=off "$(dirname "{{ item.device }}")"
+        zfs create -o mountpoint=legacy -o canmount=on "{{ item.device }}"
+        mount -t zfs "{{ item.device }}" "{{ item.mountpoint }}"
+        zpool set bootfs="{{ zfs_pool_name }}/ROOT/nixos" "{{ zfs_pool_name }}"
+    else
+        mount -t zfs "{{ item.device }}" "{{ item.mountpoint }}"
+    fi
+  with_items:
+    - { device: "{{ zfs_pool_name }}/ROOT/nixos", mountpoint: "{{ tmp_mount_path }}" }
+
+- name: Create other datasets
+  shell: |
+    set -xeu
+    mkdir -p {{ item.mountpoint }}
+    if ! zfs list "{{ item.device }}"; then
+        zfs create -o mountpoint=none -o canmount=off "$(dirname "{{ item.device }}")"
+        zfs create -o mountpoint=legacy -o canmount=on "{{ item.device }}"
+    fi
+  with_items:
+    - { device: "{{ zfs_pool_name }}/NIX/nix", mountpoint: "{{ tmp_mount_path }}/nix" }
+    - { device: "{{ zfs_pool_name }}/HOME/home", mountpoint: "{{ tmp_mount_path }}/home" }
+
+- name: Create tmp datasets
+  shell: |
+    set -xeu
+    mkdir -p {{ item.mountpoint }}
+    if ! zfs list "{{ item.device }}"; then
+        zfs create -o mountpoint=none -o canmount=off "$(dirname "{{ item.device }}")"
+        zfs create -o mountpoint=legacy -o canmount=on -o sync=disabled -o setuid=off -o devices=off "{{ item.device }}"
+    fi
+  with_items:
+    - { device: "{{ zfs_pool_name }}/TMP/tmp", mountpoint: "{{ tmp_mount_path }}/tmp" }
+
+- name: Mount datasets
+  shell: |
+    set -xeu
+    mount -t zfs "{{ item.device }}" "{{ item.mountpoint }}"
+  with_items:
+    - { device: "{{ zfs_pool_name }}/NIX/nix", mountpoint: "{{ tmp_mount_path }}/nix" }
+    - { device: "{{ zfs_pool_name }}/HOME/home", mountpoint: "{{ tmp_mount_path }}/home" }
+    - { device: "{{ zfs_pool_name }}/TMP/tmp", mountpoint: "{{ tmp_mount_path }}/tmp" }
+
+- name: Mount boot partitions
+  shell: |
+    set -xeu
+    count=
+    for disk in {{ boot_partitions }}; do
+        mkdir -p "{{ tmp_mount_path }}/boot${count}"
+        umount -f "{{ tmp_mount_path }}/boot${count}" || true
+        mkfs.vfat -F32 $disk
+        mount "$disk" "{{ tmp_mount_path }}/boot${count}"
+        count=$(( ${count:-0} + 1 ))
+    done
+
+- name: Umount {{ tmp_mount_path }} when umount_after_finishing is true
+  shell: |
+    umount -f -R {{ tmp_mount_path }} || true
+  when: umount_after_finishing
