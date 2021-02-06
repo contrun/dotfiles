@@ -241,14 +241,20 @@ let
   hostSpecific = let
     hostname = let
       # LC_CTYPE=C tr -dc 'a-z' < /dev/urandom | head -c3 | tee /tmp/hostname
-      hostNameFiles =
-        [ /tmp/etc/hostname /mnt/etc/hostname /tmp/hostname /etc/hostname ];
+      hostNameFiles = if builtins.pathExists "/tmp/nixos_bootstrap" then [
+        /tmp/etc/hostname
+        /mnt/etc/hostname
+        /tmp/hostname
+        /etc/hostname
+      ] else
+        [ /etc/hostname ];
       fs = builtins.filter (x: builtins.pathExists x) hostNameFiles;
       f = builtins.elemAt fs 0;
       c = builtins.readFile f;
       l = builtins.match "([[:alnum:]]+)[[:space:]]*" c;
     in builtins.elemAt l 0;
-    hash = builtins.trace "Hashing for ${hostname}"
+    hash = builtins.trace ''
+      Hashing hostname to get hostId by printf "%s" "hostname: ${hostname}" |  sha512sum''
       (builtins.hashString "sha512" "hostname: ${hostname}");
     hostId = builtins.trace "Obtaining hash result ${hash}"
       (builtins.substring 0 8 hash);

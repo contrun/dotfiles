@@ -1,2 +1,52 @@
 ---
 # tasks file for installation
+- name: Sanity check
+  assert:
+    that:
+      - tmp_mount_path != ""
+      # - zfs_pool_name != ""
+      # - boot_partitions_uuids == []
+
+- name: Fail if tmp_mount_path is not a mounted path
+  shell: |
+    set -xeu
+    awk '{if ($2 == "{{ tmp_mount_path }}") print}' /proc/mounts | grep {{ tmp_mount_path }}
+
+- name: Copy current configuration
+  copy:
+    src: /etc/nixos/
+    dest: "{{ tmp_mount_dir }}/etc/nixos/"
+    force: yes
+    backup: yes
+
+- name: Set hostname
+  shell: |
+    mkdir -p "{{ tmp_mount_path }}/tmp/"
+    touch "{{ tmp_mount_path }}/tmp/nixos_bootstrap"
+    printf '%s' {{ nixos_hostname }} > /tmp/hostname
+
+- name: Generate nixos configuration
+  shell: |
+    nixos-generate-config --root {{ tmp_mount_path }}
+
+- name: Install nixos
+  shell: |
+    (echo "{{ root_password }}"; echo "{{ root_password }}") | nixos-install --root {{ tmp_mount_path }} --show-trace
+
+- name: Change root password
+  shell: |
+    nixos-enter --root {{ tmp_mount_path }} -c '(echo "{{ root_password }}"; echo "{{ root_password }}") | passwd'
+
+- name: Change user password
+  shell: |
+    nixos-enter --root {{ tmp_mount_path }} -c '(echo "{{ user_password }}"; echo "{{ user_password }}") | passwd {{ user }}'
+  when: (user is defined) and (user_password is defined)
+
+- name: Copy some configurations to remote host
+  copy:
+    src: "{{ item }}"
+    dest: "{{ tmp_mount_path }}{{ item }}"
+    force: yes
+  when: "'{{ item }}' is file"
+  with_items:
+    - "/etc/wpa_supplicant.conf"

@@ -1318,6 +1318,7 @@ in {
   };
 
   boot = {
+    binfmt = { emulatedSystems = [ "aarch64-linux" ]; };
     kernelParams = [ "boot.shell_on_fail" "iommu=pt" "iommu=1" ];
     kernelPackages = kernelPackages;
     kernelPatches = kernelPatches;

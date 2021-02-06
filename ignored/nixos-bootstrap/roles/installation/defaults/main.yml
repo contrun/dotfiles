@@ -1,2 +1,8 @@
 ---
 # defaults file for installation
+zfs_pool_name: "default"
+tmp_mount_path: "/mnt"
+root_password: "123"
+user_password: "456"
+user: "e"
+nixos_hostname: "abc"
