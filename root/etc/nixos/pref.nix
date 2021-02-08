@@ -2,6 +2,7 @@
 let
   pkgs = args.pkgs or (import <nixpkgs> { });
   config = args.config or args.pkgs.config or pkgs.config;
+  currentSystem = args.currentSystem or builtins.currentSystem;
   myArgs = args // {
     pkgs = pkgs;
     config = config;
@@ -23,6 +24,8 @@ let
     dpi = 144;
     enableHidpi = true;
     enableIPv6 = true;
+    enableGrub = true;
+    isRaspberryPi = false;
     # wirelessBackend = "wpa_supplicant";
     wirelessBackend = "iwd";
     enableSupplicant = wirelessBackend == "wpa_supplicant";
@@ -62,8 +65,10 @@ let
     '';
     dnsmasqServers = [ "223.6.6.6" "180.76.76.76" "8.8.8.8" "9.9.9.9" ];
     enableArbtt = true;
-    xWindowManager = "xmonad";
+    xWindowManager =
+      if (currentSystem == "x86_64-linux") then "xmonad" else "i3";
     xDefaultSession = "none+" + xWindowManager;
+    enableXmonad = xWindowManager == "xmonad";
     xSessionCommands = ''
       # echo "$(date -R): $@" >> ~/log
       # . ~/.xinitrc &
@@ -172,7 +177,7 @@ let
     xautolockNotifier =
       ''${pkgs.libnotify}/bin/notify-send "Locking in 10 seconds"'';
     enableGPGAgent = true;
-    enableADB = true;
+    enableADB = currentSystem == "x86_64-linux";
     enableCalibreServer = true;
     calibreServerLibraries = [ "${home}/Storage/Calibre" ];
     calibreServerPort = 8213;
@@ -293,6 +298,16 @@ let
     enableVirtualboxHost = false;
     enableHolePuncher = false;
     enableAutossh = false;
+    enableCrashDump = true;
+    kernelPackages = pkgs.linuxPackages;
+  } else if hostname == "shl" then rec {
+    hostId = "6fce2459";
+    kernelPackages = pkgs.linuxPackages_rpi4;
+    enableCodeServer = false;
+    enableVirtualboxHost = false;
+    enableGrub = false;
+    isRaspberryPi = true;
+    raspberryPiVersion = 4;
   } else
     { });
   prefFiles = [ "/etc/nixos/override.nix" ];

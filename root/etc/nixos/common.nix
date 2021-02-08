@@ -1,6 +1,7 @@
 { config, pkgs, ... }:
 
-with import ./pref.nix { inherit config pkgs; };
+let currentSystem = builtins.currentSystem; # TODO: get current system
+in with import ./pref.nix { inherit config pkgs currentSystem; };
 let
   importWithConfig = x: import x { config = config.nixpkgs.config; };
   importNixChannel = channel: importWithConfig (fetchNixChannel channel);
@@ -186,9 +187,6 @@ in {
         ethtool
         nftables
         ipset
-        kernelPackages.perf
-        kernelPackages.bpftrace
-        kernelPackages.bcc
         dnsmasq
         nixFlakes
         nix-info
@@ -210,7 +208,6 @@ in {
         fzf
         jq
         virt-manager
-        wine
         fdm
         mailutils
         notify-osd-customizable
@@ -225,7 +222,6 @@ in {
         qemu
         aqemu
         ldns
-        steam-run-native
         bind
         nix-prefetch-scripts
         pulsemixer
@@ -285,7 +281,6 @@ in {
         iftop
         iw
         lsof
-        hardinfo
         dmenu
         dmidecode
         dunst
@@ -306,7 +301,6 @@ in {
         i3-gaps
         i3lock
         i3status
-        xmobar
         firefox
         rsync
         sshfs
@@ -323,7 +317,17 @@ in {
         fcron
         gmp
       ] ++ (if (enableTailScale) then [ tailscale ] else [ ])
-      ++ (if (enableCodeServer) then [ code-server ] else [ ]);
+      ++ (if (enableCodeServer) then [ code-server ] else [ ])
+      ++ (if (currentSystem == "x86_64-linux") then [
+        xmobar
+        hardinfo
+        steam-run-native
+        wine
+        kernelPackages.perf
+        kernelPackages.bpftrace
+        kernelPackages.bcc
+      ] else
+        [ ]);
     enableDebugInfo = enableDebugInfo;
     shellAliases = {
       ssh = "ssh -C";
@@ -394,11 +398,11 @@ in {
       # };
     };
     # light.enable = true;
-    sway.enable = true;
-    tmux = {
+    sway = {
       enable = true;
-      secureSocket = false; # https://github.com/NixOS/nixpkgs/issues/36648
+      extraPackages = with pkgs; [ swaylock swayidle alacritty dmenu ];
     };
+    tmux = { enable = true; };
     wireshark.enable = enableWireshark;
   };
 
@@ -476,7 +480,7 @@ in {
     opengl = {
       enable = true;
       driSupport = true;
-      driSupport32Bit = true;
+      driSupport32Bit = false;
     };
     bumblebee = {
       enable = enableBumblebee;
@@ -889,6 +893,7 @@ in {
       windowManager = {
         i3.enable = true;
         awesome.enable = true;
+      } // (if (enableXmonad) then {
         xmonad = {
           enable = true;
           enableContribAndExtras = true;
@@ -906,7 +911,8 @@ in {
               dbus
             ];
         };
-      };
+      } else
+        { });
       displayManager = let
         defaultSession = xDefaultSession;
         autoLogin = {
@@ -1105,9 +1111,9 @@ in {
           ];
         };
       };
-    } // {
+    } // pkgs.lib.optionalAttrs (enableCodeServer) {
       "code-server" = {
-        enable = enableCodeServer;
+        enable = true;
         description = "Remote VSCode Server";
         after = [ "network.target" ];
         wantedBy = [ "multi-user.target" ];
@@ -1318,7 +1324,10 @@ in {
   };
 
   boot = {
-    binfmt = { emulatedSystems = [ "aarch64-linux" ]; };
+    binfmt = {
+      emulatedSystems =
+        if (currentSystem == "x86_64-linux") then [ "aarch64-linux" ] else [ ];
+    };
     kernelParams = [ "boot.shell_on_fail" "iommu=pt" "iommu=1" ];
     kernelPackages = kernelPackages;
     kernelPatches = kernelPatches;
@@ -1346,12 +1355,26 @@ in {
       "kernel.kptr_restrict" = 0;
       "kernel.perf_event_paranoid" = 1;
     };
-    loader.grub.copyKernels = true;
-    loader.grub.efiSupport = true;
-    loader.efi.canTouchEfiVariables = false;
-    loader.grub.efiInstallAsRemovable = true;
-    loader.grub.enableCryptodisk = true;
-    loader.grub.useOSProber = true;
+    loader = {
+      efi.canTouchEfiVariables = false;
+    } // (if enableGrub then {
+      grub = {
+        enable = true;
+        copyKernels = true;
+        efiSupport = true;
+        efiInstallAsRemovable = true;
+        enableCryptodisk = true;
+        useOSProber = true;
+      };
+    } else
+      { }) // (if isRaspberryPi then {
+        raspberryPi = {
+          enable = true;
+          version = raspberryPiVersion;
+        };
+      } else
+        { });
+
     supportedFilesystems = if (enableZfs) then [ "zfs" ] else [ ];
     zfs = { enableUnstable = true; };
     crashDump = { enable = enableCrashDump; };
