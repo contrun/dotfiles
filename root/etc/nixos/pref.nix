@@ -1,22 +1,27 @@
-{ ... }@args:
+let
+  fix = f: let x = f x; in x;
+  extends = f: rattrs: self: let super = rattrs self; in super // f self super;
+in { ... }@args:
 let
   pkgs = args.pkgs or (import <nixpkgs> { });
   config = args.config or args.pkgs.config or pkgs.config;
-  currentSystem = args.currentSystem or builtins.currentSystem;
   myArgs = args // {
     pkgs = pkgs;
     config = config;
   };
-  defaults = rec {
+  default = self: {
     isBootStrapping = false; # Things fail.
     owner = "e";
     ownerUid = 1000;
     ownerGroup = "users";
     ownerGroupGid = 100;
-    home = "/home/${owner}";
-    myLibsPath = "${home}/.config/nixpkgs/libs";
-    myLibs = pkgs.lib.optionalAttrs (builtins.pathExists myLibsPath)
-      (import myLibsPath);
+    home = "/home/${self.owner}";
+    currentSystem = "x86_64-linux";
+    myLibsPath = "${self.home}/.config/nixpkgs/libs";
+    myLibs = if (builtins.pathExists self.myLibsPath) then
+      (import self.myLibsPath)
+    else
+      { };
     consoleFont = null;
     hostname = "hostname";
     hostId = "346b7a87";
@@ -28,10 +33,10 @@ let
     isRaspberryPi = false;
     # wirelessBackend = "wpa_supplicant";
     wirelessBackend = "iwd";
-    enableSupplicant = wirelessBackend == "wpa_supplicant";
+    enableSupplicant = self.wirelessBackend == "wpa_supplicant";
     enableConnman = false;
-    enableWireless = enableSupplicant;
-    enableIwd = wirelessBackend == "iwd";
+    enableWireless = self.enableSupplicant;
+    enableIwd = self.wirelessBackend == "iwd";
     enableBumblebee = false;
     enableMediaKeys = true;
     enableEternalTerminal = true;
@@ -55,20 +60,21 @@ let
     enableDnsmasq = false;
     enableDebugInfo = false;
     enableZfs = true;
+    enableZfsUnstable = false;
     enableCrashDump = false;
     dnsmasqListenAddress = "127.0.0.233";
     dnsmasqResolveLocalQueries = false;
     dnsmasqExtraConfig = ''
-      listen-address=${dnsmasqListenAddress}
+      listen-address=${self.dnsmasqListenAddress}
       bind-interfaces
       cache-size=1000
     '';
     dnsmasqServers = [ "223.6.6.6" "180.76.76.76" "8.8.8.8" "9.9.9.9" ];
     enableArbtt = true;
     xWindowManager =
-      if (currentSystem == "x86_64-linux") then "xmonad" else "i3";
-    xDefaultSession = "none+" + xWindowManager;
-    enableXmonad = xWindowManager == "xmonad";
+      if (self.currentSystem == "x86_64-linux") then "xmonad" else "i3";
+    xDefaultSession = "none+" + self.xWindowManager;
+    enableXmonad = self.xWindowManager == "xmonad";
     xSessionCommands = ''
       # echo "$(date -R): $@" >> ~/log
       # . ~/.xinitrc &
@@ -93,17 +99,21 @@ let
     buildCores = 0;
     maxJobs = 6;
     proxy = null;
-    myPath = [ "${home}/.bin" ];
+    myPath = [ "${self.home}/.bin" ];
     enableOfflineimap = true;
     enableSyncthing = false;
-    yandexConfig = let myConfig = "${home}/.config/yandex-disk/config.json";
-    in {
-      directory = "${home}/Sync";
-      excludes = "";
-      user = owner;
-    } // pkgs.lib.optionalAttrs (builtins.pathExists myConfig)
-    (builtins.fromJSON (pkgs.lib.readFile myConfig));
-    enableYandexDisk = yandexConfig ? "username" && yandexConfig ? "password";
+    yandexConfig =
+      let myConfig = "${self.home}/.config/yandex-disk/config.json";
+      in {
+        directory = "${self.home}/Sync";
+        excludes = "";
+        user = self.owner;
+      } // (if (builtins.pathExists myConfig) then
+        (builtins.fromJSON (pkgs.lib.readFile myConfig))
+      else
+        { });
+    enableYandexDisk = self.yandexConfig ? "username" && self.yandexConfig
+      ? "password";
     enablePostgres = false;
     enableRedis = false;
     enableRsyncd = false;
@@ -115,7 +125,7 @@ let
     enableEmacs = true;
     enableLocate = true;
     enableFail2ban = true;
-    davfs2Secrets = "${home}/.davfs2/secrets";
+    davfs2Secrets = "${self.home}/.davfs2/secrets";
     enableDavfs2 = true;
     enableSamba = true;
     enableK3s = false;
@@ -124,7 +134,7 @@ let
       enableYandex = false;
       nextcloudWhere = "/nc/sync";
       nextcloudWhat = "https://uuuuuu.ocloud.de/remote.php/webdav/sync/";
-      yandexWhere = "${home}/yandex";
+      yandexWhere = "${self.home}/yandex";
       yandexWhat = "https://webdav.yandex.com/sync/";
     in {
       autoMounts = let
@@ -147,8 +157,8 @@ let
           where = nextcloudWhere;
           what = nextcloudWhat;
           type = "davfs";
-          options = "rw,uid=${builtins.toString ownerUid},gid=${
-              builtins.toString ownerGroupGid
+          options = "rw,uid=${builtins.toString self.ownerUid},gid=${
+              builtins.toString self.ownerGroupGid
             }";
           wants = [ "network-online.target" ];
           wantedBy = [ "remote-fs.target" ];
@@ -160,8 +170,8 @@ let
           where = yandexWhere;
           what = yandexWhat;
           type = "davfs";
-          options = "rw,user=uid=${builtins.toString ownerUid},gid=${
-              builtins.toString ownerGroupGid
+          options = "rw,user=uid=${builtins.toString self.ownerUid},gid=${
+              builtins.toString self.ownerGroupGid
             }";
           wants = [ "network-online.target" ];
           wantedBy = [ "remote-fs.target" ];
@@ -171,15 +181,15 @@ let
       in [ nextcloud yandex ];
     };
     enableXserver = true;
-    enableXautolock = enableXserver;
+    enableXautolock = self.enableXserver;
     xautolockLocker = "${pkgs.i3lock}/bin/i3lock";
     xautolockKiller = "${pkgs.systemd}/bin/systemctl suspend";
     xautolockNotifier =
       ''${pkgs.libnotify}/bin/notify-send "Locking in 10 seconds"'';
     enableGPGAgent = true;
-    enableADB = currentSystem == "x86_64-linux";
+    enableADB = self.currentSystem == "x86_64-linux";
     enableCalibreServer = true;
-    calibreServerLibraries = [ "${home}/Storage/Calibre" ];
+    calibreServerLibraries = [ "${self.home}/Storage/Calibre" ];
     calibreServerPort = 8213;
     enableSlock = true;
     enableZSH = true;
@@ -192,10 +202,10 @@ let
     enableWireshark = true;
     enabledInputMethod = "fcitx";
     # enableVirtualboxHost = true;
-    # Build of virtual box frequently failes. touching "$HOME/.cache/disable_virtual_box"
+    # Build of virtual box frequently fails. touching "$HOME/.cache/disable_virtual_box"
     # is less irritating than editing this file.
     enableVirtualboxHost =
-      !builtins.pathExists "${home}/.cache/disable_virtual_box";
+      !builtins.pathExists "${self.home}/.cache/disable_virtual_box";
     enableLibvirtd = true;
     enableAnbox = false;
     enableUnifi = false;
@@ -212,7 +222,7 @@ let
     enableAutossh = true;
     autosshServers = with pkgs.lib;
       let
-        configFiles = [ "${home}/.ssh/config" ];
+        configFiles = [ "${self.home}/.ssh/config" ];
         goodConfigFiles =
           builtins.filter (x: builtins.pathExists x) configFiles;
         lines = builtins.foldl' (a: e: a ++ (splitString "\n" (readFile e))) [ ]
@@ -263,15 +273,15 @@ let
       (builtins.hashString "sha512" "hostname: ${hostname}");
     hostId = builtins.trace "Obtaining hash result ${hash}"
       (builtins.substring 0 8 hash);
-  in {
+  in self: super:
+  {
     inherit hostname hostId;
-  } // (if hostname == "uzq" then rec {
+  } // (if hostname == "uzq" then {
     enableHidpi = true;
     # enableAnbox = true;
     consoleFont = "${pkgs.terminus_font}/share/consolefonts/ter-g20n.psf.gz";
     hostId = "80d17333";
     enableX2goServer = true;
-    # kernelPackages = pkgs.linuxPackages_5_7;
     enableTailScale = true;
     # kernelPatches = [{
     #   # See https://github.com/NixOS/nixpkgs/issues/91367
@@ -299,8 +309,7 @@ let
     enableHolePuncher = false;
     enableAutossh = false;
     enableCrashDump = true;
-    kernelPackages = pkgs.linuxPackages;
-  } else if hostname == "shl" then rec {
+  } else if hostname == "shl" then {
     hostId = "6fce2459";
     kernelPackages = pkgs.linuxPackages_rpi4;
     enableCodeServer = false;
@@ -308,13 +317,13 @@ let
     enableGrub = false;
     isRaspberryPi = true;
     raspberryPiVersion = 4;
+    currentSystem = "aarch64-linux";
   } else
     { });
   prefFiles = [ "/etc/nixos/override.nix" ];
   effectiveFiles = builtins.filter (x: builtins.pathExists x) prefFiles;
-  readPref = path: (import (builtins.toPath path)) myArgs;
-in defaults // (builtins.trace
-  "Host specific configuration: Id: ${hostSpecific.hostId}, name: ${hostSpecific.hostname}"
-  hostSpecific)
-// (builtins.foldl' (accumulator: path: accumulator // readPref path) { }
-  effectiveFiles)
+  overrides =
+    builtins.map (path: (import (builtins.toPath path))) effectiveFiles;
+  final = fix (builtins.foldl' (acc: override: extends override acc) default
+    ([ hostSpecific ]));
+in builtins.trace final final

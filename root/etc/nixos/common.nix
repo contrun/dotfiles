@@ -1,7 +1,6 @@
 { config, pkgs, ... }:
 
-let currentSystem = builtins.currentSystem; # TODO: get current system
-in with import ./pref.nix { inherit config pkgs currentSystem; };
+with import ./pref.nix { inherit config pkgs; };
 let
   importWithConfig = x: import x { config = config.nixpkgs.config; };
   importNixChannel = channel: importWithConfig (fetchNixChannel channel);
@@ -220,7 +219,6 @@ in {
         powertop
         fail2ban
         qemu
-        aqemu
         ldns
         bind
         nix-prefetch-scripts
@@ -322,6 +320,7 @@ in {
         xmobar
         hardinfo
         steam-run-native
+        aqemu
         wine
         kernelPackages.perf
         kernelPackages.bpftrace
@@ -1376,7 +1375,7 @@ in {
         { });
 
     supportedFilesystems = if (enableZfs) then [ "zfs" ] else [ ];
-    zfs = { enableUnstable = true; };
+    zfs = { enableUnstable = enableZfsUnstable; };
     crashDump = { enable = enableCrashDump; };
     initrd.network = {
       enable = true;
