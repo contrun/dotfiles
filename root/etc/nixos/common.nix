@@ -454,11 +454,12 @@ in {
   };
 
   nixpkgs = let
-    cross = rec {
+    cross = if enableAarch64Cross then rec {
       crossSystem = (import <nixpkgs>
         { }).pkgsCross.aarch64-multiplatform.stdenv.targetPlatform;
       localSystem = crossSystem;
-    };
+    } else
+      { };
     configAttr = {
       config = {
         allowUnfree = true;

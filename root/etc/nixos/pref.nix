@@ -11,6 +11,7 @@ let
   };
   default = self: {
     isBootStrapping = false; # Things fail.
+    enableAarch64Cross = false;
     owner = "e";
     ownerUid = 1000;
     ownerGroup = "users";
@@ -320,6 +321,15 @@ let
     isRaspberryPi = true;
     raspberryPiVersion = 4;
     enableVsftpd = false;
+    enableAarch64Cross = self.isBootStrapping;
+    kernelPatches = [{
+      name = "touchpad-patch";
+      patch = builtins.fetchurl {
+        name = "touchpad-patch";
+        url = "http://ix.io/2OUF";
+        sha256 = "1way5wxm9wifal1dj5k4jn3sqr01apbzvw8kmc4dq37m3la805vg";
+      };
+    }];
   } else
     { });
   prefFiles = [ ./override.nix ];
