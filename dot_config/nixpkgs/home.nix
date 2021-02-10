@@ -395,7 +395,7 @@ let
         "libnfnetlink"
         "mkcert"
         "glib-networking"
-        # "myPackages.python"
+        "myPackages.python"
         "myPackages.haskellStable"
         "perlPackages.Appcpanminus"
         "perlPackages.locallib"

@@ -141,16 +141,15 @@ let
           # nbsphinx
           # nbstripout
           pyspark
-          matplotlib
-          bokeh
-          plotly
-          altair
-          bokeh
-          vega
-          vega_datasets
-          numpy
-          pandas
-          scipy
+          # matplotlib
+          # plotly
+          # altair
+          # bokeh
+          # vega
+          # vega_datasets
+          # numpy
+          # pandas
+          # scipy
           arrow
           subliminal
           lxml
