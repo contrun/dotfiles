@@ -1,1 +1,1 @@
-{ config, pkgs, ... }@args: rec { }
+self: super: { }

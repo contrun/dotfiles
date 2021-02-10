@@ -301,6 +301,7 @@ in {
         i3status
         firefox
         rsync
+        rclone
         sshfs
         termite
         xbindkeys
@@ -453,6 +454,11 @@ in {
   };
 
   nixpkgs = let
+    cross = rec {
+      crossSystem = (import <nixpkgs>
+        { }).pkgsCross.aarch64-multiplatform.stdenv.targetPlatform;
+      localSystem = crossSystem;
+    };
     configAttr = {
       config = {
         allowUnfree = true;
@@ -471,7 +477,7 @@ in {
       overlays = import overlaysFile;
     } else
       { };
-  in overlaysAttr // pkgsAttr // configAttr;
+  in overlaysAttr // pkgsAttr // configAttr // cross;
 
   hardware = {
     enableAllFirmware = true;
@@ -626,7 +632,7 @@ in {
     #   libraries = calibreServerLibraries;
     # };
     vsftpd = {
-      enable = true;
+      enable = enableVsftpd;
       userlist = [ owner ];
       userlistEnable = true;
     };
@@ -1271,9 +1277,9 @@ in {
       yandex-disk = let
         name = "yandex-disk";
         syncFolder = "${home}/Sync";
-      in {
+      in if enableYandexDisk then {
         services.${name} = {
-          enable = enableYandexDisk;
+          enable = true;
           description = "Yandex-disk server";
           onFailure = [ "notify-systemd-unit-failures@%i.service" ];
           after = [ "network.target" ];
@@ -1285,7 +1291,8 @@ in {
               "${pkgs.yandex-disk}/bin/yandex-disk start --no-daemon --dir='${syncFolder}'";
           };
         };
-      };
+      } else
+        { };
 
       all = [
         { services = notify-systemd-unit-failures; }

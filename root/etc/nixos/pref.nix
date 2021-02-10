@@ -113,9 +113,10 @@ let
       else
         { });
     enableYandexDisk = self.yandexConfig ? "username" && self.yandexConfig
-      ? "password";
+      ? "password" && self.currentSystem == "x86_64-linux";
     enablePostgres = false;
     enableRedis = false;
+    enableVsftpd = true;
     enableRsyncd = false;
     enbleMpd = false;
     enableAccountsDaemon = true;
@@ -310,6 +311,7 @@ let
     enableAutossh = false;
     enableCrashDump = true;
   } else if hostname == "shl" then {
+    currentSystem = "aarch64-linux";
     hostId = "6fce2459";
     kernelPackages = pkgs.linuxPackages_rpi4;
     enableCodeServer = false;
@@ -317,13 +319,13 @@ let
     enableGrub = false;
     isRaspberryPi = true;
     raspberryPiVersion = 4;
-    currentSystem = "aarch64-linux";
+    enableVsftpd = false;
   } else
     { });
-  prefFiles = [ "/etc/nixos/override.nix" ];
+  prefFiles = [ ./override.nix ];
   effectiveFiles = builtins.filter (x: builtins.pathExists x) prefFiles;
   overrides =
     builtins.map (path: (import (builtins.toPath path))) effectiveFiles;
   final = fix (builtins.foldl' (acc: override: extends override acc) default
-    ([ hostSpecific ]));
+    ([ hostSpecific ] ++ overrides));
 in builtins.trace final final
