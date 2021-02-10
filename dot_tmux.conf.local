@@ -1,11 +1,18 @@
+# List of plugins
+set -g @tpm_plugins '          \
+    tmux-plugins/tpm \
+    tmux-plugins/tmux-sensible \
+    nhdaly/tmux-better-mouse-mode \
+    tmux-plugins/tmux-yank \
+'
+
 set -g history-limit 10000
 set-option -s set-clipboard off
 bind-key -n S-F5 copy-mode -u
-# bind-key -n S-F7 copy-mode -d
-bind-key -T copy-mode-vi MouseDragEnd1Pane send-keys -X copy-pipe-and-cancel "xclip -se p -i"
-bind-key -T copy-mode MouseDragEnd1Pane send-keys -X copy-pipe-and-cancel "xclip -se p -i"
-bind-key -T copy-mode-vi y send-keys -X copy-pipe-and-cancel "xclip -se p -i"
-bind-key -T copy-mode C-w send-keys -X copy-pipe-and-cancel "xclip -se p -i"
+
+set-clipboard on
+set-option -g mouse on
+
 # bind-key -T copy-mode C-@ send-keys -X begin-selection
 # bind-key -T copy-mode C-m send-keys -X begin-selection
 set-option -g status off
@@ -265,9 +272,6 @@ tmux_conf_copy_to_os_clipboard=true
 # increase history size
 #set -g history-limit 10000
 
-# start with mouse mode enabled
-set -g mouse on
-
 # force Vi mode
 #   really you should export VISUAL or EDITOR environment variable, see manual
 set -g status-keys vi
@@ -286,15 +290,6 @@ unbind C-b
 set -g prefix C-Space
 # move status line to top
 #set -g status-position top
-
-# List of plugins
-set -g @tpm_plugins '          \
-    tmux-plugins/tpm \
-    tmux-plugins/tmux-sensible \
-    nhdaly/tmux-better-mouse-mode \
-    tmux-plugins/tmux-yank \
-'
-
 
 # Other examples:
 # set -g @plugin 'github_username/plugin_name'
