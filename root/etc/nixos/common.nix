@@ -808,6 +808,10 @@ in {
       drivers = [ pkgs.hplip ];
     };
     tailscale = { enable = enableTailScale; };
+    zerotierone = {
+      enable = enableZerotierone;
+      joinNetworks = zerotieroneNetworks;
+    };
     system-config-printer.enable = enablePrinting;
     logind.extraConfig = ''
       HandlePowerKey=suspend

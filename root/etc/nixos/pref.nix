@@ -42,6 +42,8 @@ let
     enableMediaKeys = true;
     enableEternalTerminal = true;
     enableSmartdns = true;
+    enableZerotierone = true;
+    zerotieroneNetworks = [ "9bee8941b5ce6172" ];
     smartdnsSettings = {
       bind = ":5533 -no-rule -group example";
       cache-size = 4096;
