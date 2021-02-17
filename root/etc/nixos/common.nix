@@ -35,9 +35,24 @@ let
     import <unstable> { }
   else
     importNixChannel "unstable";
+  nivSources = let file = "${home}/.config/nixpkgs/nix/sources.nix";
+  in if (builtins.pathExists file) then import file else { };
+  nivSourceOr = name: default:
+    if nivSources ? name then nivSources.name else default;
+  nivSourceOrFetchTarball = name: tarball:
+    nivSourceOr name (builtins.fetchTarball tarball);
+  sops-nix-import = "${
+      nivSourceOrFetchTarball "sops-nix"
+      "https://github.com/Mic92/sops-nix/archive/master.tar.gz"
+    }/modules/sops";
+  sops-secrets-file = "${home}/.config/nixpkgs/sops/secrets.yaml";
+  enableSops = builtins.pathExists sops-secrets-file;
 in {
-  imports =
-    builtins.filter (x: builtins.pathExists x) [ ./machine.nix ./cachix.nix ];
+  imports = (if enableSops then [ sops-nix-import ] else [ ])
+    ++ (builtins.filter (x: builtins.pathExists x) [
+      ./machine.nix
+      ./cachix.nix
+    ]);
   security = {
     sudo = { wheelNeedsPassword = false; };
     pki = {
@@ -1407,4 +1422,20 @@ in {
     };
   };
   system.stateVersion = nixosStableVersion;
-}
+} // (if enableSops then {
+  sops = {
+    validateSopsFiles = false;
+    defaultSopsFile = "${builtins.path {
+      name = "sops-secrets";
+      path = sops-secrets-file;
+    }}";
+    secrets = {
+      hello = {
+        mode = "0440";
+        owner = owner;
+        group = ownerGroup;
+      };
+    };
+  };
+} else
+  { })
