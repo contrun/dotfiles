@@ -279,6 +279,8 @@ in {
         iftop
         iw
         lsof
+        age
+        sops
         dmenu
         dmidecode
         dunst
@@ -1305,6 +1307,7 @@ in {
       ];
     in builtins.foldl' (a: e: pkgs.lib.recursiveUpdate a e) { } all;
   };
+
   nix = {
     package = pkgs.nixFlakes;
     extraOptions =

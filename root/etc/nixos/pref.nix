@@ -103,18 +103,12 @@ let
     myPath = [ "${self.home}/.bin" ];
     enableOfflineimap = true;
     enableSyncthing = false;
-    yandexConfig =
-      let myConfig = "${self.home}/.config/yandex-disk/config.json";
-      in {
-        directory = "${self.home}/Sync";
-        excludes = "";
-        user = self.owner;
-      } // (if (builtins.pathExists myConfig) then
-        (builtins.fromJSON (pkgs.lib.readFile myConfig))
-      else
-        { });
-    enableYandexDisk = self.yandexConfig ? "username" && self.yandexConfig
-      ? "password" && self.currentSystem == "x86_64-linux";
+    yandexConfig = {
+      directory = "${self.home}/Sync";
+      excludes = "";
+      user = self.owner;
+    };
+    enableYandexDisk = self.currentSystem == "x86_64-linux";
     enablePostgres = false;
     enableRedis = false;
     enableVsftpd = true;
