@@ -1329,6 +1329,7 @@ in {
   };
 
   nix = {
+    inherit buildMachines buildCores maxJobs distributedBuilds;
     package = pkgs.nixFlakes;
     extraOptions =
       pkgs.lib.optionalString (config.nix.package == pkgs.nixFlakes)
@@ -1342,8 +1343,6 @@ in {
       "hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ=" # cardano
       "ryantrinkle.com-1:JJiAKaRv9mWgpVAz8dwewnZe0AzzEAzPkagE9SP5NWI=" # reflex
     ];
-    buildCores = buildCores;
-    maxJobs = maxJobs;
     useSandbox = "relaxed";
     gc = {
       automatic = true;

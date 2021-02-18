@@ -814,6 +814,7 @@ let
         # seahorse
         "speedcrunch"
         "sshfs"
+        "ssh-to-pgp"
         "unstable.sftpman"
         "x11vnc"
         "tigervnc"

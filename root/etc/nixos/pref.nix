@@ -100,7 +100,7 @@ let
     # xSessionCommands = "";
     xDisplayManager = "lightdm";
     buildCores = 0;
-    maxJobs = 6;
+    maxJobs = "auto";
     proxy = null;
     myPath = [ "${self.home}/.bin" ];
     enableOfflineimap = true;
@@ -127,6 +127,8 @@ let
     enableDavfs2 = true;
     enableSamba = true;
     enableK3s = false;
+    buildMachines = [ ];
+    distributedBuilds = true;
     systemdMounts = let
       enableNextcloud = false;
       enableYandex = false;
@@ -306,7 +308,32 @@ let
     enableVirtualboxHost = false;
     enableHolePuncher = false;
     enableAutossh = false;
-    enableCrashDump = true;
+    # enableCrashDump = true;
+    # kernelPatches = [{
+    #   name = "touchpad-patch";
+    #   patch = builtins.fetchurl {
+    #     name = "touchpad-patch";
+    #     url = "http://ix.io/2OUF";
+    #     sha256 = "1way5wxm9wifal1dj5k4jn3sqr01apbzvw8kmc4dq37m3la805vg";
+    #   };
+    # }];
+    buildMachines = super.buildMachines ++ [
+      {
+        hostName = "node1";
+        system = "x86_64-linux";
+        supportedFeatures = [ "kvm" "big-parallel" ];
+      }
+      {
+        hostName = "node2";
+        system = "x86_64-linux";
+        supportedFeatures = [ "kvm" "big-parallel" ];
+      }
+      {
+        hostName = "node3";
+        system = "x86_64-linux";
+        supportedFeatures = [ "kvm" "big-parallel" ];
+      }
+    ];
   } else if hostname == "shl" then {
     currentSystem = "aarch64-linux";
     hostId = "6fce2459";
@@ -318,14 +345,6 @@ let
     raspberryPiVersion = 4;
     enableVsftpd = false;
     enableAarch64Cross = self.isBootStrapping;
-    kernelPatches = [{
-      name = "touchpad-patch";
-      patch = builtins.fetchurl {
-        name = "touchpad-patch";
-        url = "http://ix.io/2OUF";
-        sha256 = "1way5wxm9wifal1dj5k4jn3sqr01apbzvw8kmc4dq37m3la805vg";
-      };
-    }];
   } else
     { });
   prefFiles = [ ./override.nix ];
