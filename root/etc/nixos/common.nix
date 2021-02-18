@@ -970,6 +970,7 @@ in {
       "libvirt"
       "audio"
       "disk"
+      "keys"
       "networkmanager"
       "adbusers"
       "docker"
