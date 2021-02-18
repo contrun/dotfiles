@@ -809,7 +809,7 @@ in {
     };
     tailscale = { enable = enableTailScale; };
     zerotierone = {
-      enable = enableZerotierone;
+      enable = buildZerotierone;
       joinNetworks = zerotieroneNetworks;
     };
     system-config-printer.enable = enablePrinting;
@@ -1065,14 +1065,18 @@ in {
       };
     };
 
-    services = notify-systemd-unit-failures // {
+    services = notify-systemd-unit-failures // (if enableZerotierone then
+      { }
+    else {
+      # build zero tier one anyway, but enable it on enableZerotierone is true;
+      "zerotierone" = { wantedBy = pkgs.lib.mkForce [ ]; };
+    }) // {
       # copied from https://github.com/NixOS/nixpkgs/blob/7803ff314c707ee11a6d8d1c9ac4cde70737d22e/nixos/modules/tasks/auto-upgrade.nix#L72
       "nixos-update@" = {
         description = "NixOS Update";
         restartIfChanged = false;
         unitConfig = { X-StopOnRemoval = false; };
         serviceConfig.Type = "oneshot";
-
         environment = config.nix.envVars // {
           inherit (config.environment.sessionVariables) NIX_PATH;
           HOME = "/root";

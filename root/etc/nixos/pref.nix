@@ -42,6 +42,7 @@ let
     enableMediaKeys = true;
     enableEternalTerminal = true;
     enableSmartdns = true;
+    buildZerotierone = true;
     enableZerotierone = true;
     zerotieroneNetworks = [ "9bee8941b5ce6172" ];
     smartdnsSettings = {
@@ -317,6 +318,7 @@ let
     #     sha256 = "1way5wxm9wifal1dj5k4jn3sqr01apbzvw8kmc4dq37m3la805vg";
     #   };
     # }];
+    enableZerotierone = false;
     buildMachines = super.buildMachines ++ [
       {
         hostName = "node1";
