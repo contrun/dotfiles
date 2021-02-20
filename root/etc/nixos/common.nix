@@ -1011,7 +1011,11 @@ in {
       enableExtensionPack = enableVirtualboxHost;
       # enableHardening = false;
     };
-    docker.enable = true;
+    docker = {
+      enable = true;
+      package = unstable.docker;
+      autoPrune.enable = true;
+    };
     anbox = { enable = enableAnbox; };
   };
   # powerManagement = {
@@ -1361,9 +1365,7 @@ in {
       emulatedSystems =
         if (currentSystem == "x86_64-linux") then [ "aarch64-linux" ] else [ ];
     };
-    kernelParams = [ "boot.shell_on_fail" "iommu=pt" "iommu=1" ];
-    kernelPackages = kernelPackages;
-    kernelPatches = kernelPatches;
+    inherit kernelParams extraModulePackages kernelPackages kernelPatches;
     kernel.sysctl = {
       "fs.file-max" = 51200;
       "net.core.rmem_max" = 67108864;

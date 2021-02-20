@@ -237,7 +237,9 @@ let
     enableBootSSH = true;
     enableGnome = false;
     enableGnomeKeyring = false;
+    extraModulePackages = [ ];
     kernelPatches = [ ];
+    kernelParams = [ "boot.shell_on_fail" ];
     kernelPackages = pkgs.linuxPackages_latest;
     networkingInterfaces = { };
     nixosStableVersion = "20.09";
@@ -310,14 +312,6 @@ let
     enableHolePuncher = false;
     enableAutossh = false;
     # enableCrashDump = true;
-    # kernelPatches = [{
-    #   name = "touchpad-patch";
-    #   patch = builtins.fetchurl {
-    #     name = "touchpad-patch";
-    #     url = "http://ix.io/2OUF";
-    #     sha256 = "1way5wxm9wifal1dj5k4jn3sqr01apbzvw8kmc4dq37m3la805vg";
-    #   };
-    # }];
     enableZerotierone = false;
     buildMachines = super.buildMachines ++ [
       {
