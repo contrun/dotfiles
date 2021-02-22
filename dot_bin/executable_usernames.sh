@@ -119,4 +119,4 @@ echoUsernames() {
         done
 }
 
-echoUsernames | xargs -I _ -P "$maxProcs" bash -c 'checkUserName "$@"' _ "${cmd[@]}"
+echoUsernames | xargs -I _REPLACE_ME_PLZ_ -P "$maxProcs" bash -c 'checkUserName "$@"' _REPLACE_ME_PLZ_ "${cmd[@]}"
