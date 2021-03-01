@@ -313,7 +313,6 @@ in {
         btrfs-progs
         exfat
         i3blocks
-        i3-gaps
         i3lock
         i3status
         firefox
@@ -398,7 +397,7 @@ in {
   };
 
   programs = {
-    ccache = { enable = true; };
+    ccache = { enable = enableCcache; };
     java = { enable = enableJava; };
     gnupg.agent = { enable = enableGPGAgent; };
     ssh = { startAgent = true; };
@@ -463,7 +462,7 @@ in {
   # networking.firewall.allowedTCPPorts = [ ... ];
   # networking.firewall.allowedUDPPorts = [ ... ];
   # Or disable the firewall altogether.
-  networking.firewall.enable = false;
+  networking.firewall.enable = enableFirewall;
 
   sound = {
     enable = true;
@@ -503,7 +502,6 @@ in {
     opengl = {
       enable = true;
       driSupport = true;
-      driSupport32Bit = false;
     };
     bumblebee = {
       enable = enableBumblebee;
@@ -639,11 +637,8 @@ in {
   };
 
   services = {
-    arbtt = {
-      enable = false;
-      # enable = enableArbtt;
-    };
-    compton = { enable = true; };
+    arbtt = { enable = enableArbtt; };
+    compton = { enable = enableCompton; };
     connman = { enable = enableConnman; };
     # calibre-server = {
     #   enable = enableCalibreServer;
@@ -655,7 +650,7 @@ in {
       userlistEnable = true;
     };
     fcron = {
-      enable = false;
+      enable = enableFcron;
       maxSerialJobs = 5;
       systab = "";
     };
@@ -713,13 +708,13 @@ in {
       };
     };
     privoxy = {
-      enable = true;
+      enable = enablePrivoxy;
       listenAddress = "0.0.0.0:8118";
       extraConfig = ''
         forward-socks5   /               127.0.0.1:1081 .
       '';
     };
-    redshift = { enable = true; };
+    redshift = { enable = enableRedshift; };
     avahi = {
       enable = enableAvahi;
       nssmdns = true;
@@ -760,7 +755,7 @@ in {
 
     };
     nfs.server = {
-      enable = true;
+      enable = enableNfs;
       extraNfsdConfig = ''
         udp=y
       '';
@@ -819,7 +814,7 @@ in {
       RuntimeDirectorySize=50%
     '';
     postfix = {
-      enable = true;
+      enable = enablePostfix;
       rootAlias = owner;
       extraConfig = ''
         myhostname = ${hostname}
@@ -918,7 +913,10 @@ in {
       # desktopManager.plasma5.enable = true;
       # desktopManager.xfce.enableXfwm = false;
       windowManager = {
-        i3.enable = true;
+        i3 = {
+          enable = true;
+          package = pkgs.i3-gaps;
+        };
         awesome.enable = true;
       } // (if (enableXmonad) then {
         xmonad = {
@@ -965,6 +963,7 @@ in {
   users.users = let
     extraGroups = [
       "wheel"
+      "cups"
       "video"
       "kvm"
       "libvirt"

@@ -41,7 +41,8 @@ let
     enableBumblebee = false;
     enableMediaKeys = true;
     enableEternalTerminal = true;
-    enableSmartdns = true;
+    enableSmartdns = false;
+    enablePrivoxy = false;
     buildZerotierone = true;
     enableZerotierone = true;
     zerotieroneNetworks = [ "9bee8941b5ce6172" ];
@@ -61,11 +62,11 @@ let
     sslhPort = 44443;
     enableTailScale = false;
     enableX2goServer = false;
-    enableDnsmasq = false;
     enableDebugInfo = false;
     enableZfs = true;
     enableZfsUnstable = false;
     enableCrashDump = false;
+    enableDnsmasq = false;
     dnsmasqListenAddress = "127.0.0.233";
     dnsmasqResolveLocalQueries = false;
     dnsmasqExtraConfig = ''
@@ -74,7 +75,7 @@ let
       cache-size=1000
     '';
     dnsmasqServers = [ "223.6.6.6" "180.76.76.76" "8.8.8.8" "9.9.9.9" ];
-    enableArbtt = true;
+    enableArbtt = false;
     xWindowManager =
       if (self.currentSystem == "x86_64-linux") then "xmonad" else "i3";
     xDefaultSession = "none+" + self.xWindowManager;
@@ -195,6 +196,13 @@ let
     enableSlock = true;
     enableZSH = true;
     enableJava = true;
+    enableCcache = true;
+    enableFirewall = false;
+    enableCompton = false;
+    enableFcron = false;
+    enableRedshift = false;
+    enablePostfix = true;
+    enableNfs = true;
     linkedJdks = [ "openjdk15" "openjdk14" "openjdk11" "openjdk8" ];
     enableNextcloudClient = false;
     enableTaskWarriorSync = true;
@@ -311,6 +319,10 @@ let
     enableVirtualboxHost = false;
     enableHolePuncher = false;
     enableAutossh = false;
+    enablePrinting = false;
+    enableEternalTerminal = false;
+    enableCodeServer = false;
+    enablePostfix = false;
     # enableCrashDump = true;
     enableZerotierone = false;
     buildMachines = super.buildMachines ++ [
