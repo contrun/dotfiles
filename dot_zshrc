@@ -48,16 +48,6 @@ export ZSH=~/.oh-my-zsh
 ZSH_THEME="random"
 DISABLE_AUTO_UPDATE="true"
 
-#set history size
-export HISTSIZE=10000000
-#save history after logout
-export SAVEHIST=10000000
-#history file
-# export HISTFILE=~/.zhistory
-setopt INC_APPEND_HISTORY
-setopt HIST_IGNORE_DUPS
-setopt EXTENDED_HISTORY
-
 # pyenv
 # web-search
 # wd
@@ -154,3 +144,11 @@ command -v direnv >/dev/null && eval "$(direnv hook zsh)"
 test -r ~/.opam/opam-init/init.sh && . ~/.opam/opam-init/init.sh > /dev/null 2>&1
 
 [[ -f ~/.zshrc.local ]] && source ~/.zshrc.local
+
+HISTFILE=~/.zsh_history
+HISTSIZE=999999999
+SAVEHIST=$HISTSIZE
+#history file
+setopt INC_APPEND_HISTORY
+setopt HIST_IGNORE_DUPS
+setopt EXTENDED_HISTORY

@@ -316,7 +316,6 @@ let
     consoleFont = "${pkgs.terminus_font}/share/consolefonts/ter-g20n.psf.gz";
   } else if hostname == "jxt" then {
     hostId = "5ee92b8d";
-    enableVirtualboxHost = false;
     enableHolePuncher = false;
     enableAutossh = false;
     enablePrinting = false;
