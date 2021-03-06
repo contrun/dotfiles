@@ -12,9 +12,11 @@
 import Control.Monad (liftM2)
 import Data.Char
 import Data.Foldable (find)
+import Data.List (group)
 import qualified Data.Map as M
 import Data.Maybe
 import Data.Monoid
+import Data.Sort (sort)
 import Data.Tuple.Curry
 import Debug.Trace
 import System.Environment
@@ -104,7 +106,7 @@ myModMaskStr = "M3"
 --
 -- > workspaces = ["web", "irc", "code" ] ++ map show [4..9]
 --
-myWorkspaces = ["1", "2", "3", "4", "5", "6", "7", "8", "9"] ++ myInvisibleWorkspaces ++ myShortenedWorkspaces
+myWorkspaces = rmdups (["1", "2", "3", "4", "5", "6", "7", "8", "9"] ++ myInvisibleWorkspaces ++ myShortenedWorkspaces)
 
 -- Border colors for unfocused and focused windows, respectively.
 --
@@ -649,7 +651,6 @@ myLogHook = return ()
 myStartupHook = do
   -- setWMName "LG3D"
   io $ setEnv "_JAVA_AWT_WM_NONREPARENTING" "1"
-  mapM_ addHiddenWorkspace $ filter (\x -> x /= "NSP") myInvisibleWorkspaces
   return () -- workaround for checkKeymap!
   -- workaround to integrate Java Swing/GUI apps into XMonad layouts;
   -- otherwise they just float around.
@@ -671,14 +672,14 @@ myStatusBar = "xmobar"
 
 myInvisibleWorkspaces = ["NSP", "hidden"]
 
-myShortenedWorkspaces = ["chat", "reading", "web", "private", "ide", "quick", "editor", "vscode", "zstash", "video", "hidden"]
+myShortenedWorkspaces = ["chat", "reading", "web", "private", "ide", "quick", "editor", "zstash", "video", "hidden"]
 
 myPP =
   xmobarPP
     { ppTitle = xmobarColor "green" "",
       ppHiddenNoWindows = const "",
       ppLayout = const "",
-      ppSep = "  ",
+      ppSep = " ",
       ppVisible = xmobarColor "orange" "" . justAcronym,
       ppHidden = justAcronym . ignoreWorkspaces,
       ppCurrent = xmobarColor "violet" "" . justAcronym,
@@ -687,6 +688,9 @@ myPP =
   where
     ignoreWorkspaces = \x -> if elem x myInvisibleWorkspaces then "" else x
     justAcronym = \x -> if elem x myShortenedWorkspaces then map toUpper (take 1 x) else x
+
+rmdups :: (Ord a) => [a] -> [a]
+rmdups = map head . group . sort
 
 -- The main function.
 main = xmonad =<< statusBar myStatusBar myPP myToggleStruts (ewmh defaults)
