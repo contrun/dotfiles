@@ -1101,8 +1101,8 @@ Call a second time to restore the original window configuration."
   ;; complementary to
   ;; C-x r m / C-x r l
   ;; and C-<space> C-<space> / C-u C-<space>
-  :bind (("s-r" . goto-last-change)
-         ("s-R" . goto-last-change-reverse)))
+  :bind (("s-l" . goto-last-change)
+         ("s-L" . goto-last-change-reverse)))
 
 ;;----------------------------------------------------------------------------
 ;; Some basic preferences
@@ -2564,6 +2564,18 @@ With arg N, insert N newlines."
   (with-eval-after-load 'org-agenda
     (define-key org-agenda-mode-map (kbd "P") 'org-pomodoro))
   )
+
+(use-package org-roam
+  :hook
+  (after-init . org-roam-mode)
+  :custom
+  (org-roam-directory (expand-file-name "~/Sync/docs/org-mode/roam"))
+  :bind (:map org-roam-mode-map
+              (("s-r r" . org-roam)
+               ("s-r f" . org-roam-find-file)
+               ("s-r g" . org-roam-graph))
+              (("s-r i" . org-roam-insert))
+              (("s-r I" . org-roam-insert-immediate))))
 
 (use-package org-caldav
   :init
