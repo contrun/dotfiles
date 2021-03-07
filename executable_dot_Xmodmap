@@ -79,7 +79,11 @@ keycode 251 = space NoSymbol space
 
 EOF
 
-[ -f ~/.mouse.left ] && xinput list | perl -ne 'print "$1\n" if m|mouse\s+.*id=([0-9]+).*|i' | xargs -I _ xinput set-button-map _ 3 2 1
+if [[ -f ~/.mouse.left ]]; then
+    xinput list | perl -ne 'print "$1\n" if m|mouse\s+.*id=([0-9]+).*|i' | xargs -I _ xinput set-button-map _ 3 2 1
+else
+    xinput list | perl -ne 'print "$1\n" if m|mouse\s+.*id=([0-9]+).*|i' | xargs -I _ xinput set-button-map _ 1 2 3
+fi
 
 pkill -f "xcape.*Mode_switch.*space"
 xcape -e 'Mode_switch=space'

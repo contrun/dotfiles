@@ -966,7 +966,8 @@ in {
       "cups"
       "video"
       "kvm"
-      "libvirt"
+      "libvirtd"
+      "qemu-libvirtd"
       "audio"
       "disk"
       "keys"
@@ -1386,6 +1387,9 @@ in {
       "net.ipv4.tcp_congestion_control" = "bbr";
       "net.core.default_qdisc" = "fq";
       "vfs.usermount" = 1;
+      "net.ipv4.igmp_max_memberships" = 256;
+      "fs.inotify.max_user_instances" = 256;
+      "fs.inotify.max_user_watches" = 524288;
       "kernel.kptr_restrict" = 0;
       "kernel.perf_event_paranoid" = 1;
     };
