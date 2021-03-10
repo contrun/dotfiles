@@ -113,6 +113,7 @@ let
       user = self.owner;
     };
     enableYandexDisk = self.currentSystem == "x86_64-linux";
+    yandexExcludedFiles = "docs/org-mode/roam/.emacs";
     enablePostgres = false;
     enableRedis = false;
     enableVsftpd = true;

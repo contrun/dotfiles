@@ -303,7 +303,6 @@ in {
         e2fsprogs
         efibootmgr
         dbus
-        linuxHeaders
         cryptsetup
         compton
         btrbk
@@ -1319,7 +1318,7 @@ in {
           serviceConfig = {
             Restart = "always";
             ExecStart =
-              "${pkgs.yandex-disk}/bin/yandex-disk start --no-daemon --dir='${syncFolder}'";
+              "${pkgs.yandex-disk}/bin/yandex-disk start --no-daemon --auth=/run/secrets/yandex-passwd --dir='${syncFolder}' --exclude-dirs='${yandexExcludedFiles}'";
           };
         };
       } else
@@ -1445,6 +1444,11 @@ in {
     secrets = {
       hello = {
         mode = "0440";
+        owner = owner;
+        group = ownerGroup;
+      };
+      yandex-passwd = {
+        mode = "0400";
         owner = owner;
         group = ownerGroup;
       };

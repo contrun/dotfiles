@@ -373,11 +373,12 @@ pressing `<leader> m`. Set it to `nil` to disable it.")
 
 
 (use-package my/bootstrap-straight
-  :ensure nil
+  :ensure t
   :init
+  (setq straight-base-dir (expand-file-name "straight" my/emacs-d))
   (defvar bootstrap-version)
   (defun my/bootstrap-straight ()
-    (let ((bootstrap-file (concat my/emacs-d "straight/repos/straight.el/bootstrap.el"))
+    (let ((bootstrap-file (expand-file-name "straight/repos/straight.el/bootstrap.el" straight-base-dir))
           (bootstrap-version 5))
       (unless (file-exists-p bootstrap-file)
         (with-current-buffer
@@ -2569,7 +2570,7 @@ With arg N, insert N newlines."
   :hook
   (after-init . org-roam-mode)
   :custom
-  (org-roam-directory (expand-file-name "~/Sync/docs/org-mode/roam"))
+  (org-roam-directory (expand-file-name "~/Sync/docs/org-mode/roam/org"))
   :bind (:map org-roam-mode-map
               (("s-r r" . org-roam)
                ("s-r f" . org-roam-find-file)
