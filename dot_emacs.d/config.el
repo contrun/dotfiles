@@ -1,6 +1,7 @@
 ;; -*- lexical-binding: t; coding: utf-8; no-byte-compile: t; -*-
 ;;; Main configuration file
 
+(setq package-enable-at-startup nil)
 ;;----------------------------------------------------------------------------
 ;; Adjust garbage collection thresholds during startup, and thereafter
 ;;----------------------------------------------------------------------------
@@ -32,61 +33,26 @@
 (load (my/path-under-emacs-d "secrets") t)
 
 
-(require 'package)
-;;; Install into separate package dirs for each Emacs version, to prevent bytecode incompatibility
-(let ((versioned-package-dir
-       (expand-file-name (format "elpa-%s.%s" emacs-major-version emacs-minor-version)
-                         my/emacs-d)))
-  (setq package-user-dir versioned-package-dir))
 
-;;; Standard package repositories
-(let* ((no-ssl (and (memq system-type '(windows-nt ms-dos))
-                    (not (gnutls-available-p))))
-       (proto (if no-ssl "http" "https")))
-  (add-to-list 'package-archives (cons "melpa" (concat proto "://melpa.org/packages/")) t)
-  (add-to-list 'package-archives (cons "org" (concat proto "://orgmode.org/elpa/")) t)
-  ;; Official MELPA Mirror, in case necessary.
-  ;;(add-to-list 'package-archives (cons "melpa-mirror" (concat proto "://www.mirrorservice.org/sites/melpa.org/packages/")) t)
-  (if (< emacs-major-version 24)
-      ;; For important compatibility libraries like cl-lib
-      (add-to-list 'package-archives '("gnu" . (concat proto "://elpa.gnu.org/packages/")))
-    (unless no-ssl
-      ;; Force SSL for GNU ELPA
-      (setcdr (assoc "gnu" package-archives) "https://elpa.gnu.org/packages/"))))
+(setq straight-base-dir (expand-file-name "straight" my/emacs-d)
+      straight-use-package-by-default t)
 
-;;; On-demand installation of packages
-(defun my/install-package (package &optional min-version no-refresh)
-  "Install given PACKAGE, optionally requiring MIN-VERSION.
-If NO-REFRESH is non-nil, the available package lists will not be
-re-downloaded in order to locate PACKAGE."
-  (if (package-installed-p package min-version)
-      t
-    (if (or (assoc package package-archive-contents) no-refresh)
-        (package-install package)
-      (progn
-        (package-refresh-contents)
-        (my/install-package package min-version t)))))
+(defvar bootstrap-version)
+(defun my/bootstrap-straight ()
+  (let ((bootstrap-file (expand-file-name "straight/repos/straight.el/bootstrap.el" straight-base-dir))
+        (bootstrap-version 5))
+    (unless (file-exists-p bootstrap-file)
+      (with-current-buffer
+          (url-retrieve-synchronously
+           "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
+           'silent 'inhibit-cookies)
+        (goto-char (point-max))
+        (eval-print-last-sexp)))
+    (load bootstrap-file nil 'nomessage)))
+(my/bootstrap-straight)
 
-(defun my/try-install-package (package &optional min-version no-refresh)
-  "Try to install PACKAGE, and return non-nil if successful.
-In the event of failure, return nil and print a warning message.
-Optionally require MIN-VERSION.  If NO-REFRESH is non-nil, the
-available package lists will not be re-downloaded in order to
-locate PACKAGE."
-  (condition-case err
-      (my/install-package package min-version no-refresh)
-    (error
-     (message "Couldn't install optional package `%s': %S" package err)
-     nil)))
-
-;;; Fire up package.el
-(setq package-enable-at-startup nil)
-(package-initialize)
-
-;;; Install use-package
-(my/try-install-package 'use-package)
-(require 'use-package)
-
+(straight-use-package 'use-package)
+(straight-use-package 'el-patch)
 ;; Enable defer and ensure by default for use-package
 (setq use-package-always-defer t
       use-package-always-ensure t)
@@ -95,6 +61,7 @@ locate PACKAGE."
 
 (use-package my/constants
   :ensure nil
+  :straight nil
   :init
   (defconst my/initial-frame (selected-frame)
     "The frame (if any) active during Emacs initialization.")
@@ -105,6 +72,7 @@ locate PACKAGE."
 
 (use-package my/functions
   :ensure nil
+  :straight nil
   :init
   (defun my/shell-command-to-string (command)
     "Just `shell-command-to-string' COMMAND without the trailing newline."
@@ -250,6 +218,7 @@ pressing `<leader> m`. Set it to `nil` to disable it.")
 
 (use-package my/keymaps
   :ensure nil
+  :straight nil
   :init
   (define-key read-expression-map (kbd "C-r") 'counsel-expression-history)
 
@@ -372,24 +341,6 @@ pressing `<leader> m`. Set it to `nil` to disable it.")
 
 
 
-(use-package my/bootstrap-straight
-  :ensure nil
-  :init
-  (setq straight-base-dir (expand-file-name "straight" my/emacs-d))
-  (defvar bootstrap-version)
-  (defun my/bootstrap-straight ()
-    (let ((bootstrap-file (expand-file-name "straight/repos/straight.el/bootstrap.el" straight-base-dir))
-          (bootstrap-version 5))
-      (unless (file-exists-p bootstrap-file)
-        (with-current-buffer
-            (url-retrieve-synchronously
-             "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
-             'silent 'inhibit-cookies)
-          (goto-char (point-max))
-          (eval-print-last-sexp)))
-      (load bootstrap-file nil 'nomessage)))
-  (my/bootstrap-straight))
-
 (use-package el-get
   :init
   (defvar my/el-get-d
@@ -450,6 +401,7 @@ pressing `<leader> m`. Set it to `nil` to disable it.")
 
 (use-package term-mode
   :ensure nil
+  :straight nil
   :hook
   (term-mode-hook . (lambda () (setq line-spacing 0))))
 
@@ -464,6 +416,7 @@ pressing `<leader> m`. Set it to `nil` to disable it.")
 
 (use-package eww
   :ensure nil
+  :straight nil
   :bind
   (:map eww-mode-map
         ("s" . my/eww-split-right)
@@ -546,6 +499,7 @@ pressing `<leader> m`. Set it to `nil` to disable it.")
 
 (use-package dired
   :ensure nil
+  :straight nil
   :config
   (setq dired-recursive-deletes 'top)
   (define-key dired-mode-map [mouse-2] 'dired-find-file)
@@ -704,6 +658,7 @@ Get required params to call `dash-docs-result-url' from SEARCH-RESULT."
 
 (use-package uniquify
   :ensure nil
+  :straight nil
   :init
   (setq uniquify-buffer-name-style 'reverse)
   (setq uniquify-separator " • ")
@@ -724,6 +679,7 @@ Get required params to call `dash-docs-result-url' from SEARCH-RESULT."
 
 (use-package ibuffer
   :ensure nil
+  :straight nil
   :init
   (defun ibuffer-set-up-preferred-filters ()
     (ibuffer-vc-set-filter-groups-by-vc-root)
@@ -892,6 +848,7 @@ instead."
 
 (use-package hippie-expand
   :ensure nil
+  :straight nil
   :init
   (global-set-key (kbd "M-/") 'hippie-expand)
 
@@ -959,6 +916,7 @@ instead."
 
 (use-package winner
   :ensure nil
+  :straight nil
   :hook
   (after-init . winner-mode)
   )
@@ -969,6 +927,7 @@ instead."
 
 (use-package my/window-managerment
   :ensure nil
+  :straight nil
   :init
 
   ;; Make "C-x o" prompt for a target window when there are more than 2
@@ -1214,6 +1173,7 @@ Call a second time to restore the original window configuration."
 
 (use-package my/save-and-backup
   :ensure nil
+  :straight nil
   ;; :hook
   ;; (before-save . force-backup-of-buffer)
   :init
@@ -1588,6 +1548,7 @@ With arg N, insert N newlines."
 
 (use-package tramp
   :ensure nil
+  :straight nil
   :init
   (setq tramp-default-method "ssh")
   ;; Avoid indefinite hang in tramp, https://www.emacswiki.org/emacs/TrampMode#toc9
@@ -1624,6 +1585,7 @@ With arg N, insert N newlines."
 
 (use-package prog-mode
   :ensure nil
+  :straight nil
   :hook (prog-mode . my-prog-mode-hook)
   :init
   (defun my-prog-mode-hook ()
@@ -1792,7 +1754,7 @@ With arg N, insert N newlines."
 
 (use-package lsp-ui :commands lsp-ui-mode)
 (use-package lsp-origami)
-(use-package company-lsp :commands company-lsp)
+;; (use-package company-lsp :commands company-lsp)
 (use-package helm-lsp :commands helm-lsp-workspace-symbol)
 (use-package lsp-treemacs :commands lsp-treemacs-errors-list)
 
@@ -2672,15 +2634,16 @@ With arg N, insert N newlines."
 
 (use-package simplenote2
   :commands simplenote2-list simplenote2-browse simplenote2-create-note-from-buffer
-  :init
-  (require 'simplenote2)
-  (simplenote2-setup)
+  ;; :init
+  ;; (require 'simplenote2)
+  ;; (simplenote2-setup)
   :config
   (my/simplenote-setup)
   )
 
 (use-package nxml-mode
   :ensure nil
+  :straight nil
   :mode
   "\\.xml\\'" "\\.xsd\\'" "\\.sch\\'" "\\.rng\\'" "\\.xslt\\'"
   "\\.svg\\'" "\\.rss\\'" "\\.gpx\\'" "\\.tcx\\'" "\\.plist\\'"
@@ -2691,6 +2654,7 @@ With arg N, insert N newlines."
 
 (use-package my/html
   :ensure nil
+  :straight nil
   :mode ("\\.\\(jsp\\|tmpl\\)\\'". html-mode))
 
 (use-package tagedit)
@@ -4073,6 +4037,7 @@ With arg N, insert N newlines."
 
 (use-package mu4e
   :ensure nil
+  :straight nil
   :init
   (unless (require 'mu4e nil t)
     ;; try to add mu4e to load-path on nixos
@@ -4360,6 +4325,7 @@ With arg N, insert N newlines."
 
 (use-package my/locales
   :ensure nil
+  :straight nil
   :init
   (defun my/utf8-locale-p (v)
     "Return whether locale string V relates to a UTF-8 locale."
@@ -4385,6 +4351,7 @@ With arg N, insert N newlines."
 
 (use-package my/appearance
   :ensure nil
+  :straight nil
   :hook
   (after-init . reapply-themes)
   :init
@@ -4398,6 +4365,7 @@ With arg N, insert N newlines."
 
   (use-package prettify-symbols
     :ensure nil
+    :straight nil
     :when (fboundp 'global-prettify-symbols-mode)
     :hook
     (after-init . global-prettify-symbols-mode))
@@ -4447,6 +4415,7 @@ With arg N, insert N newlines."
 
   (use-package my/frame-hooks
     :ensure nil
+    :straight nil
     :init
     (defvar after-make-console-frame-hook '()
       "Hooks to run after creating a new TTY frame")
@@ -4511,6 +4480,7 @@ Selectively runs either `after-make-console-frame-hooks' or
 
 (use-package my/convenient-functions
   :ensure nil
+  :straight nil
   :init
   ;;----------------------------------------------------------------------------
   ;; Delete the current file
@@ -4665,6 +4635,7 @@ Return the scratch buffer opened."
 
 (use-package my/mac
   :ensure nil
+  :straight nil
   :when (eq system-type 'darwin)
   :init
   (use-package osx-location)
