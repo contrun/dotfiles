@@ -373,7 +373,7 @@ pressing `<leader> m`. Set it to `nil` to disable it.")
 
 
 (use-package my/bootstrap-straight
-  :ensure t
+  :ensure nil
   :init
   (setq straight-base-dir (expand-file-name "straight" my/emacs-d))
   (defvar bootstrap-version)
@@ -388,8 +388,7 @@ pressing `<leader> m`. Set it to `nil` to disable it.")
           (goto-char (point-max))
           (eval-print-last-sexp)))
       (load bootstrap-file nil 'nomessage)))
-  (my/bootstrap-straight)
-  )
+  (my/bootstrap-straight))
 
 (use-package el-get
   :init
@@ -773,7 +772,15 @@ Get required params to call `dash-docs-result-url' from SEARCH-RESULT."
   :hook
   (after-init . global-flycheck-mode)
   :custom
-  (flycheck-display-errors-function #'flycheck-display-error-messages-unless-error-list))
+  (flycheck-display-errors-function #'flycheck-display-error-messages-unless-error-list)
+  :init
+  (defvar-local my/flycheck-local-cache nil)
+
+  (defun my/flycheck-checker-get (fn checker property)
+    (or (alist-get property (alist-get checker my/flycheck-local-cache))
+        (funcall fn checker property)))
+
+  (advice-add 'flycheck-checker-get :around 'my/flycheck-checker-get))
 
 (use-package flycheck-color-mode-line
   :hook
@@ -1759,6 +1766,11 @@ With arg N, insert N newlines."
   (python-mode . lsp)
   (ruby-mode . lsp)
   (java-mode . lsp)
+  ;; https://github.com/flycheck/flycheck/issues/1762
+  ;; seem to be not working.
+  (lsp-managed-mode . (lambda ()
+                        (when (derived-mode-p 'sh-mode)
+                          (setq my/flycheck-local-cache '((lsp . ((next-checkers . (sh-shellcheck)))))))))
   :init
   (when (executable-find "ag")
     (setq lsp-python-ms-executable "mspyls")
