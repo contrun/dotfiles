@@ -4118,11 +4118,11 @@ With arg N, insert N newlines."
 
   (setq mu4e-contexts
         (mapcar (lambda (accout) (make-mu4e-context
-                             :name(car accout)
-                             :match-func `(lambda (msg)
-                                            (when msg (mu4e-message-contact-field-matches msg :to ,(cadr (assq 'user-mail-address accout)))))
-                             :vars `((mu43-sent-folder . ,(cadr (assq 'mu4e-sent-folder accout)))
-                                     (mu43-drafts-folder . ,(cadr (assq 'mu4e-drafts-folder accout)))
+                                  :name(car accout)
+                                  :match-func `(lambda (msg)
+                                                 (when msg (mu4e-message-contact-field-matches msg :to ,(cadr (assq 'user-mail-address accout)))))
+                                  :vars `((mu43-sent-folder . ,(cadr (assq 'mu4e-sent-folder accout)))
+                                          (mu43-drafts-folder . ,(cadr (assq 'mu4e-drafts-folder accout)))
                                           (mu43-trash-folder . ,(cadr (assq 'mu4e-trash-folder accout)))
                                           (mu43-refle-folder . ,(cadr (assq 'mu4e-refile-folder accout)))))) my-mu4e-account-alist))
 
@@ -4310,8 +4310,8 @@ With arg N, insert N newlines."
 (use-package uptimes
   :config
   (setq-default uptimes-keep-count 200)
-  ; :hook
-  ; (after-init . (lambda () (require 'uptimes)))
+  :hook
+  (after-init . (lambda () (require 'uptimes)))
   )
 
 
@@ -4388,7 +4388,10 @@ With arg N, insert N newlines."
   (setq use-dialog-box nil)
   (setq inhibit-startup-screen t)
   (tool-bar-mode -1)
-  (set-scroll-bar-mode nil)
+  (when (fboundp 'set-scroll-bar-mode)
+    (if exordium-scroll-bar
+        (set-scroll-bar-mode 'right)
+      (set-scroll-bar-mode nil)))
   (menu-bar-mode -1)
   (pixel-scroll-mode 1)
   (setq frame-title-format
@@ -4449,7 +4452,7 @@ Selectively runs either `after-make-console-frame-hooks' or
     (after-make-console-frame . my/console-frame-setup)
     (after-make-window-system-frame . my/window-system-frame-setup)
     (after-init . (lambda () (when my/initial-frame
-                               (run-after-make-frame-hooks my/initial-frame))))
+                          (run-after-make-frame-hooks my/initial-frame))))
     )
   )
 
@@ -4688,8 +4691,8 @@ Return the scratch buffer opened."
   (when (file-directory-p "/Applications/org-clock-statusbar.app")
     (add-hook 'org-clock-in-hook
               (lambda () (call-process "/usr/bin/osascript" nil 0 nil "-e"
-                                  (concat "tell application \"org-clock-statusbar\" to clock in \"" org-clock-current-task "\""))))
+                                       (concat "tell application \"org-clock-statusbar\" to clock in \"" org-clock-current-task "\""))))
     (add-hook 'org-clock-out-hook
               (lambda () (call-process "/usr/bin/osascript" nil 0 nil "-e"
-                                  "tell application \"org-clock-statusbar\" to clock out"))))
+                                       "tell application \"org-clock-statusbar\" to clock out"))))
   )

@@ -3,3 +3,4 @@
 chezmoi.toml
 /Makefile
 /ignored
+.github

@@ -1,0 +1,42 @@
+name: Elisp test
+
+on:
+  pull_request:
+    paths:
+      - 'dot_emacs.d/**'
+      - '.github/workflows/elisp.yml'
+  push:
+    branches:
+      - master
+      - main
+      - actions
+      - ci
+      - 'releases/*'
+    paths:
+      - 'dot_emacs.d/**'
+      - '.github/workflows/elisp.yml'
+
+jobs:
+  emacs-init-check:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        emacs_version:
+          - 26.3
+          - 27.1
+        ignore_warnings:
+          - true
+        include:
+          - emacs_version: snapshot
+            ignore_warnings: false
+    steps:
+    - uses: actions/checkout@v2
+    - uses: purcell/setup-emacs@master
+      with:
+        version: ${{ matrix.emacs_version }}
+    - uses: leotaku/elisp-check@master
+      with:
+        check: load-file
+        file:  dot_emacs.d/init.el
+        ignore_warnings: ${{ matrix.ignore_warnings }}
