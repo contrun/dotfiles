@@ -1948,9 +1948,6 @@ With arg N, insert N newlines."
 
 (use-package ox-clip)
 
-(define-key global-map (kbd "C-c l") 'org-store-link)
-(define-key global-map (kbd "C-c a") 'org-agenda)
-
 ;; Various preferences
 (setq org-log-done t
       org-edit-timestamp-down-means-later t
@@ -2540,7 +2537,14 @@ With arg N, insert N newlines."
     (define-key org-agenda-mode-map (kbd "P") 'org-pomodoro))
   )
 
+(use-package org-download
+  :init (require 'org-download))
+
+(define-key global-map (kbd "s-r l") 'org-store-link)
+
 (use-package org-roam
+  :init
+  (require 'org-roam-protocol)
   :hook
   (after-init . org-roam-mode)
   :custom
@@ -4308,11 +4312,8 @@ With arg N, insert N newlines."
 (use-package dotenv-mode)
 
 (use-package uptimes
-  :config
-  (setq-default uptimes-keep-count 200)
-  :hook
-  (after-init . (lambda () (require 'uptimes)))
-  )
+  :init
+  (setq-default uptimes-keep-count 200))
 
 
 (require 'server)
@@ -4389,7 +4390,7 @@ With arg N, insert N newlines."
   (setq inhibit-startup-screen t)
   (tool-bar-mode -1)
   (when (fboundp 'set-scroll-bar-mode)
-    (if exordium-scroll-bar
+    (if (fboundp 'exordium-scroll-bar)
         (set-scroll-bar-mode 'right)
       (set-scroll-bar-mode nil)))
   (menu-bar-mode -1)
@@ -4452,7 +4453,7 @@ Selectively runs either `after-make-console-frame-hooks' or
     (after-make-console-frame . my/console-frame-setup)
     (after-make-window-system-frame . my/window-system-frame-setup)
     (after-init . (lambda () (when my/initial-frame
-                          (run-after-make-frame-hooks my/initial-frame))))
+                               (run-after-make-frame-hooks my/initial-frame))))
     )
   )
 
