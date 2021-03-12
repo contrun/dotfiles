@@ -2530,6 +2530,12 @@ With arg N, insert N newlines."
 
 
 
+(use-package org
+  :ensure nil
+  :straight nil
+  :hook
+  (org-mode . org-indent-mode))
+
 (use-package org-pomodoro
   :custom (org-pomodoro-keep-killed-pomodoro-time t)
   :init
@@ -2547,14 +2553,28 @@ With arg N, insert N newlines."
   (require 'org-roam-protocol)
   :hook
   (after-init . org-roam-mode)
+  :config
+  (setq-default org-download-image-dir (expand-file-name "../static/images" org-roam-directory))
+  (setq-default org-download-heading-lvl nil)
   :custom
   (org-roam-directory (expand-file-name "~/Sync/docs/org-mode/roam/org"))
   :bind (:map org-roam-mode-map
               (("s-r r" . org-roam)
                ("s-r f" . org-roam-find-file)
-               ("s-r g" . org-roam-graph))
-              (("s-r i" . org-roam-insert))
-              (("s-r I" . org-roam-insert-immediate))))
+               ("s-r g" . org-roam-graph)
+               ("s-r t" . org-roam-tag-add)
+               ("s-r i" . org-roam-insert)
+               ("s-r I" . org-roam-insert-immediate))))
+
+(use-package org-rich-yank
+  :bind (:map org-mode-map
+              ("C-M-y" . org-rich-yank)))
+
+(use-package org-superstar
+  :init
+  (setq org-superstar-leading-bullet " ")
+  :hook
+  (org-mode . org-superstar-mode))
 
 (use-package org-caldav
   :init
@@ -3739,6 +3759,8 @@ With arg N, insert N newlines."
   (let ((server (executable-find "languagetool-commandline")))
     (if server (setq langtool-bin server)))
   )
+
+(use-package flyspell-correct)
 
 (use-package flyspell
   :hook (prog-mode . flyspell-prog-mode)
