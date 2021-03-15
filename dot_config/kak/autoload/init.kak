@@ -1,3 +1,19 @@
+evaluate-commands %sh{
+    config_files="
+        recentf.kak
+    "
+
+    for file in $config_files; do
+        printf "%s" "
+            try %{
+                source %{${kak_config:?}/$file}
+            } catch %{
+                echo -debug %val{error}
+            }
+        "
+    done
+}
+
 map global normal <a-s> ': write<ret>'
 
 addhl global/ wrap
@@ -15,12 +31,14 @@ hook global RegisterModified '"' %{ nop %sh{
     printf %s "$kak_main_reg_dquote" | clipboard
 }}
 
-nop %sh{
-    git clone https://github.com/robertmeta/plug.kak.git "$kak_config/plugins/plug.kak/" || :
+evaluate-commands %sh{
+    plugins="$HOME/.config/kak/plugins"
+    mkdir -p $plugins
+    [ ! -e "$plugins/plug.kak" ] && \
+        git clone -q https://github.com/andreyorst/plug.kak "$plugins/plug.kak"
+    printf "%s\n" "source '$plugins/plug.kak/rc/plug.kak'"
 }
-source "%val{config}/plugins/plug.kak/rc/plug.kak"
-
-plug plug.kak https://github.com/alexherbo2/plug.kak
+plug "andreyorst/plug.kak" noload
 
 plug "lePerdu/kakboard" %{
     hook global WinCreate .* %{ kakboard-enable }
@@ -44,8 +62,7 @@ plug "https://gitlab.com/Screwtapello/kakoune-state-save" config %{
 }
 
 plug "kak-lsp/kak-lsp" do %{
-    cargo build --release --locked
-    cargo install --force --path .
+    cargo install --locked --force --path .
 } config %{
     # uncomment to enable debugging
     eval %sh{echo ${kak_opt_lsp_cmd} >> /tmp/kak-lsp.log}
@@ -119,6 +136,6 @@ plug "occivink/kakoune-vertical-selection"
 
 plug "occivink/kakoune-expand"
 
-plug "jdugan6240/powerline.kak" config %{
+plug "andreyorst/powerline.kak" config %{
         powerline-start
 }
