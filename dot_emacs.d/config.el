@@ -757,10 +757,10 @@ Get required params to call `dash-docs-result-url' from SEARCH-RESULT."
   :config
   (editorconfig-mode 1))
 
-;; (add-hook 'after-init-hook 'recentf-mode)
+(setq recentf-keep '(file-remote-p file-readable-p))
 (setq-default
  recentf-max-saved-items 1000
- recentf-exclude '("/tmp/" "/ssh:"))
+ recentf-exclude '("/tmp/" "/sudo:"))
 
 (use-package smex
   :init
@@ -1550,10 +1550,12 @@ With arg N, insert N newlines."
   :ensure nil
   :straight nil
   :init
+  (require 'tramp)
   (setq tramp-default-method "ssh")
   ;; Avoid indefinite hang in tramp, https://www.emacswiki.org/emacs/TrampMode#toc9
   (setq tramp-terminal-type "tramp")
-  )
+  (add-to-list 'tramp-remote-path "~/.nix-profile/bin")
+  (add-to-list 'tramp-remote-path 'tramp-own-remote-path))
 
 (use-package projectile
   :bind-keymap
@@ -1734,10 +1736,19 @@ With arg N, insert N newlines."
                         (when (derived-mode-p 'sh-mode)
                           (setq my/flycheck-local-cache '((lsp . ((next-checkers . (sh-shellcheck)))))))))
   :init
-  (when (executable-find "ag")
-    (setq lsp-python-ms-executable "mspyls")
-    (require 'lsp-python-ms)
-    )
+  (when (executable-find "python-language-server")
+    (setq lsp-python-ms-executable "python-language-server")
+    (require 'lsp-python-ms))
+  (lsp-register-client
+   (make-lsp-client :new-connection (lsp-tramp-connection "rust-analyzer")
+                    :major-modes '(rust-mode)
+                    :remote? t
+                    :server-id 'rust-analyzer-remote))
+  (lsp-register-client
+   (make-lsp-client :new-connection (lsp-tramp-connection "gopls")
+                    :major-modes '(go-mode)
+                    :remote? t
+                    :server-id 'gopls-remote))
   :custom
   (lsp-ui-doc-enable t)
   (lsp-clients-clangd-args '("-log=verbose"))
@@ -2554,7 +2565,7 @@ With arg N, insert N newlines."
   :hook
   (after-init . org-roam-mode)
   :config
-  (setq-default org-download-image-dir (expand-file-name "../static/images" org-roam-directory))
+  (setq-default org-download-image-dir (expand-file-name "assets/images" org-roam-directory))
   (setq-default org-download-heading-lvl nil)
   :custom
   (org-roam-directory (expand-file-name "~/Sync/docs/org-mode/roam/org"))
