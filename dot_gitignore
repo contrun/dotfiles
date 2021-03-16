@@ -246,8 +246,8 @@ secring.*
 *.tif
 
 # Scalable Vector Graphics
-*.svg
-*.svgz
+# *.svg
+# *.svgz
 
 # Portable Document Format
 *.pdf

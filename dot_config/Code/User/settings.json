@@ -23,7 +23,8 @@
         "cef3": "linux",
         "node1": "linux",
         "node2": "linux",
-        "node3": "linux"
+        "node3": "linux",
+        "cef4": "linux"
     },
     "editor.multiCursorModifier": "alt",
     "editor.wordWrap": "on",
