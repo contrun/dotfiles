@@ -1,14 +1,29 @@
 let
   fix = f: let x = f x; in x;
   extends = f: rattrs: self: let super = rattrs self; in super // f self super;
+  hostname = let
+    # LC_CTYPE=C tr -dc 'a-z' < /dev/urandom | head -c3 | tee /tmp/hostname
+    hostNameFiles = if builtins.pathExists "/tmp/nixos_bootstrap" then [
+      /tmp/etc/hostname
+      /mnt/etc/hostname
+      /tmp/hostname
+      /etc/hostname
+    ] else
+      [ /etc/hostname ];
+    fs = builtins.filter (x: builtins.pathExists x) hostNameFiles;
+    f = builtins.elemAt fs 0;
+    c = builtins.readFile f;
+    l = builtins.match "([[:alnum:]]+)[[:space:]]*" c;
+  in builtins.elemAt l 0;
+  hash = builtins.trace ''
+    Hashing hostname to get hostId by printf "%s" "hostname: ${hostname}" |  sha512sum''
+    (builtins.hashString "sha512" "hostname: ${hostname}");
+  hostId = builtins.trace "Obtaining hash result ${hash}"
+    (builtins.substring 0 8 hash);
+  prefFiles = [ ./override.nix ];
 in { ... }@args:
 let
   pkgs = args.pkgs or (import <nixpkgs> { });
-  config = args.config or args.pkgs.config or pkgs.config;
-  myArgs = args // {
-    pkgs = pkgs;
-    config = config;
-  };
   default = self: {
     isBootStrapping = false; # Things fail.
     enableAarch64Cross = false;
@@ -214,8 +229,7 @@ let
     # enableVirtualboxHost = true;
     # Build of virtual box frequently fails. touching "$HOME/.cache/disable_virtual_box"
     # is less irritating than editing this file.
-    enableVirtualboxHost =
-      !builtins.pathExists "${self.home}/.cache/disable_virtual_box";
+    enableVirtualboxHost = false;
     enableLibvirtd = true;
     enableAnbox = false;
     enableUnifi = false;
@@ -265,100 +279,73 @@ let
     };
     extraOutputsToInstall = [ "dev" "lib" "doc" "info" "devdoc" ];
   };
-  hostSpecific = let
-    hostname = let
-      # LC_CTYPE=C tr -dc 'a-z' < /dev/urandom | head -c3 | tee /tmp/hostname
-      hostNameFiles = if builtins.pathExists "/tmp/nixos_bootstrap" then [
-        /tmp/etc/hostname
-        /mnt/etc/hostname
-        /tmp/hostname
-        /etc/hostname
-      ] else
-        [ /etc/hostname ];
-      fs = builtins.filter (x: builtins.pathExists x) hostNameFiles;
-      f = builtins.elemAt fs 0;
-      c = builtins.readFile f;
-      l = builtins.match "([[:alnum:]]+)[[:space:]]*" c;
-    in builtins.elemAt l 0;
-    hash = builtins.trace ''
-      Hashing hostname to get hostId by printf "%s" "hostname: ${hostname}" |  sha512sum''
-      (builtins.hashString "sha512" "hostname: ${hostname}");
-    hostId = builtins.trace "Obtaining hash result ${hash}"
-      (builtins.substring 0 8 hash);
-  in self: super:
-  {
-    inherit hostname hostId;
-  } // (if hostname == "uzq" then {
-    enableHidpi = true;
-    # enableAnbox = true;
-    consoleFont = "${pkgs.terminus_font}/share/consolefonts/ter-g20n.psf.gz";
-    hostId = "80d17333";
-    enableX2goServer = true;
-    enableTailScale = true;
-    # kernelPatches = [{
-    #   # See https://github.com/NixOS/nixpkgs/issues/91367
-    #   name = "anbox-kernel-config";
-    #   patch = null;
-    #   extraConfig = ''
-    #     CONFIG_ASHMEM=y
-    #     CONFIG_ANDROID=y
-    #     CONFIG_ANDROID_BINDER_IPC=y
-    #     CONFIG_ANDROID_BINDERFS=y
-    #     CONFIG_ANDROID_BINDER_DEVICES="binder,hwbinder,vndbinder"
-    #   '';
-    # }];
-  } else if hostname == "ssg" then {
-    hostId = "034d2ba3";
-    dpi = 128;
-    enableX2goServer = true;
-    enableHidpi = false;
-    enableK3s = true;
-    enableWireless = true;
-    consoleFont = "${pkgs.terminus_font}/share/consolefonts/ter-g20n.psf.gz";
-  } else if hostname == "jxt" then {
-    hostId = "5ee92b8d";
-    enableHolePuncher = false;
-    enableAutossh = false;
-    enablePrinting = false;
-    enableEternalTerminal = false;
-    enableCodeServer = false;
-    enablePostfix = false;
-    # enableCrashDump = true;
-    enableZerotierone = false;
-    buildMachines = super.buildMachines ++ [
-      {
-        hostName = "node1";
-        system = "x86_64-linux";
-        supportedFeatures = [ "kvm" "big-parallel" ];
-      }
-      {
-        hostName = "node2";
-        system = "x86_64-linux";
-        supportedFeatures = [ "kvm" "big-parallel" ];
-      }
-      {
-        hostName = "node3";
-        system = "x86_64-linux";
-        supportedFeatures = [ "kvm" "big-parallel" ];
-      }
-    ];
-  } else if hostname == "shl" then {
-    currentSystem = "aarch64-linux";
-    hostId = "6fce2459";
-    kernelPackages = pkgs.linuxPackages_rpi4;
-    enableCodeServer = false;
-    enableVirtualboxHost = false;
-    enableGrub = false;
-    isRaspberryPi = true;
-    raspberryPiVersion = 4;
-    enableVsftpd = false;
-    enableAarch64Cross = self.isBootStrapping;
-  } else
-    { });
-  prefFiles = [ ./override.nix ];
-  effectiveFiles = builtins.filter (x: builtins.pathExists x) prefFiles;
-  overrides =
-    builtins.map (path: (import (builtins.toPath path))) effectiveFiles;
+  hostSpecific = self: super:
+    {
+      inherit hostname hostId;
+    } // (if hostname == "uzq" then {
+      enableHidpi = true;
+      # enableAnbox = true;
+      consoleFont = "${pkgs.terminus_font}/share/consolefonts/ter-g20n.psf.gz";
+      hostId = "80d17333";
+      enableX2goServer = true;
+      enableTailScale = true;
+      # kernelPatches = [{
+      #   # See https://github.com/NixOS/nixpkgs/issues/91367
+      #   name = "anbox-kernel-config";
+      #   patch = null;
+      #   extraConfig = ''
+      #     CONFIG_ASHMEM=y
+      #     CONFIG_ANDROID=y
+      #     CONFIG_ANDROID_BINDER_IPC=y
+      #     CONFIG_ANDROID_BINDERFS=y
+      #     CONFIG_ANDROID_BINDER_DEVICES="binder,hwbinder,vndbinder"
+      #   '';
+      # }];
+    } else if hostname == "ssg" then {
+      hostId = "034d2ba3";
+      dpi = 128;
+      enableX2goServer = true;
+      enableHidpi = false;
+      enableK3s = true;
+      enableWireless = true;
+      consoleFont = "${pkgs.terminus_font}/share/consolefonts/ter-g20n.psf.gz";
+    } else if hostname == "jxt" then {
+      hostId = "5ee92b8d";
+      enableHolePuncher = false;
+      enableAutossh = false;
+      enablePrinting = false;
+      enableEternalTerminal = false;
+      enableCodeServer = false;
+      enablePostfix = false;
+      # enableCrashDump = true;
+      enableZerotierone = false;
+      buildMachines = super.buildMachines ++ [
+        {
+          hostName = "node1";
+          system = "x86_64-linux";
+          supportedFeatures = [ "kvm" "big-parallel" ];
+        }
+        {
+          hostName = "node2";
+          system = "x86_64-linux";
+          supportedFeatures = [ "kvm" "big-parallel" ];
+        }
+      ];
+    } else if hostname == "shl" then {
+      currentSystem = "aarch64-linux";
+      hostId = "6fce2459";
+      kernelPackages = pkgs.linuxPackages_rpi4;
+      enableCodeServer = false;
+      enableVirtualboxHost = false;
+      enableGrub = false;
+      isRaspberryPi = true;
+      raspberryPiVersion = 4;
+      enableVsftpd = false;
+      enableAarch64Cross = self.isBootStrapping;
+    } else
+      { });
+  overrides = builtins.map (path: (import (builtins.toPath path)))
+    (builtins.filter (x: builtins.pathExists x) prefFiles);
   final = fix (builtins.foldl' (acc: override: extends override acc) default
     ([ hostSpecific ] ++ overrides));
 in builtins.trace final final
