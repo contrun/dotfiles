@@ -1739,6 +1739,7 @@ With arg N, insert N newlines."
   (when (executable-find "python-language-server")
     (setq lsp-python-ms-executable "python-language-server")
     (require 'lsp-python-ms))
+  :config
   (lsp-register-client
    (make-lsp-client :new-connection (lsp-tramp-connection "rust-analyzer")
                     :major-modes '(rust-mode)
@@ -1760,8 +1761,7 @@ With arg N, insert N newlines."
   (lsp-keep-workspace-alive nil)
   (lsp-enable-on-type-formatting t)
   (lsp-enable-file-watchers nil)
-  (lsp-file-watch-threshold 3000)
-  )
+  (lsp-file-watch-threshold 3000))
 
 (use-package lsp-ui :commands lsp-ui-mode)
 (use-package lsp-origami)
