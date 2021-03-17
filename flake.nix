@@ -8,7 +8,6 @@
     home-manager.url = "github:nix-community/home-manager/master";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
     nur-no-pkgs.url = "github:nix-community/NUR/master";
-
     sops-nix.url = "github:Mic92/sops-nix";
     sops-nix.inputs.nixpkgs.follows = "nixpkgs";
   };
@@ -19,7 +18,7 @@
       pathOr = path: default:
         if (builtins.pathExists path) then path else default;
       getHostPreference = hostname:
-        (import /etc/nixos/pref.nix) { inherit hostname; };
+        (import (myRootPath "/etc/nixos/pref.nix")) { inherit hostname; };
       generateHostConfigurations = hostname:
         let
           prefs = getHostPreference hostname;
@@ -56,7 +55,7 @@
                 })
 
               (import (pathOr
-                (myRootPath "/etc/nixos/${hostname}-hardware-configuration.nix")
+                (myRootPath "/etc/nixos/hardware-configuration-${hostname}.nix")
                 /etc/nixos/hardware-configuration.nix))
 
               (import (myRootPath "/etc/nixos/common.nix"))

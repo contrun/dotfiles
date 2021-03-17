@@ -6,3 +6,4 @@ chezmoi.toml
 /flake.nix
 /flake.lock
 /.github
+result/
