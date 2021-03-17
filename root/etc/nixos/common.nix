@@ -1,26 +1,8 @@
 { config, pkgs, ... }@args:
 let prefs = import ./pref.nix args;
-in with prefs;
-let
-  nivSources = let file = "${home}/.config/nixpkgs/nix/sources.nix";
-  in if (builtins.pathExists file) then import file else { };
-  nivSourceOr = name: default:
-    if nivSources ? name then nivSources.name else default;
-  nivSourceOrFetchTarball = name: tarball:
-    nivSourceOr name (builtins.fetchTarball tarball);
-  sops-nix-import = "${
-      nivSourceOrFetchTarball "sops-nix"
-      "https://github.com/Mic92/sops-nix/archive/master.tar.gz"
-    }/modules/sops";
-  sops-secrets-file = "${home}/.config/nixpkgs/sops/secrets.yaml";
-  enableSops = builtins.pathExists sops-secrets-file;
-  inherit (pkgs) stable unstable;
-in {
-  imports = (if enableSops then [ sops-nix-import ] else [ ])
-    ++ (builtins.filter (x: builtins.pathExists x) [
-      ./machine.nix
-      ./cachix.nix
-    ]);
+in with prefs // { inherit (pkgs) stable unstable; }; {
+  imports =
+    (builtins.filter (x: builtins.pathExists x) [ ./machine.nix ./cachix.nix ]);
   security = {
     sudo = { wheelNeedsPassword = false; };
     pki = {
@@ -97,11 +79,6 @@ in {
     };
     proxy.default = proxy;
     enableIPv6 = enableIPv6;
-    extraHosts = let
-      readHostsFile = p:
-        pkgs.lib.optionalString (builtins.pathExists p) (builtins.readFile p);
-      hostsFiles = [ "${home}/.hosts" "${home}/.hosts.tmp" ];
-    in builtins.foldl' (a: p: a + (readHostsFile p)) "" hostsFiles;
   };
 
   console = {
@@ -451,17 +428,12 @@ in {
         experimental-features = "nix-command flakes";
       };
     };
-    localPkgs = "${home}/Local/nixpkgs";
-    pkgsAttr = if (builtins.pathExists "${localPkgs}/.useme") then {
-      pkgs = import localPkgs { inherit (configAttr) config; };
-    } else
-      { };
     overlaysAttr = let overlaysFile = "${home}/.config/nixpkgs/overlays.nix";
     in if (builtins.pathExists overlaysFile) then {
       overlays = import overlaysFile;
     } else
       { };
-  in overlaysAttr // pkgsAttr // configAttr // cross;
+  in overlaysAttr // configAttr // cross;
 
   hardware = {
     enableAllFirmware = true;
@@ -506,20 +478,6 @@ in {
       jdks = {
         text = pkgs.lib.concatMapStringsSep "\n" addjdk jdks;
         deps = [ "local" ];
-      };
-    } // pkgs.lib.optionalAttrs nixosAutoUpgrade.enableHomeManager {
-      addHomeManagerChannel = {
-        text =
-          "${config.nix.package.out}/bin/nix-channel --add ${nixosAutoUpgrade.homeManagerChannel} home-manager";
-        deps = [ ];
-      };
-    } // {
-      addNixosChannel = {
-        text = if enableUnstableNixosChannel then
-          "${config.nix.package.out}/bin/nix-channel --add https://nixos.org/channels/nixos-unstable nixos"
-        else
-          "${config.nix.package.out}/bin/nix-channel --add https://nixos.org/channels/nixos-${nixosStableVersion} nixos";
-        deps = [ ];
       };
     } // {
       mkCcacheDirs = {
@@ -665,7 +623,7 @@ in {
     };
     privoxy = {
       enable = enablePrivoxy;
-      listenAddress = "0.0.0.0:8118";
+      settings = { listen-address = "0.0.0.0:8118"; };
     };
     redshift = { enable = enableRedshift; };
     avahi = {
@@ -843,8 +801,10 @@ in {
       dpi = dpi;
       libinput = {
         enable = enableLibInput;
-        tapping = true;
-        disableWhileTyping = true;
+        touchpad = {
+          tapping = true;
+          disableWhileTyping = true;
+        };
       };
       # videoDrivers = [ "dummy" ] ++ [ "intel" ];
       virtualScreen = {
@@ -1361,26 +1321,5 @@ in {
       };
     };
   };
-  system.stateVersion = nixosStableVersion;
-} // (if enableSops then {
-  sops = {
-    validateSopsFiles = false;
-    defaultSopsFile = "${builtins.path {
-      name = "sops-secrets";
-      path = sops-secrets-file;
-    }}";
-    secrets = {
-      hello = {
-        mode = "0440";
-        owner = owner;
-        group = ownerGroup;
-      };
-      yandex-passwd = {
-        mode = "0400";
-        owner = owner;
-        group = ownerGroup;
-      };
-    };
-  };
-} else
-  { })
+  system.stateVersion = stateVersion;
+}

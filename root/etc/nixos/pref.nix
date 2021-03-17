@@ -232,6 +232,7 @@ let
     kernelPackages = pkgs.linuxPackages_latest;
     networkingInterfaces = { };
     nixosStableVersion = "20.09";
+    stateVersion = "20.09";
     enableUnstableNixosChannel = false;
     nixosAutoUpgrade = {
       nixosChannelList = [ "stable" "unstable" "unstable-small" ];
