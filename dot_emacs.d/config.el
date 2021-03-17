@@ -902,15 +902,13 @@ instead."
   :hook (company-mode . company-box-mode))
 
 (use-package company-tabnine
-  ;; :after company
-  ;; :config
-  ;; (add-to-list 'company-backends #'company-tabnine)
-  )
+  :after company
+  :init
+  (add-to-list 'company-backends #'company-tabnine))
 
 (use-package company-quickhelp
   :hook
-  (after-init . company-quickhelp-mode)
-  )
+  (after-init . company-quickhelp-mode))
 
 
 
