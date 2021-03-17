@@ -2,39 +2,6 @@
 let prefs = import ./pref.nix args;
 in with prefs;
 let
-  importWithConfig = x: import x { config = config.nixpkgs.config; };
-  importNixChannel = channel: importWithConfig (fetchNixChannel channel);
-  nixChannelURL = channel:
-    let
-      # This currently only runs on nixos, as we possibly cannot read "/root/.nix-defexpr/channels"
-      # We need some reliable way to get all available channel list.
-      # isNixOS = builtins.pathExists /etc/NIXOS;
-      isNixOS = true;
-      prefix = if isNixOS then "nixos" else "nixpkgs";
-      postfix = if (channel != "stable") then
-        channel
-      else
-        (if isNixOS then nixosStableVersion else "unstable");
-    in "https://nixos.org/channels/${prefix}-${postfix}";
-  fetchNixChannel = channel:
-    builtins.fetchTarball "${nixChannelURL channel}/nixexprs.tar.xz";
-  importGithubNixPkgs = rev: importWithConfig (fetchGithubNixPkgs rev);
-  fetchGithubNixPkgs = rev:
-    builtins.fetchTarball
-    "https://github.com/NixOS/nixpkgs/archive/${rev}.tar.gz";
-  allChannels = let
-    env = builtins.getEnv "HOME";
-    root_home = if (env == "") then "/root" else env;
-    list = builtins.readDir "${root_home}/.nix-defexpr/channels";
-  in pkgs.lib.filterAttrs (n: v: n != "manifest.nix") list;
-  stable = if allChannels ? "stable" then
-    import <stable> { }
-  else
-    importNixChannel "stable";
-  unstable = if allChannels ? "unstable" then
-    import <unstable> { }
-  else
-    importNixChannel "unstable";
   nivSources = let file = "${home}/.config/nixpkgs/nix/sources.nix";
   in if (builtins.pathExists file) then import file else { };
   nivSourceOr = name: default:
@@ -47,6 +14,7 @@ let
     }/modules/sops";
   sops-secrets-file = "${home}/.config/nixpkgs/sops/secrets.yaml";
   enableSops = builtins.pathExists sops-secrets-file;
+  inherit (pkgs) stable unstable;
 in {
   imports = (if enableSops then [ sops-nix-import ] else [ ])
     ++ (builtins.filter (x: builtins.pathExists x) [
@@ -488,8 +456,8 @@ in {
       pkgs = import localPkgs { inherit (configAttr) config; };
     } else
       { };
-    overlaysFile = "${home}/.config/nixpkgs/overlays.nix";
-    overlaysAttr = if (builtins.pathExists overlaysFile) then {
+    overlaysAttr = let overlaysFile = "${home}/.config/nixpkgs/overlays.nix";
+    in if (builtins.pathExists overlaysFile) then {
       overlays = import overlaysFile;
     } else
       { };
@@ -620,17 +588,6 @@ in {
           ln -sfn ${pkgs.neovim}/bin/nvim /usr/local/bin/nv
         '';
         deps = [ "binsh" "usrlocalbin" ];
-      };
-
-      addChannels = let
-        add-channel = channel:
-          "${config.nix.package.out}/bin/nix-channel --add ${
-            nixChannelURL channel
-          } ${channel}";
-      in {
-        text = pkgs.lib.concatMapStringsSep "\n" add-channel
-          nixosAutoUpgrade.nixosChannelList;
-        deps = [ ];
       };
     };
   };
@@ -1010,7 +967,7 @@ in {
     };
     docker = {
       enable = true;
-      package = unstable.docker;
+      package = unstable.docker or pkgs.docker;
       autoPrune.enable = true;
     };
     anbox = { enable = enableAnbox; };
@@ -1100,82 +1057,14 @@ in {
         in pkgs.lib.optionals (builtins.pathExists from) newUnits;
     in getAllUnits usrLocalPrefix etcPrefix;
 
-    timers = {
-      nixos-update = {
-        timerConfig = {
-          OnCalendar = nixosAutoUpgrade.onCalendar;
-          Unit = "nixos-update@.service";
-          Persistent = true;
-        };
-      };
-    };
+    timers = { };
 
     services = notify-systemd-unit-failures // (if enableZerotierone then
       { }
     else {
       # build zero tier one anyway, but enable it on enableZerotierone is true;
       "zerotierone" = { wantedBy = pkgs.lib.mkForce [ ]; };
-    }) // {
-      # copied from https://github.com/NixOS/nixpkgs/blob/7803ff314c707ee11a6d8d1c9ac4cde70737d22e/nixos/modules/tasks/auto-upgrade.nix#L72
-      "nixos-update@" = {
-        description = "NixOS Update";
-        restartIfChanged = false;
-        unitConfig = { X-StopOnRemoval = false; };
-        serviceConfig.Type = "oneshot";
-        environment = config.nix.envVars // {
-          inherit (config.environment.sessionVariables) NIX_PATH;
-          HOME = "/root";
-          ARGS = "%I";
-        } // config.networking.proxy.envVars;
-
-        path = [
-          pkgs.coreutils
-          pkgs.gnutar
-          pkgs.xz.bin
-          pkgs.shadow.su
-          pkgs.gitMinimal
-          config.nix.package.out
-          config.system.build.nixos-rebuild
-          pkgs.niv
-          pkgs.home-manager
-          pkgs.chezmoi
-        ];
-
-        scriptArgs = "$ARGS";
-        script = with nixosAutoUpgrade;
-          let
-            update-channels = ''
-              nix-channel --update
-            '';
-            update-my-packages = pkgs.lib.optionalString updateMyPackages ''
-              if cd "${home}/.local/share/chezmoi/dot_config/nixpkgs/"; then
-                  su "${owner}" -c "niv update; chezmoi apply -v" || true
-              fi
-              if [[ -f "${home}/.local/share/chezmoi/root/chezmoi.toml" ]]; then
-                  cd "${home}"
-                  chezmoi -c "${home}/.local/share/chezmoi/root/chezmoi.toml" apply -v || true
-              fi
-            '';
-            upgrade-system = if allowReboot then ''
-              nixos-rebuild boot ${toString nixosRebuildFlags}
-              booted="$(readlink /run/booted-system/{initrd,kernel,kernel-modules})"
-              built="$(readlink /nix/var/nix/profiles/system/{initrd,kernel,kernel-modules})"
-              if [ "$booted" = "$built" ]; then
-                nixos-rebuild switch ${toString nixosRebuildFlags}
-              else
-                /run/current-system/sw/bin/shutdown -r +1
-              fi
-            '' else ''
-              nixos-rebuild switch ${toString nixosRebuildFlags}
-            '';
-            update-home-manager = pkgs.lib.optionalString enableHomeManager ''
-              su "${owner}" -c "nix-shell '<home-manager>' -A install" || true
-              su "${owner}" -c "home-manager switch" || true
-            '';
-          in update-channels + update-my-packages + update-home-manager
-          + upgrade-system;
-      };
-    } // pkgs.lib.optionalAttrs (enableK3s) {
+    }) // pkgs.lib.optionalAttrs (enableK3s) {
       "k3s" = {
         serviceConfig = {
           ExecStartPost = [

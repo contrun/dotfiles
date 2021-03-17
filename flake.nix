@@ -3,6 +3,8 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
+    nixpkgs-stable.url = "github:NixOS/nixpkgs/nixos-20.09";
     home-manager.url = "github:nix-community/home-manager/master";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
     nur-no-pkgs.url = "github:nix-community/NUR/master";
@@ -19,12 +21,29 @@
       getHostPreference = hostname:
         (import /etc/nixos/pref.nix) { inherit hostname; };
       generateHostConfigurations = hostname:
-        let prefs = getHostPreference hostname;
+        let
+          prefs = getHostPreference hostname;
+          system = prefs.nixosSystem or "x86_64-linux";
         in {
           "${hostname}" = inputs.nixpkgs.lib.nixosSystem {
-            system = prefs.nixosSystem or "x86_64-linux";
+            inherit system;
 
             modules = [
+              ({ config, pkgs, system, inputs, ... }: {
+                nixpkgs.overlays = [
+                  (self: super: {
+                    unstable = import inputs.nixpkgs-unstable {
+                      inherit system;
+                      config = super.config;
+                    };
+                    stable = import inputs.nixpkgs-stable {
+                      inherit system;
+                      config = super.config;
+                    };
+                  })
+                ];
+              })
+
               ({ config, pkgs, ... }:
                 if hostname == "ssg" then {
                   boot.loader.grub.devices = [ "/dev/nvme0n1" ];
@@ -52,7 +71,7 @@
               }
             ];
 
-            specialArgs = { inherit inputs prefs hostname; };
+            specialArgs = { inherit inputs system prefs hostname; };
           };
         };
       allConfigurations = builtins.foldl'
