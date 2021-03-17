@@ -1,9 +1,6 @@
 { config, pkgs, ... }@args:
-let
-  myArgs = args
-    // (if args ? hostname then { inherit (args) hostname; } else { });
-  prefs = myArgs.prefs or (import ./pref.nix myArgs);
-in with prefs // { kernelPackages = pkgs.${prefs.kernelPackages}; };
+let prefs = import ./pref.nix args;
+in with prefs;
 let
   importWithConfig = x: import x { config = config.nixpkgs.config; };
   importNixChannel = channel: importWithConfig (fetchNixChannel channel);
@@ -335,7 +332,7 @@ in {
         gmp
       ] ++ (if (enableTailScale) then [ tailscale ] else [ ])
       ++ (if (enableCodeServer) then [ code-server ] else [ ])
-      ++ (if (currentSystem == "x86_64-linux") then [
+      ++ (if (nixosSystem == "x86_64-linux") then [
         xmobar
         hardinfo
         steam-run-native
@@ -1405,10 +1402,7 @@ in {
   };
 
   boot = {
-    binfmt = {
-      emulatedSystems =
-        if (currentSystem == "x86_64-linux") then [ "aarch64-linux" ] else [ ];
-    };
+    binfmt = { inherit emulatedSystems; };
     inherit kernelParams extraModulePackages kernelPatches kernelPackages;
     kernel.sysctl = {
       "fs.file-max" = 51200;

@@ -5,10 +5,18 @@ let
 
   prefFiles = [ ./override.nix ];
 
-  pkgs = builtins.trace args (args.pkgs or (import <nixpkgs> { }));
+  hasPkgs = args ? pkgs;
+  pkgs = builtins.trace
+    "Calling pref ${if hasPkgs then "with" else "without"} argument pkgs"
+    (args.pkgs or (import <nixpkgs> { }));
 
-  hostname = let
-    hostnameFromHostFile = let
+  hasHostname = args ? hostname;
+  hostname = builtins.trace "Calling pref ${
+      if hasHostname then
+        ("with argument hostname " + args.hostname)
+      else
+        "without argument hostname"
+    }" (args.hostname or (let
       # LC_CTYPE=C tr -dc 'a-z' < /dev/urandom | head -c3 | tee /tmp/hostname
       hostNameFiles = if builtins.pathExists "/tmp/nixos_bootstrap" then [
         /tmp/etc/hostname
@@ -21,8 +29,7 @@ let
       f = builtins.elemAt fs 0;
       c = builtins.readFile f;
       l = builtins.match "([[:alnum:]]+)[[:space:]]*" c;
-    in builtins.elemAt l 0;
-  in args.hostname or hostnameFromHostFile;
+    in builtins.elemAt l 0));
   hostId = let
     hash = builtins.trace ''
       Hashing hostname to get hostId by printf "%s" "hostname: ${hostname}" |  sha512sum''
@@ -38,7 +45,7 @@ let
     ownerGroup = "users";
     ownerGroupGid = 100;
     home = "/home/${self.owner}";
-    currentSystem = "x86_64-linux";
+    nixosSystem = "x86_64-linux";
     myLibsPath = "${self.home}/.config/nixpkgs/libs";
     myLibs = if (builtins.pathExists self.myLibsPath) then
       (import self.myLibsPath)
@@ -98,7 +105,7 @@ let
     dnsmasqServers = [ "223.6.6.6" "180.76.76.76" "8.8.8.8" "9.9.9.9" ];
     enableArbtt = false;
     xWindowManager =
-      if (self.currentSystem == "x86_64-linux") then "xmonad" else "i3";
+      if (self.nixosSystem == "x86_64-linux") then "xmonad" else "i3";
     xDefaultSession = "none+" + self.xWindowManager;
     enableXmonad = self.xWindowManager == "xmonad";
     xSessionCommands = ''
@@ -133,7 +140,7 @@ let
       excludes = "";
       user = self.owner;
     };
-    enableYandexDisk = self.currentSystem == "x86_64-linux";
+    enableYandexDisk = self.nixosSystem == "x86_64-linux";
     yandexExcludedFiles = "docs/org-mode/roam/.emacs";
     enablePostgres = false;
     enableRedis = false;
@@ -162,7 +169,7 @@ let
     enableXserver = true;
     enableXautolock = self.enableXserver;
     enableGPGAgent = true;
-    enableADB = self.currentSystem == "x86_64-linux";
+    enableADB = self.nixosSystem == "x86_64-linux";
     enableCalibreServer = true;
     calibreServerLibraries = [ "${self.home}/Storage/Calibre" ];
     calibreServerPort = 8213;
@@ -201,40 +208,28 @@ let
     enableAutoUpgrade = true;
     autoUpgradeChannel = "https://nixos.org/channels/nixos-unstable";
     enableAutossh = true;
-    autosshServers = let
-      # TODO: eliminate this dirty tricks which is to clean the dependency of this file on pkgs.
-      addContextFrom = a: b: builtins.substring 0 0 a + b;
-      splitString = _sep: _s:
-        let
-          sep = builtins.unsafeDiscardStringContext _sep;
-          s = builtins.unsafeDiscardStringContext _s;
-          splits = builtins.filter builtins.isString (builtins.split sep s);
-        in builtins.map (v: addContextFrom _sep (addContextFrom _s v)) splits;
-      configFiles = [ "${self.home}/.ssh/config" ];
-      goodConfigFiles = builtins.filter (x: builtins.pathExists x) configFiles;
-      lines =
-        builtins.foldl' (a: e: a ++ (splitString "\n" (builtins.readFile e)))
-        [ ] goodConfigFiles;
-      autosshPrefix = "Host autossh";
-      autosshPrefixLength = builtins.stringLength autosshPrefix;
-      hostPrefix = "Host ";
-      hostPrefixLength = builtins.stringLength hostPrefix;
-      autosshLines = builtins.filter
-        (x: builtins.substring 0 autosshPrefixLength x == autosshPrefix) lines;
-      servers = map (x:
-        builtins.substring hostPrefixLength
-        ((builtins.stringLength x) - hostPrefixLength) x) autosshLines;
-    in builtins.filter (x: x != "autossh") servers;
+    autosshServers = with pkgs.lib;
+      let
+        configFiles = [ "${self.home}/.ssh/config" ];
+        goodConfigFiles =
+          builtins.filter (x: builtins.pathExists x) configFiles;
+        lines = builtins.foldl' (a: e: a ++ (splitString "\n" (readFile e))) [ ]
+          goodConfigFiles;
+        autosshLines = filter (x: hasPrefix "Host autossh" x) lines;
+        servers = map (x: removePrefix "Host " x) autosshLines;
+      in filter (x: x != "autossh") servers;
     enableAutoLogin = true;
     enableLibInput = true;
     enableFprintAuth = false;
     enableBootSSH = true;
     enableGnome = false;
     enableGnomeKeyring = false;
+    emulatedSystems =
+      if (self.nixosSystem == "x86_64-linux") then [ "aarch64-linux" ] else [ ];
     extraModulePackages = [ ];
     kernelPatches = [ ];
     kernelParams = [ "boot.shell_on_fail" ];
-    kernelPackages = "linuxPackages_latest";
+    kernelPackages = pkgs.linuxPackages_latest;
     networkingInterfaces = { };
     nixosStableVersion = "20.09";
     enableUnstableNixosChannel = false;
@@ -257,7 +252,7 @@ let
     } // (if hostname == "uzq" then {
       enableHidpi = true;
       # enableAnbox = true;
-      # consoleFont = "${pkgs.terminus_font}/share/consolefonts/ter-g20n.psf.gz";
+      consoleFont = "${pkgs.terminus_font}/share/consolefonts/ter-g20n.psf.gz";
       hostId = "80d17333";
       enableX2goServer = true;
       enableTailScale = true;
@@ -280,7 +275,7 @@ let
       enableHidpi = false;
       enableK3s = true;
       enableWireless = true;
-      # consoleFont = "${pkgs.terminus_font}/share/consolefonts/ter-g20n.psf.gz";
+      consoleFont = "${pkgs.terminus_font}/share/consolefonts/ter-g20n.psf.gz";
     } else if hostname == "jxt" then {
       hostId = "5ee92b8d";
       enableHolePuncher = false;
@@ -304,9 +299,9 @@ let
         }
       ];
     } else if hostname == "shl" then {
-      currentSystem = "aarch64-linux";
+      nixosSystem = "aarch64-linux";
       hostId = "6fce2459";
-      kernelPackages = "linuxPackages_rpi4";
+      kernelPackages = pkgs.linuxPackages_rpi4;
       enableCodeServer = false;
       enableVirtualboxHost = false;
       enableGrub = false;

@@ -3,4 +3,6 @@
 chezmoi.toml
 /Makefile
 /ignored
-.github
+/flake.nix
+/flake.lock
+/.github
