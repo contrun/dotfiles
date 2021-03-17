@@ -1,5 +1,36 @@
 {
   "nodes": {
+    "authinfo": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1573803694,
+        "narHash": "sha256-6517AdiFUvLPmaaigJyPOQCTrfJoxVM/NXdz10n0wDg=",
+        "owner": "aartamonau",
+        "repo": "authinfo",
+        "rev": "0098545479fa81234ebc1c2951610cb8c70f5c44",
+        "type": "github"
+      },
+      "original": {
+        "owner": "aartamonau",
+        "repo": "authinfo",
+        "type": "github"
+      }
+    },
+    "emacs-overlay": {
+      "locked": {
+        "lastModified": 1615911877,
+        "narHash": "sha256-r068WLpoigoSIZJ4rRO3LxkjXdvOKZsPF/jEzzu54A4=",
+        "owner": "nix-community",
+        "repo": "emacs-overlay",
+        "rev": "54967f1a51f2742c580c7ab1f3174e2e1afe874f",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-community",
+        "repo": "emacs-overlay",
+        "type": "github"
+      }
+    },
     "home-manager": {
       "inputs": {
         "nixpkgs": [
@@ -34,6 +65,22 @@
         "owner": "NixOS",
         "ref": "nixos-unstable",
         "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs-mozilla": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1603906276,
+        "narHash": "sha256-RsNPnEKd7BcogwkqhaV5kI/HuNC4flH/OQCC/4W5y/8=",
+        "owner": "mozilla",
+        "repo": "nixpkgs-mozilla",
+        "rev": "8c007b60731c07dd7a052cce508de3bb1ae849b4",
+        "type": "github"
+      },
+      "original": {
+        "owner": "mozilla",
+        "repo": "nixpkgs-mozilla",
         "type": "github"
       }
     },
@@ -85,13 +132,50 @@
         "type": "github"
       }
     },
+    "nvimpager": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1615745850,
+        "narHash": "sha256-iQMpL/qnP8hxgT1mRAI6pvnxOLOPQlc5KgNi2CuGiFs=",
+        "owner": "lucc",
+        "repo": "nvimpager",
+        "rev": "4b180e65fd36eb5b2acf66ab881f3a8c3fb9c351",
+        "type": "github"
+      },
+      "original": {
+        "owner": "lucc",
+        "repo": "nvimpager",
+        "type": "github"
+      }
+    },
+    "old-ghc-nix": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1607082992,
+        "narHash": "sha256-PdNHrjLMa9Ir4JN4oeluan/k/twaccYp7ZRe1aIZ0qA=",
+        "owner": "mpickering",
+        "repo": "old-ghc-nix",
+        "rev": "75632f684de06fcd604109b4ddbf28dfd04f9b2c",
+        "type": "github"
+      },
+      "original": {
+        "owner": "mpickering",
+        "repo": "old-ghc-nix",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
+        "authinfo": "authinfo",
+        "emacs-overlay": "emacs-overlay",
         "home-manager": "home-manager",
         "nixpkgs": "nixpkgs",
+        "nixpkgs-mozilla": "nixpkgs-mozilla",
         "nixpkgs-stable": "nixpkgs-stable",
         "nixpkgs-unstable": "nixpkgs-unstable",
         "nur-no-pkgs": "nur-no-pkgs",
+        "nvimpager": "nvimpager",
+        "old-ghc-nix": "old-ghc-nix",
         "sops-nix": "sops-nix"
       }
     },
