@@ -1,29 +1,35 @@
+{ ... }@args:
 let
   fix = f: let x = f x; in x;
   extends = f: rattrs: self: let super = rattrs self; in super // f self super;
-  hostname = let
-    # LC_CTYPE=C tr -dc 'a-z' < /dev/urandom | head -c3 | tee /tmp/hostname
-    hostNameFiles = if builtins.pathExists "/tmp/nixos_bootstrap" then [
-      /tmp/etc/hostname
-      /mnt/etc/hostname
-      /tmp/hostname
-      /etc/hostname
-    ] else
-      [ /etc/hostname ];
-    fs = builtins.filter (x: builtins.pathExists x) hostNameFiles;
-    f = builtins.elemAt fs 0;
-    c = builtins.readFile f;
-    l = builtins.match "([[:alnum:]]+)[[:space:]]*" c;
-  in builtins.elemAt l 0;
-  hash = builtins.trace ''
-    Hashing hostname to get hostId by printf "%s" "hostname: ${hostname}" |  sha512sum''
-    (builtins.hashString "sha512" "hostname: ${hostname}");
-  hostId = builtins.trace "Obtaining hash result ${hash}"
-    (builtins.substring 0 8 hash);
+
   prefFiles = [ ./override.nix ];
-in { ... }@args:
-let
-  pkgs = args.pkgs or (import <nixpkgs> { });
+
+  pkgs = builtins.trace args (args.pkgs or (import <nixpkgs> { }));
+
+  hostname = let
+    hostnameFromHostFile = let
+      # LC_CTYPE=C tr -dc 'a-z' < /dev/urandom | head -c3 | tee /tmp/hostname
+      hostNameFiles = if builtins.pathExists "/tmp/nixos_bootstrap" then [
+        /tmp/etc/hostname
+        /mnt/etc/hostname
+        /tmp/hostname
+        /etc/hostname
+      ] else
+        [ /etc/hostname ];
+      fs = builtins.filter (x: builtins.pathExists x) hostNameFiles;
+      f = builtins.elemAt fs 0;
+      c = builtins.readFile f;
+      l = builtins.match "([[:alnum:]]+)[[:space:]]*" c;
+    in builtins.elemAt l 0;
+  in args.hostname or hostnameFromHostFile;
+  hostId = let
+    hash = builtins.trace ''
+      Hashing hostname to get hostId by printf "%s" "hostname: ${hostname}" |  sha512sum''
+      (builtins.hashString "sha512" "hostname: ${hostname}");
+  in builtins.trace "Obtaining hash result ${hash}"
+  (builtins.substring 0 8 hash);
+
   default = self: {
     isBootStrapping = false; # Things fail.
     enableAarch64Cross = false;
@@ -147,63 +153,14 @@ let
     enableK3s = false;
     buildMachines = [ ];
     distributedBuilds = true;
-    systemdMounts = let
-      enableNextcloud = false;
-      enableYandex = false;
-      nextcloudWhere = "/nc/sync";
-      nextcloudWhat = "https://uuuuuu.ocloud.de/remote.php/webdav/sync/";
-      yandexWhere = "${self.home}/yandex";
-      yandexWhat = "https://webdav.yandex.com/sync/";
-    in {
-      autoMounts = let
-        nextcloud = {
-          enable = enableNextcloud;
-          description = "Automount nextcloud sync directory.";
-          where = nextcloudWhere;
-          wantedBy = [ "multi-user.target" ];
-        };
-        yandex = {
-          enable = enableYandex;
-          description = "Automount yandex sync directory.";
-          where = yandexWhere;
-          wantedBy = [ "multi-user.target" ];
-        };
-      in [ nextcloud yandex ];
-      mounts = let
-        nextcloud = {
-          enable = enableNextcloud;
-          where = nextcloudWhere;
-          what = nextcloudWhat;
-          type = "davfs";
-          options = "rw,uid=${builtins.toString self.ownerUid},gid=${
-              builtins.toString self.ownerGroupGid
-            }";
-          wants = [ "network-online.target" ];
-          wantedBy = [ "remote-fs.target" ];
-          after = [ "network-online.target" ];
-          unitConfig = { path = [ pkgs.utillinux ]; };
-        };
-        yandex = {
-          enable = enableYandex;
-          where = yandexWhere;
-          what = yandexWhat;
-          type = "davfs";
-          options = "rw,user=uid=${builtins.toString self.ownerUid},gid=${
-              builtins.toString self.ownerGroupGid
-            }";
-          wants = [ "network-online.target" ];
-          wantedBy = [ "remote-fs.target" ];
-          after = [ "network-online.target" ];
-          unitConfig = { paths = [ pkgs.utillinux ]; };
-        };
-      in [ nextcloud yandex ];
-    };
+    enableNextcloud = false;
+    enableYandex = false;
+    nextcloudWhere = "/nc/sync";
+    nextcloudWhat = "https://uuuuuu.ocloud.de/remote.php/webdav/sync/";
+    yandexWhere = "${self.home}/yandex";
+    yandexWhat = "https://webdav.yandex.com/sync/";
     enableXserver = true;
     enableXautolock = self.enableXserver;
-    xautolockLocker = "${pkgs.i3lock}/bin/i3lock";
-    xautolockKiller = "${pkgs.systemd}/bin/systemctl suspend";
-    xautolockNotifier =
-      ''${pkgs.libnotify}/bin/notify-send "Locking in 10 seconds"'';
     enableGPGAgent = true;
     enableADB = self.currentSystem == "x86_64-linux";
     enableCalibreServer = true;
@@ -244,16 +201,30 @@ let
     enableAutoUpgrade = true;
     autoUpgradeChannel = "https://nixos.org/channels/nixos-unstable";
     enableAutossh = true;
-    autosshServers = with pkgs.lib;
-      let
-        configFiles = [ "${self.home}/.ssh/config" ];
-        goodConfigFiles =
-          builtins.filter (x: builtins.pathExists x) configFiles;
-        lines = builtins.foldl' (a: e: a ++ (splitString "\n" (readFile e))) [ ]
-          goodConfigFiles;
-        autosshLines = filter (x: hasPrefix "Host autossh" x) lines;
-        servers = map (x: removePrefix "Host " x) autosshLines;
-      in filter (x: x != "autossh") servers;
+    autosshServers = let
+      # TODO: eliminate this dirty tricks which is to clean the dependency of this file on pkgs.
+      addContextFrom = a: b: builtins.substring 0 0 a + b;
+      splitString = _sep: _s:
+        let
+          sep = builtins.unsafeDiscardStringContext _sep;
+          s = builtins.unsafeDiscardStringContext _s;
+          splits = builtins.filter builtins.isString (builtins.split sep s);
+        in builtins.map (v: addContextFrom _sep (addContextFrom _s v)) splits;
+      configFiles = [ "${self.home}/.ssh/config" ];
+      goodConfigFiles = builtins.filter (x: builtins.pathExists x) configFiles;
+      lines =
+        builtins.foldl' (a: e: a ++ (splitString "\n" (builtins.readFile e)))
+        [ ] goodConfigFiles;
+      autosshPrefix = "Host autossh";
+      autosshPrefixLength = builtins.stringLength autosshPrefix;
+      hostPrefix = "Host ";
+      hostPrefixLength = builtins.stringLength hostPrefix;
+      autosshLines = builtins.filter
+        (x: builtins.substring 0 autosshPrefixLength x == autosshPrefix) lines;
+      servers = map (x:
+        builtins.substring hostPrefixLength
+        ((builtins.stringLength x) - hostPrefixLength) x) autosshLines;
+    in builtins.filter (x: x != "autossh") servers;
     enableAutoLogin = true;
     enableLibInput = true;
     enableFprintAuth = false;
@@ -263,7 +234,7 @@ let
     extraModulePackages = [ ];
     kernelPatches = [ ];
     kernelParams = [ "boot.shell_on_fail" ];
-    kernelPackages = pkgs.linuxPackages_latest;
+    kernelPackages = "linuxPackages_latest";
     networkingInterfaces = { };
     nixosStableVersion = "20.09";
     enableUnstableNixosChannel = false;
@@ -279,13 +250,14 @@ let
     };
     extraOutputsToInstall = [ "dev" "lib" "doc" "info" "devdoc" ];
   };
+
   hostSpecific = self: super:
     {
       inherit hostname hostId;
     } // (if hostname == "uzq" then {
       enableHidpi = true;
       # enableAnbox = true;
-      consoleFont = "${pkgs.terminus_font}/share/consolefonts/ter-g20n.psf.gz";
+      # consoleFont = "${pkgs.terminus_font}/share/consolefonts/ter-g20n.psf.gz";
       hostId = "80d17333";
       enableX2goServer = true;
       enableTailScale = true;
@@ -308,7 +280,7 @@ let
       enableHidpi = false;
       enableK3s = true;
       enableWireless = true;
-      consoleFont = "${pkgs.terminus_font}/share/consolefonts/ter-g20n.psf.gz";
+      # consoleFont = "${pkgs.terminus_font}/share/consolefonts/ter-g20n.psf.gz";
     } else if hostname == "jxt" then {
       hostId = "5ee92b8d";
       enableHolePuncher = false;
@@ -334,7 +306,7 @@ let
     } else if hostname == "shl" then {
       currentSystem = "aarch64-linux";
       hostId = "6fce2459";
-      kernelPackages = pkgs.linuxPackages_rpi4;
+      kernelPackages = "linuxPackages_rpi4";
       enableCodeServer = false;
       enableVirtualboxHost = false;
       enableGrub = false;
@@ -344,8 +316,10 @@ let
       enableAarch64Cross = self.isBootStrapping;
     } else
       { });
+
   overrides = builtins.map (path: (import (builtins.toPath path)))
     (builtins.filter (x: builtins.pathExists x) prefFiles);
+
   final = fix (builtins.foldl' (acc: override: extends override acc) default
     ([ hostSpecific ] ++ overrides));
 in builtins.trace final final

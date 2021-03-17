@@ -1,6 +1,9 @@
-{ config, pkgs, ... }:
-
-with import ./pref.nix { inherit config pkgs; };
+{ config, pkgs, ... }@args:
+let
+  myArgs = args
+    // (if args ? hostname then { inherit (args) hostname; } else { });
+  prefs = myArgs.prefs or (import ./pref.nix myArgs);
+in with prefs // { kernelPackages = pkgs.${prefs.kernelPackages}; };
 let
   importWithConfig = x: import x { config = config.nixpkgs.config; };
   importNixChannel = channel: importWithConfig (fetchNixChannel channel);
@@ -336,7 +339,7 @@ in {
         xmobar
         hardinfo
         steam-run-native
-        aqemu
+        # aqemu
         wine
         kernelPackages.perf
         kernelPackages.bpftrace
@@ -709,9 +712,6 @@ in {
     privoxy = {
       enable = enablePrivoxy;
       listenAddress = "0.0.0.0:8118";
-      extraConfig = ''
-        forward-socks5   /               127.0.0.1:1081 .
-      '';
     };
     redshift = { enable = enableRedshift; };
     avahi = {
@@ -898,9 +898,10 @@ in {
         y = 1920;
       };
       xautolock = let
-        locker = xautolockLocker;
-        killer = xautolockKiller;
-        notifier = xautolockNotifier;
+        locker = "${pkgs.i3lock}/bin/i3lock";
+        killer = "${pkgs.systemd}/bin/systemctl suspend";
+        notifier =
+          ''${pkgs.libnotify}/bin/notify-send "Locking in 10 seconds"'';
       in {
         inherit locker killer notifier;
         enable = enableXautolock;
@@ -1035,9 +1036,53 @@ in {
         };
       };
     };
+
+    systemdMounts = {
+      automounts = let
+        nextcloud = {
+          enable = enableNextcloud;
+          description = "Automount nextcloud sync directory.";
+          where = nextcloudWhere;
+          wantedBy = [ "multi-user.target" ];
+        };
+        yandex = {
+          enable = enableYandex;
+          description = "Automount yandex sync directory.";
+          where = yandexWhere;
+          wantedBy = [ "multi-user.target" ];
+        };
+      in [ nextcloud yandex ];
+      mounts = let
+        nextcloud = {
+          enable = enableNextcloud;
+          where = nextcloudWhere;
+          what = nextcloudWhat;
+          type = "davfs";
+          options = "rw,uid=${builtins.toString ownerUid},gid=${
+              builtins.toString ownerGroupGid
+            }";
+          wants = [ "network-online.target" ];
+          wantedBy = [ "remote-fs.target" ];
+          after = [ "network-online.target" ];
+          unitConfig = { path = [ pkgs.utillinux ]; };
+        };
+        yandex = {
+          enable = enableYandex;
+          where = yandexWhere;
+          what = yandexWhat;
+          type = "davfs";
+          options = "rw,user=uid=${builtins.toString ownerUid},gid=${
+              builtins.toString ownerGroupGid
+            }";
+          wants = [ "network-online.target" ];
+          wantedBy = [ "remote-fs.target" ];
+          after = [ "network-online.target" ];
+          unitConfig = { paths = [ pkgs.utillinux ]; };
+        };
+      in [ nextcloud yandex ];
+    };
   in {
-    automounts = systemdMounts.autoMounts;
-    mounts = systemdMounts.mounts;
+    inherit (systemdMounts) automounts mounts;
 
     packages = let
       usrLocalPrefix = "/usr/local/lib/systemd/system";
@@ -1364,7 +1409,7 @@ in {
       emulatedSystems =
         if (currentSystem == "x86_64-linux") then [ "aarch64-linux" ] else [ ];
     };
-    inherit kernelParams extraModulePackages kernelPackages kernelPatches;
+    inherit kernelParams extraModulePackages kernelPatches kernelPackages;
     kernel.sysctl = {
       "fs.file-max" = 51200;
       "net.core.rmem_max" = 67108864;
