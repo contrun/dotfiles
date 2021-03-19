@@ -88,7 +88,7 @@ let
     };
     enableSslh = true;
     sslhPort = 44443;
-    enableTailScale = false;
+    enableTailScale = true;
     enableX2goServer = false;
     enableDebugInfo = false;
     enableZfs = true;
@@ -256,7 +256,6 @@ let
       consoleFont = "${pkgs.terminus_font}/share/consolefonts/ter-g20n.psf.gz";
       hostId = "80d17333";
       enableX2goServer = true;
-      enableTailScale = true;
       # kernelPatches = [{
       #   # See https://github.com/NixOS/nixpkgs/issues/91367
       #   name = "anbox-kernel-config";
@@ -287,6 +286,7 @@ let
       enablePostfix = false;
       # enableCrashDump = true;
       enableZerotierone = false;
+      enableTailScale = false;
       buildMachines = super.buildMachines ++ [
         {
           hostName = "node1";
