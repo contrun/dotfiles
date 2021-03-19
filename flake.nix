@@ -63,15 +63,17 @@
             ];
           };
           hostConfiguration = { config, pkgs, ... }:
-            if hostname == "ssg" then {
+            {
+              system.stateVersion = "20.09";
+            } // (if hostname == "ssg" then {
               boot.loader.grub.devices = [ "/dev/nvme0n1" ];
               services.xserver.videoDrivers = [ "amdgpu" ];
               hardware.cpu.amd.updateMicrocode = true;
-            } else if hostname == "jxt" then
-              { }
-            else {
+            } else if hostname == "jxt" then {
               boot.loader.grub.devices = [ "/dev/nvme0n1" ];
-            };
+            } else {
+              boot.loader.grub.devices = [ "/dev/nvme0n1" ];
+            });
           hardwareConfiguration = import (pathOr
             (myRootPath "/etc/nixos/hardware-configuration-${hostname}.nix")
             /etc/nixos/hardware-configuration.nix);

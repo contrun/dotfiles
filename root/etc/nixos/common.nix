@@ -329,7 +329,8 @@ in with prefs // { inherit (pkgs) stable unstable; }; {
       EDITOR = "nvim";
     } // pkgs.lib.optionalAttrs (pkgs ? myPackages) {
       # export PYTHONPATH="$MYPYTHONPATH:$PYTHONPATH"
-      MYPYTHONPATH = (pkgs.myPackages.pythonPackages.makePythonPath or pkgs.python3Packages.makePythonPath)
+      MYPYTHONPATH =
+        (pkgs.myPackages.pythonPackages.makePythonPath or pkgs.python3Packages.makePythonPath)
         [ (pkgs.myPackages.python or pkgs.python) ];
       PAGER = "nvimpager";
     });
@@ -1321,5 +1322,4 @@ in with prefs // { inherit (pkgs) stable unstable; }; {
       };
     };
   };
-  system.stateVersion = stateVersion;
 }
