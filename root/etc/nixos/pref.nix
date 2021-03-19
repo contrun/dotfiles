@@ -285,7 +285,7 @@ let
       enablePostfix = false;
       # enableCrashDump = true;
       enableZerotierone = false;
-      enableTailScale = false;
+      # enableTailScale = false;
       buildMachines = super.buildMachines ++ [
         {
           hostName = "node1";

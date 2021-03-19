@@ -19,6 +19,8 @@
     sops-nix.url = "github:Mic92/sops-nix";
     sops-nix.inputs.nixpkgs.follows = "nixpkgs";
     emacs-overlay.url = "github:nix-community/emacs-overlay";
+    flake-firefox-nightly.url = "github:colemickens/flake-firefox-nightly";
+    flake-firefox-nightly.inputs.nixpkgs.follows = "nixpkgs";
     nixpkgs-mozilla = {
       url = "github:mozilla/nixpkgs-mozilla";
       flake = false;
@@ -93,6 +95,11 @@
                 };
 
               mozillaOverlay = import inputs.nixpkgs-mozilla;
+
+              firefoxOverlay = self: super: {
+                firefox-nightly-bin =
+                  inputs.flake-firefox-nightly.packages.${super.system}.firefox-nightly-bin;
+              };
 
               dontCheckOverlay = self: super:
                 let
@@ -642,6 +649,7 @@
 
             in [
               mozillaOverlay
+              firefoxOverlay
               haskellOverlay
               dontCheckOverlay
               inputs.emacs-overlay.overlay
