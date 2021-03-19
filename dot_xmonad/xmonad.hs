@@ -405,6 +405,8 @@ myAddtionalKeys =
              (myMod "C-w", (windows . W.shift) "web"),
              (myMod "e", runInHiddenWorkspaceIfEmpty "editor" "emacsclient --alternate-editor='' --no-wait --create-frame"),
              (myMod "C-e", (windows . W.shift) "editor"),
+             (myMod "d", toggleWindowOrRunInHiddenWorkspace "docs" "zeal" (className =? "Zeal")),
+             (myMod "C-d", (windows . W.shift) "docs"),
              (myMod "q", runInHiddenWorkspaceIfEmpty "quick" "alacritty --class 'QuickTerminal' -e tmux new 'exec zsh'"),
              (myMod "C-q", (windows . W.shift) "quick"),
              (myMod "z", toggleOrViewHiddenWorkspace' "zstash"),
@@ -435,7 +437,7 @@ myAddtionalKeys =
              ("<XF86Eject>", spawn "eject")
            ]
         ++ [ (launcherMode1 "e", spawn "emacsclientmod"),
-             (launcherMode1 "d", spawn "zeal"),
+             (launcherMode1 "d", toggleWindowOrRunInHiddenWorkspace "docs" "zeal" (className =? "Zeal")),
              (launcherMode1 "g", spawn "goldendict"),
              (launcherMode1 "b", runOrRaiseInHiddenWorkspace "web" "firefox" ((className =? "Nightly") <&&> (not <$> (title =? "Picture-in-Picture")))),
              (launcherMode1 "r", runOrRaiseInHiddenWorkspace "reading" "koreader" (fmap (=~ ".*KOReader$") title)),
@@ -519,6 +521,15 @@ raiseMaybeInHiddenWorkspace tag action query =
 
 toggleOrViewHiddenWorkspaceAndRunOrRaise :: String -> String -> Query Bool -> X ()
 toggleOrViewHiddenWorkspaceAndRunOrRaise tag command query = toggleOrViewHiddenWorkspace tag >> runOrRaise command query
+
+withFocusedOrDo :: (Window -> X ()) -> X () -> X ()
+withFocusedOrDo doOnFocusedWindow ifNoSuchWindowDo = withWindowSet $ maybe ifNoSuchWindowDo doOnFocusedWindow . W.peek
+
+toggleWindowOrRunInHiddenWorkspace :: String -> String -> Query Bool -> X ()
+toggleWindowOrRunInHiddenWorkspace tag command query = toggleWindowOrDo query (viewHiddenWorkspace tag >> spawn command)
+
+toggleWindowOrDo :: Query Bool -> X () -> X ()
+toggleWindowOrDo query action = let r = raise query in ifWindows query (\allWindows -> withFocusedOrDo (\currentWindow -> if (null $ filter ((==) currentWindow) allWindows) then r else toggleWS) r) action
 
 runOrRaiseInHiddenWorkspace :: String -> String -> Query Bool -> X ()
 runOrRaiseInHiddenWorkspace tag command query = viewHiddenWorkspace tag >> runOrRaise command query
@@ -672,7 +683,7 @@ myStatusBar = "xmobar"
 
 myInvisibleWorkspaces = ["NSP", "hidden"]
 
-myShortenedWorkspaces = ["chat", "reading", "web", "private", "ide", "quick", "editor", "zstash", "video", "hidden"]
+myShortenedWorkspaces = ["chat", "reading", "web", "private", "ide", "quick", "docs", "editor", "zstash", "video", "hidden"]
 
 myPP =
   xmobarPP
