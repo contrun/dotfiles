@@ -692,7 +692,8 @@
           homeManagerConfiguration = {
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
-            # home-manager.users.${prefs.owner} = import  (./. + "/dot_config/nixpkgs/home.nix");
+            home-manager.users.${prefs.owner} =
+              import (./. + "/dot_config/nixpkgs/home.nix");
           };
         in {
           "${hostname}" = inputs.nixpkgs.lib.nixosSystem {
