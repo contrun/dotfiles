@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
-set -e
+set -eu
 
 if [[ $EUID -ne 0 ]]; then
-    exec sudo /usr/bin/env bash "$0" "$@"
+    exec sudo --preserve-env=DONT_TOUCH_IPTABLES /usr/bin/env bash "$0" "$@"
 fi
 
 CLASH_IPTABLES_TAG="CLASH"
@@ -36,7 +36,9 @@ start() {
     fi
     parse_config
     run_clash
-    setup_iptables
+    if [[ -z "${DONT_TOUCH_IPTABLES:-}" ]]; then
+        setup_iptables "$@"
+    fi
 }
 
 parse_config() {
@@ -53,7 +55,7 @@ run_clash() {
 }
 
 setup_iptables() {
-    method="${CLASH_PROXY_METHOD:tproxy}"
+    method="${CLASH_PROXY_METHOD:-}"
     if [[ "$method" == tproxy ]]; then
         setup_iptables_tproxy "$@"
     elif [[ "$method" == redirect || "$method" == redir ]]; then
