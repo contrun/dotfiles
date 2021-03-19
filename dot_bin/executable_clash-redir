@@ -94,6 +94,7 @@ setup_iptables_tproxy() {
     iptables -t mangle -A CLASH_LOCAL -d 240.0.0.0/4 -j RETURN
     iptables -t mangle -A CLASH_LOCAL -d 192.168.0.0/16 -j RETURN
     iptables -t mangle -A CLASH_LOCAL -d 10.0.0.0/8 -j RETURN
+    iptables -t mangle -A CLASH_LOCAL -d 100.64.0.0/10 -j RETURN
     iptables -t mangle -A CLASH_LOCAL -d 255.255.255.255 -j RETURN
     iptables -t mangle -A CLASH_LOCAL -p tcp -j MARK --set-mark "$CLASH_MARK"
     iptables -t mangle -I OUTPUT -p tcp -j CLASH_LOCAL
@@ -110,6 +111,7 @@ setup_iptables_tproxy() {
     iptables -t mangle -A CLASH_EXTERNAL -d 240.0.0.0/4 -j RETURN
     iptables -t mangle -A CLASH_EXTERNAL -d 192.168.0.0/16 -j RETURN
     iptables -t mangle -A CLASH_EXTERNAL -d 10.0.0.0/8 -j RETURN
+    iptables -t mangle -A CLASH_EXTERNAL -d 100.64.0.0/10 -j RETURN
     iptables -t mangle -A CLASH_EXTERNAL -d 255.255.255.255 -j RETURN
     iptables -t mangle -A CLASH_EXTERNAL -p tcp -j TPROXY --on-port "$CLASH_TPROXY_PORT" --tproxy-mark "$CLASH_MARK"
     iptables -t mangle -I PREROUTING -p tcp -j CLASH_EXTERNAL
@@ -131,6 +133,7 @@ setup_iptables_redirect() {
     iptables -t nat -A CLASH_LOCAL -d 240.0.0.0/4 -j RETURN
     iptables -t nat -A CLASH_LOCAL -d 192.168.0.0/16 -j RETURN
     iptables -t nat -A CLASH_LOCAL -d 10.0.0.0/8 -j RETURN
+    iptables -t nat -A CLASH_LOCAL -d 100.64.0.0/10 -j RETURN
     iptables -t nat -A CLASH_LOCAL -d 255.255.255.255 -j RETURN
     iptables -t nat -A CLASH_LOCAL -p tcp -j REDIRECT --to-ports "$CLASH_REDIRECT_PORT"
     iptables -t nat -I OUTPUT -p tcp -j CLASH_LOCAL
@@ -145,6 +148,7 @@ setup_iptables_redirect() {
     iptables -t nat -A CLASH_EXTERNAL -d 240.0.0.0/4 -j RETURN
     iptables -t nat -A CLASH_EXTERNAL -d 192.168.0.0/16 -j RETURN
     iptables -t nat -A CLASH_EXTERNAL -d 10.0.0.0/8 -j RETURN
+    iptables -t nat -A CLASH_EXTERNAL -d 100.64.0.0/10 -j RETURN
     iptables -t nat -A CLASH_EXTERNAL -d 255.255.255.255 -j RETURN
     iptables -t nat -A CLASH_EXTERNAL -p tcp -j REDIRECT --to-ports "$CLASH_REDIRECT_PORT"
     iptables -t nat -I PREROUTING -p tcp -j CLASH_EXTERNAL
