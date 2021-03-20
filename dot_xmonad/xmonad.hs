@@ -9,7 +9,7 @@
 -- Normally, you'd only override those defaults you care about.
 --
 
-import Control.Monad (liftM2)
+import Control.Monad (liftM2, void)
 import Data.Char
 import Data.Foldable (find)
 import Data.List (group)
@@ -117,7 +117,7 @@ myFocusedBorderColor = "#ff0000"
 ----------------------------------------------------- -------------------
 -- Key bindings. Add, modify or remove key bindings here.
 --
-myKeys conf@(XConfig {XMonad.modMask = modm}) =
+myKeys conf@XConfig {XMonad.modMask = modm} =
   M.fromList $
     [ ( (modm .|. controlMask, xK_Return),
         -- launch a terminal
@@ -180,7 +180,7 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) =
       -- See also the statusBar function from Hooks.DynamicLog.
       --
       -- Quit xmonad
-      ((modm .|. shiftMask .|. controlMask, xK_q), io (exitWith ExitSuccess)),
+      ((modm .|. shiftMask .|. controlMask, xK_q), io exitSuccess),
       ((modm .|. shiftMask .|. controlMask, xK_BackSpace), removeWorkspace),
       ((modm, xK_F4), withFocused hideWindow),
       ((modm .|. controlMask, xK_F4), popOldestHiddenWindow),
@@ -189,7 +189,7 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) =
       ((modm .|. controlMask, xK_c), withWorkspace def (windows . copy)),
       -- What the fuck. Firefox just does not allow me to disable control-q, control-b. Below is to slow.
       -- Tow slow for emacs
-      (keyPassThrough (controlMask, xK_q) (focusedHasProperty $ foldr1 Or $ map ClassName firefoxClasses, return ())),
+      keyPassThrough (controlMask, xK_q) (focusedHasProperty $ foldr1 Or $ map ClassName firefoxClasses, return ()),
       ((modm .|. shiftMask, xK_r), spawn "noti --title xmonad --message recompiling; make -C ~/.local/share/chezmoi/ home-install; xmonad --recompile; xmonad --restart"),
       -- Run xmessage with a summary of the default keybindings (useful for beginners)
       -- , ((modm .|. controlMask, xK_slash ), spawn ("echo \"" ++ help ++ "\" | xmessage -file -"))
@@ -223,25 +223,23 @@ toggleOrGreedyViewNoSP = toggleOrDoSkip myInvisibleWorkspaces W.greedyView
 ------------------------------------------------------------------------
 -- Mouse bindings: default actions bound to mouse events
 --
-myMouseBindings (XConfig {XMonad.modMask = modm}) =
-  M.fromList $
+myMouseBindings XConfig {XMonad.modMask = modm} =
+  M.fromList
     [ ( (modm, button1),
         -- mod-button1, Set the window to floating mode and move by dragging
-        ( \w ->
-            focus w
-              >> mouseMoveWindow w
-              >> windows W.shiftMaster
-        )
+        \w ->
+          focus w
+            >> mouseMoveWindow w
+            >> windows W.shiftMaster
       ),
       -- mod-button2, Raise the window to the top of the stack
-      ((modm, button2), (\w -> focus w >> windows W.shiftMaster)),
+      ((modm, button2), \w -> focus w >> windows W.shiftMaster),
       -- mod-button3, Set the window to floating mode and resize by dragging
       ( (modm, button3),
-        ( \w ->
-            focus w
-              >> mouseResizeWindow w
-              >> windows W.shiftMaster
-        )
+        \w ->
+          focus w
+            >> mouseResizeWindow w
+            >> windows W.shiftMaster
       )
       -- you may also bind events to the mouse scroll wheel (button4 and button5)
     ]
@@ -274,7 +272,7 @@ myXPConfig =
     }
 
 keyPassThrough :: (KeyMask, KeySym) -> (X Bool, X ()) -> ((KeyMask, KeySym), X ())
-keyPassThrough (keyMask, keySym) (condition, action) = ((keyMask, keySym), condition >>= \x -> if x then action else (sendKey keyMask keySym))
+keyPassThrough (keyMask, keySym) (condition, action) = ((keyMask, keySym), condition >>= \x -> if x then action else sendKey keyMask keySym)
 
 myAddtionalKeys =
   let searchEngineList =
@@ -384,14 +382,14 @@ myAddtionalKeys =
           ("youtube", "https://www.youtube.com/results?aq=f&oq=&search_query="),
           ("zdic", "http://www.zdic.net/search/?q=")
         ]
-      searchEngines = concatMap (\(name, url) -> map (\n -> S.searchEngine n url) (words name)) searchEngineList
+      searchEngines = concatMap (\(name, url) -> map (`S.searchEngine` url) (words name)) searchEngineList
       defaultSearchEngine = S.searchEngine "google" "http://www.google.com/search?num=100&q="
       searchEnginesCombined = S.namedEngine "multi" $ foldr1 (S.!>) searchEngines
       myMod x = myModMaskStr ++ "-" ++ x
       searchBindings =
         [ (myMod "C-/", S.promptSearch myXPConfig searchEnginesCombined),
           (unwords $ replicate 2 $ myMod "/", S.promptSearch myXPConfig defaultSearchEngine),
-          (unwords $ [myMod "/", "/"], shellPrompt myXPConfig)
+          (unwords [myMod "/", "/"], shellPrompt myXPConfig)
         ]
           ++ [(unwords [myMod "/", name], S.promptSearch myXPConfig e) | e@(S.SearchEngine name _) <- searchEngines, length name == 1]
       launcherMode1 x = unwords [myMod "x", x]
@@ -513,7 +511,7 @@ toggleOrViewHiddenWorkspace tag = do
   withWindowSet $ return . (tag ==) . W.currentTag
 
 toggleOrViewHiddenWorkspace' :: String -> X ()
-toggleOrViewHiddenWorkspace' tag = toggleOrViewHiddenWorkspace tag >> return ()
+toggleOrViewHiddenWorkspace' tag = Control.Monad.void (toggleOrViewHiddenWorkspace tag)
 
 raiseMaybeInHiddenWorkspace :: String -> X () -> Query Bool -> X ()
 raiseMaybeInHiddenWorkspace tag action query =
@@ -529,7 +527,7 @@ toggleWindowOrRunInHiddenWorkspace :: String -> String -> Query Bool -> X ()
 toggleWindowOrRunInHiddenWorkspace tag command query = toggleWindowOrDo query (viewHiddenWorkspace tag >> spawn command)
 
 toggleWindowOrDo :: Query Bool -> X () -> X ()
-toggleWindowOrDo query action = let r = raise query in ifWindows query (\allWindows -> withFocusedOrDo (\currentWindow -> if (null $ filter ((==) currentWindow) allWindows) then r else toggleWS) r) action
+toggleWindowOrDo query action = let r = raise query in ifWindows query (\allWindows -> withFocusedOrDo (\currentWindow -> if currentWindow `notElem` allWindows then r else nextMatch History (return True)) r) action
 
 runOrRaiseInHiddenWorkspace :: String -> String -> Query Bool -> X ()
 runOrRaiseInHiddenWorkspace tag command query = viewHiddenWorkspace tag >> runOrRaise command query
@@ -542,15 +540,15 @@ runInHiddenWorkspaceIfEmpty tag command =
   whenX (toggleOrViewHiddenWorkspace tag) (whenX (withWindowSet (return . null . windowsInCurrentWorkspace)) (spawn command))
 
 myGetTerminalCommand :: Maybe String -> Maybe String -> [String] -> (String, [String])
-myGetTerminalCommand title cls command = ("alacritty", (maybe [] (\x -> ["--title", x]) title) ++ (maybe [] (\x -> ["--class", x]) cls) ++ (if null command then [] else ["-e"] ++ command))
+myGetTerminalCommand title cls command = ("alacritty", maybe [] (\x -> ["--title", x]) title ++ maybe [] (\x -> ["--class", x]) cls ++ (if null command then [] else "-e" : command))
 
 myGetTerminalCommandString :: Maybe String -> Maybe String -> [String] -> String
 myGetTerminalCommandString title cls command = uncurry showCommandForUser $ myGetTerminalCommand title cls command
 
 myScratchpadTuples =
-  [ ("stardict", "stardict", (className =? "Stardict"), centerFloating),
-    ("goldendict", "goldendict", (className =? "GoldenDict"), centerFloating),
-    ("notes", "gvim --role notes ~/notes.txt", (role =? "notes"), nonFloating),
+  [ ("stardict", "stardict", className =? "Stardict", centerFloating),
+    ("goldendict", "goldendict", className =? "GoldenDict", centerFloating),
+    ("notes", "gvim --role notes ~/notes.txt", role =? "notes", nonFloating),
     runTerminal "terminal" ["tmux"] Nothing,
     runTerminal "mutt" ["neomutt"] Nothing,
     runTerminal "sdcv" ["sdcv"] Nothing,
@@ -563,9 +561,9 @@ myScratchpadTuples =
     ++ map runFzfLaunch ["downloads", "calibre", "reading", "zotero"]
   where
     role = stringProperty "WM_WINDOW_ROLE"
-    centerFloating = (customFloating $ W.RationalRect (1 / 6) (1 / 6) (2 / 3) (2 / 3))
+    centerFloating = customFloating $ W.RationalRect (1 / 6) (1 / 6) (2 / 3) (2 / 3)
     runTerminal name command windowTitle =
-      let t = (fromMaybe (unwords ["scratchpad", name]) windowTitle)
+      let t = fromMaybe (unwords ["scratchpad", name]) windowTitle
        in (name, myGetTerminalCommandString (Just t) Nothing command, title =? t, centerFloating)
     runFzfLaunch name = runTerminal (unwords [name, "fzf"]) ["fo.sh", name] $ Just $ unwords ["scratchpad", name, "fzf"]
 
@@ -616,7 +614,7 @@ myManageHook =
           (className =? "MPlayer") --> doShiftAndViewHiddenWorkspace "video",
           (appName =? "calibre-ebook-viewer") --> doShiftAndViewHiddenWorkspace "reading",
           (className =? "Zathura") --> doShiftAndViewHiddenWorkspace "reading",
-          (fmap (=~ ".*KOReader$") title) --> doShiftAndViewHiddenWorkspace "reading"
+          fmap (=~ ".*KOReader$") title --> doShiftAndViewHiddenWorkspace "reading"
         ]
       ]
   where
@@ -626,8 +624,8 @@ myManageHook =
     myTitleIgnores = ["kdesktop"]
     myBrowserClasses2 = ["Chromium-browser"]
     doHide = ask >>= \w -> liftX (hideWindow w) >> doF (W.delete w)
-    doShiftHiddenWorkspace ws = (liftX $ addHiddenWorkspace ws) >> doShift ws
-    doShiftAndViewHiddenWorkspace ws = (liftX $ addHiddenWorkspace ws) >> doShiftAndView ws
+    doShiftHiddenWorkspace ws = liftX (addHiddenWorkspace ws) >> doShift ws
+    doShiftAndViewHiddenWorkspace ws = liftX (addHiddenWorkspace ws) >> doShiftAndView ws
     doShiftAndView = doF . liftM2 (.) W.greedyView W.shift
 
 ------------------------------------------------------------------------
@@ -649,7 +647,7 @@ myEventHook = mempty
 -- Perform an arbitrary action on each internal state change or X event.
 -- See the 'XMonad.Hooks.DynamicLog' extension for examples.
 --
-myLogHook = return ()
+myLogHook = historyHook
 
 ------------------------------------------------------------------------
 -- Startup hook
@@ -697,8 +695,8 @@ myPP =
       ppUrgent = xmobarColor "red" "yellow"
     }
   where
-    ignoreWorkspaces = \x -> if elem x myInvisibleWorkspaces then "" else x
-    justAcronym = \x -> if elem x myShortenedWorkspaces then map toUpper (take 1 x) else x
+    ignoreWorkspaces = \x -> if x `elem` myInvisibleWorkspaces then "" else x
+    justAcronym = \x -> if x `elem` myShortenedWorkspaces then map toUpper (take 1 x) else x
 
 rmdups :: (Ord a) => [a] -> [a]
 rmdups = map head . group . sort
