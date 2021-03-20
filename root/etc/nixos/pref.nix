@@ -38,7 +38,7 @@ let
   (builtins.substring 0 8 hash);
 
   default = self: {
-    isBootStrapping = false; # Things fail.
+    isMinimalSystem = false; # Things fail.
     enableAarch64Cross = false;
     owner = "e";
     ownerUid = 1000;
@@ -311,9 +311,10 @@ let
       isRaspberryPi = true;
       raspberryPiVersion = 4;
       enableVsftpd = false;
-      enableAarch64Cross = self.isBootStrapping;
-    } else
-      { });
+      # enableAarch64Cross = true;
+    } else {
+      isMinimalSystem = true; # set unknown host to be minimal system
+    });
 
   overrides = builtins.map (path: (import (builtins.toPath path)))
     (builtins.filter (x: builtins.pathExists x) prefFiles);

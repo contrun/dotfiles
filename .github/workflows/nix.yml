@@ -1,0 +1,103 @@
+name: Build Nix envs
+
+on:
+  pull_request:
+    branches:
+      - master
+      - main
+      - actions
+      - ci
+      - 'releases/*'
+    paths:
+      - '**/*.nix'
+      - '.github/workflows/nix.yml'
+  push:
+    branches:
+      - master
+      - main
+      - actions
+      - ci
+      - 'releases/*'
+    paths:
+      - '**/*.nix'
+      - '.github/workflows/nix.yml'
+  schedule:
+    - cron: '0 0 * * 0' # Every Sunday at midnight UTC
+
+jobs:
+  build-linux-env:
+    name: Build/cache Linux Nix env
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - name: Checkout repository
+      uses: actions/checkout@v2
+      with:
+          # Nix Flakes doesn't work on shallow clones
+          fetch-depth: 0
+
+    - name: Install Nix
+      uses: cachix/install-nix-action@v12
+      with:
+        install_url: https://github.com/numtide/nix-flakes-installer/releases/download/nix-2.4pre20210207_fd6eaa1/install
+        extra_nix_config: |
+          experimental-features = nix-command flakes
+          access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
+          substituters = https://cache.nixos.org/ https://hydra.iohk.io
+          trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ=
+
+    - name: Setup Cachix
+      uses: cachix/cachix-action@v8
+      with:
+        name: ${{ github.repository_owner }}
+        extraPullNames: iohk
+        authToken: ${{ secrets.CACHIX_SIGNING_KEY }}
+
+    # https://github.com/actions/virtual-environments/issues/2840#issuecomment-790492173
+    # https://github.com/actions/virtual-environments/issues/709
+    - name: Free some disk space
+      run: |
+        df -h
+        echo "=============================================================================="
+        echo "Freeing up disk space on CI system"
+        echo "=============================================================================="
+        echo "Listing 100 largest packages"
+        dpkg-query -Wf '${Installed-Size}\t${Package}\n' | sort -n | tail -n 100
+        df -h
+        echo "Removing large packages"
+        sudo apt-get remove -y '^ghc-8.*'
+        sudo apt-get remove -y '^dotnet-.*'
+        sudo apt-get remove -y '^llvm-.*'
+        sudo apt-get remove -y 'php.*'
+        sudo apt-get remove -y azure-cli google-cloud-sdk hhvm google-chrome-stable firefox powershell
+        sudo apt-get autoremove -y
+        sudo apt-get clean
+        df -h
+        echo "Removing large directories"
+        sudo rm -rf /usr/share/dotnet
+        sudo rm -rf /opt/ghc
+        sudo rm -rf "/usr/local/share/boost"
+        sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+        df -h
+
+    - name: If scheduled, update inputs
+      if: ${{ github.event_name == 'schedule' && success() }}
+      run: |
+        nix flake update --recreate-lock-file
+
+    - name: Build nixos
+      run: |
+        # Prevent conflict between Cachix installed by workflow and the one installed in the config
+        nix-env --set-flag priority 1 cachix
+        # Build and switch to home-manager env
+        nix build .#nixosConfigurations.x86_64-linux.config.system.build.toplevel
+
+    - name: If scheduled, push commit with updated inputs
+      if: ${{ github.event_name == 'schedule' && success() }}
+      run: |
+        git config user.name github-actions
+        git config user.email github-actions@github.com
+        git aa
+        git cm "Update inputs on $(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+        git push

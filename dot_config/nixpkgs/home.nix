@@ -40,7 +40,7 @@ let
     else if unstablePackage != null then
       unstablePackage
     else
-      null);
+      builtins.throw "${path} not found");
   # Emits a warning when package does not exist, instead of quitting immediately
   getPkg = attrset: path: dontCheckPkg (getMyPkgOrPkg attrset path);
   getPackages = list:
@@ -58,7 +58,7 @@ let
       name = "command line tools (unstable)";
       priority = 48;
       packages = getPackages [
-        "unstable.alacritty"
+        "alacritty"
       ];
     }
     {
@@ -392,7 +392,7 @@ let
         "libunwind"
         "gmp"
         "libevdev"
-        "unstable.libcap"
+        "libcap"
         "libuuid"
         "libxml2"
         "expat"
@@ -508,7 +508,7 @@ let
         "stunnel"
         "shadowsocks-libev"
         "v2ray"
-        "unstable.clash"
+        "clash"
         "simplescreenrecorder"
         "cloc"
         "sloc"
@@ -887,6 +887,7 @@ in {
     extraOutputsToInstall = [ "dev" "lib" "doc" "info" "devdoc" "out" ];
     packages = allPackages;
     # priority = builtins.trace 4 4;
+    stateVersion = "21.05";
   };
-  manual.manpages.enable = false;
+  manual.manpages.enable = true;
 }

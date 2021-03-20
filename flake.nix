@@ -33,6 +33,17 @@
 
   outputs = { self, ... }@inputs:
     let
+      systemsList = [
+        "x86_64-linux"
+        "i686-linux"
+        "x86_64-darwin"
+        "aarch64-linux"
+        "armv6l-linux"
+        "armv7l-linux"
+      ];
+      systems =
+        builtins.foldl' (acc: current: acc // { "${current}" = current; }) { }
+        systemsList;
       myRootPath = path: ./. + "/root${path}";
       pathOr = path: default:
         if (builtins.pathExists path) then path else default;
@@ -40,9 +51,9 @@
         (import (myRootPath "/etc/nixos/pref.nix")) { inherit hostname; };
       generateHostConfigurations = hostname:
         let
+          isMinimalSystem = systems ? "${hostname}";
           prefs = getHostPreference hostname;
-          system = prefs.nixosSystem or "x86_64-linux";
-
+          system = systems.hostname or prefs.nixosSystem or "x86_64-linux";
           flakeSupport = { lib, pkgs, config, ... }: {
             nix.package = pkgs.nixFlakes;
             nix.extraOptions =
@@ -76,9 +87,15 @@
             } else {
               boot.loader.grub.devices = [ "/dev/nvme0n1" ];
             });
-          hardwareConfiguration = import (pathOr
-            (myRootPath "/etc/nixos/hardware-configuration-${hostname}.nix")
-            /etc/nixos/hardware-configuration.nix);
+          hardwareConfiguration = builtins.trace (hostname)
+            (if isMinimalSystem then
+              import (pathOr
+                (myRootPath "/etc/nixos/hardware-configuration-${hostname}.nix")
+                (myRootPath "/etc/nixos/hardware-configuration-fake.nix"))
+            else
+              import (pathOr
+                (myRootPath "/etc/nixos/hardware-configuration-${hostname}.nix")
+                /etc/nixos/hardware-configuration.nix));
           commonConfiguration = import (myRootPath "/etc/nixos/common.nix");
           myOverlaysConfiguration = {
             nixpkgs.overlays = let
@@ -679,10 +696,15 @@
           } else
             { };
           homeManagerConfiguration = {
-            home-manager.useGlobalPkgs = true;
-            home-manager.useUserPackages = true;
-            home-manager.users.${prefs.owner} =
-              import (./. + "/dot_config/nixpkgs/home.nix");
+            home-manager = {
+              useGlobalPkgs = true;
+              useUserPackages = true;
+            } // (if isMinimalSystem then
+              { }
+            else {
+              users.${prefs.owner} =
+                import (./. + "/dot_config/nixpkgs/home.nix");
+            });
           };
         in {
           "${hostname}" = inputs.nixpkgs.lib.nixosSystem {
@@ -702,11 +724,13 @@
               # overlaysConfiguration
             ];
 
-            specialArgs = { inherit inputs system prefs hostname; };
+            specialArgs = {
+              inherit inputs system prefs hostname isMinimalSystem;
+            };
           };
         };
       allConfigurations = builtins.foldl'
-        (acc: current: acc // generateHostConfigurations current)
-        { } [ "default" "ssg" "jxt" "shl" ];
+        (acc: current: acc // generateHostConfigurations current) { }
+        ([ "ssg" "jxt" "shl" ] ++ systemsList);
     in { nixosConfigurations = allConfigurations; };
 }
