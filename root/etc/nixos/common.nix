@@ -927,8 +927,9 @@ in with prefs // { inherit (pkgs) stable unstable; }; {
       # enableHardening = false;
     };
     docker = {
-      enable = true;
+      enable = enableDocker;
       package = unstable.docker or pkgs.docker;
+      storageDriver = dockerStorageDriver;
       autoPrune.enable = true;
     };
     anbox = { enable = enableAnbox; };
@@ -1026,17 +1027,18 @@ in with prefs // { inherit (pkgs) stable unstable; }; {
       # build zero tier one anyway, but enable it on enableZerotierone is true;
       "zerotierone" = { wantedBy = pkgs.lib.mkForce [ ]; };
     }) // pkgs.lib.optionalAttrs (enableK3s) {
-      "k3s" = {
-        serviceConfig = {
-          ExecStartPost = [
-            ''
+      "k3s" = let
+        k3sPatchScript = pkgs.writeShellScript "add-k3s-config" ''
+          if k3s kubectl patch -n kube-system services traefik; then
               ${pkgs.k3s}/bin/k3s kubectl patch -n kube-system services traefik -p '{"spec":{"ports":[{"name":"http","nodePort":30080,"port":80,"protocol":"TCP","targetPort":"http"},{"name":"https","nodePort":30443,"port":443,"protocol":"TCP","targetPort":"https"}]}}'
-                          ''
-            ''
+          fi
+          if [[ -f /etc/rancher/k3s/k3s.yaml ]]; then
               ${pkgs.coreutils}/bin/chown ${owner} /etc/rancher/k3s/k3s.yaml
-            ''
-          ];
-        };
+          fi
+        '';
+      in {
+        path = if enableZfs then [ pkgs.zfs ] else [ ];
+        serviceConfig = { ExecStartPost = [ "${k3sPatchScript}" ]; };
       };
     } // pkgs.lib.optionalAttrs (enableCodeServer) {
       "code-server" = {

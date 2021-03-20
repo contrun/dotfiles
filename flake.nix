@@ -103,15 +103,26 @@
 
               dontCheckOverlay = self: super:
                 let
-                  python37 = super.python37.override {
-                    packageOverrides = self: super: {
-                      pytest =
-                        super.pytest.overrideAttrs (old: { doCheck = false; });
-                    };
+                  overridePythonPackages = let
+                    packagesToIgnoreTest = [
+                      # "psutil" "pathpy"
+                    ];
+                    dontCheckPythonPkg = pp:
+                      pp.overridePythonAttrs (old: { doCheck = false; });
+                  in pythonPkg:
+                  pythonPkg.override {
+                    packageOverrides = pythonSelf: pythonSuper:
+                      super.lib.genAttrs packagesToIgnoreTest
+                      (name: dontCheckPythonPkg pythonSuper.${name});
                   };
-                  packages = { inherit (super) mitmproxy notmuch; };
-                in super.lib.mapAttrs
-                (name: p: p.overrideAttrs (old: { doCheck = false; })) packages;
+                  dontCheckPkg = pkg:
+                    pkg.overrideAttrs (old: { doCheck = false; });
+                in {
+                  python3Full = overridePythonPackages super.python3Full;
+                  python3 = overridePythonPackages super.python3;
+                } // (super.lib.mapAttrs (name: p: dontCheckPkg p) {
+                  inherit (super) mitmproxy notmuch;
+                });
 
               shellsOverlay = self: super: {
                 # This env is used to setup LD_LIBRARY_PATH appropirately in nix-shell
@@ -368,54 +379,32 @@
                   getPython3Packages = ps:
                     with ps; [
                       pip
-                      chardet
+                      # chardet
                       dateutil
                       setuptools
                       virtualenvwrapper
-                      yapf
                       pycparser
-                      python-language-server
                       pynvim
                       pyparsing
-                      black
-                      requests
+                      # requests
                       docopt
-                      python-dotenv
+                      # python-dotenv
                       pyyaml
                       pyperclip
-                      # jupyter
-                      # ipykernel
-                      # ipywidgets
-                      # jupyter_client
-                      # jupyter_console
-                      # jupyter_core
-                      # jupyterhub
-                      # jupyterlab
-                      # jupyterlab_launcher
-                      # jupyterlab_server
-                      # jupyterhub-ldapauthenticator
-                      # jupytext
-                      # nbconvert
-                      # nbformat
-                      # nbsphinx
-                      # nbstripout
-                      pyspark
-                      matplotlib
-                      plotly
-                      altair
-                      bokeh
-                      vega
-                      vega_datasets
-                      numpy
-                      pandas
-                      scipy
-                      arrow
-                      subliminal
+                      # pyspark
+                      # matplotlib
+                      # plotly
+                      # altair
+                      # bokeh
+                      # vega
+                      # vega_datasets
+                      # numpy
+                      # pandas
+                      # scipy
+                      # arrow
+                      # subliminal
                       lxml
-                      django
-                      cookiecutter
-                      pillow
-                      elasticsearch-dsl
+                      # cookiecutter
                     ];
                   makeEmacsPkg = emacsPkg:
                     (super.emacsPackagesGen emacsPkg).emacsWithPackages (epkgs:

@@ -643,7 +643,7 @@ let
         "plantuml"
         "texmacs"
         "texlab"
-        "myPackages.texLive"
+        # "myPackages.texLive"
         "texlab"
         "auctex"
         # "mupdf"

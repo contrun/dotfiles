@@ -194,6 +194,8 @@ let
     # Build of virtual box frequently fails. touching "$HOME/.cache/disable_virtual_box"
     # is less irritating than editing this file.
     enableVirtualboxHost = false;
+    enableDocker = true;
+    dockerStorageDriver = if self.enableZfs then "zfs" else "overlay2";
     enableLibvirtd = true;
     enableAnbox = false;
     enableUnifi = false;
@@ -272,6 +274,7 @@ let
       dpi = 128;
       enableX2goServer = true;
       enableHidpi = false;
+      maxJobs = 6;
       enableK3s = true;
       enableWireless = true;
       consoleFont = "${pkgs.terminus_font}/share/consolefonts/ter-g20n.psf.gz";

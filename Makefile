@@ -3,6 +3,7 @@
 DIR := $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 ROOTDIR = $(DIR)/root
 IGNOREDDIR = $(DIR)/ignored
+HOST ?= $(shell hostname)
 DESTDIR ?= ${HOME}
 DESTROOTDIR ?= /
 
@@ -49,7 +50,7 @@ deps-install deps-uninstall deps-reinstall:
 	test -f "$(IGNOREDDIR)/$(call script,$@).sh" && DESTDIR=$(DESTDIR) "$(IGNOREDDIR)/$(call script,$@).sh" "$(call action,$@)" || true
 
 nixos-rebuild: install
-	sudo nixos-rebuild switch --show-trace --keep-going
+	sudo nixos-rebuild switch --flake .#$(HOST) --show-trace --keep-going
 
 nixos-update-channels:
 	sudo nix-channel --update
