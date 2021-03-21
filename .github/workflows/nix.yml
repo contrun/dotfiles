@@ -1,6 +1,8 @@
+# Taken liberally from https://github.com/malob/nixpkgs/blob/master/.github/workflows/ci.yml
 name: Build Nix envs
 
 on:
+  workflow_dispatch: {}
   pull_request:
     branches:
       - master
@@ -82,9 +84,9 @@ jobs:
         df -h
 
     - name: If scheduled, update inputs
-      if: ${{ github.event_name == 'schedule' && success() }}
+      if: ${{ (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && success() }}
       run: |
-        nix flake update --recreate-lock-file
+        nix flake update
 
     - name: Build nixos
       run: |
@@ -94,10 +96,10 @@ jobs:
         nix build .#nixosConfigurations.x86_64-linux.config.system.build.toplevel
 
     - name: If scheduled, push commit with updated inputs
-      if: ${{ github.event_name == 'schedule' && success() }}
+      if: ${{ (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && success() }}
       run: |
         git config user.name github-actions
         git config user.email github-actions@github.com
         git aa
-        git cm "Update inputs on $(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+        git cm "auto update nix inputs on $(date -u +"%Y-%m-%dT%H:%M:%SZ")"
         git push
