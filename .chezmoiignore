@@ -6,5 +6,5 @@ chezmoi.toml
 /flake.nix
 /flake.lock
 /.github
-/result
+/result*/
 *.qcow2

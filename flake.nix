@@ -58,12 +58,13 @@
             inherit inputs system prefs hostname isMinimalSystem;
           };
 
-          flakeSupport = { lib, pkgs, config, ... }: {
-            nix.package = pkgs.nixFlakes;
-            nix.extraOptions =
-              pkgs.lib.optionalString (config.nix.package == pkgs.nixFlakes)
-              "experimental-features = nix-command flakes ca-references";
+          systemInfo = { lib, pkgs, config, ... }: {
             system.configurationRevision = lib.mkIf (self ? rev) self.rev;
+            system.nixos.label = lib.mkIf
+              (self.sourceInfo ? lastModifiedDate && self.sourceInfo ? shortRev)
+              "flake.${
+                builtins.substring 0 8 self.sourceInfo.lastModifiedDate
+              }.${self.sourceInfo.shortRev}";
           };
           nixpkgsOverlay = { config, pkgs, system, inputs, ... }: {
             nixpkgs.overlays = [
@@ -716,6 +717,7 @@
             inherit system;
 
             modules = [
+              systemInfo
               nixpkgsOverlay
               hostConfiguration
               hardwareConfiguration
