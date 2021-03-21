@@ -8,10 +8,6 @@
     home-manager.url = "github:nix-community/home-manager/master";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
     nur-no-pkgs.url = "github:nix-community/NUR/master";
-    nvimpager = {
-      url = "github:lucc/nvimpager";
-      flake = false;
-    };
     authinfo = {
       url = "github:aartamonau/authinfo";
       flake = false;
@@ -580,26 +576,6 @@
                         nativeBuildInputs = [ pkgconfig ];
                         buildInputs = [ openssl libgit2 ];
                         LIBGIT2_SYS_USE_PKG_CONFIG = true;
-                      };
-                    };
-
-                  nvimpager = with super;
-                    stdenv.mkDerivation rec {
-                      pname = "nvimpager";
-                      version = "unstable";
-                      src = inputs.nvimpager;
-
-                      nativeBuildInputs = [ pandoc ];
-
-                      makeFlags = [ "PREFIX=$(out)" "DESTDIR=" ];
-
-                      meta = with stdenv.lib; {
-                        description =
-                          "Use nvim as a pager to view manpages, diffs, etc with nvim's syntax highlighting";
-                        homepage = "https://github.com/lucc/nvimpager";
-                        license = licenses.bsd2;
-                        platforms = platforms.all;
-                        maintainers = with maintainers; [ contrun ];
                       };
                     };
 

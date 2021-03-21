@@ -202,7 +202,7 @@ in with prefs // { inherit (pkgs) stable unstable; }; {
         python3
         # (pkgs.myPackages.pythonStable or python3)
         # (pkgs.myPackages.python2 or python2)
-        (pkgs.myPackages.nvimpager or null)
+        nvimpager
         (pkgs.myPackages.nvimdiff or null)
         rofi
         ruby

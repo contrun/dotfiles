@@ -186,22 +186,6 @@
         "type": "github"
       }
     },
-    "nvimpager": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1615745850,
-        "narHash": "sha256-iQMpL/qnP8hxgT1mRAI6pvnxOLOPQlc5KgNi2CuGiFs=",
-        "owner": "lucc",
-        "repo": "nvimpager",
-        "rev": "4b180e65fd36eb5b2acf66ab881f3a8c3fb9c351",
-        "type": "github"
-      },
-      "original": {
-        "owner": "lucc",
-        "repo": "nvimpager",
-        "type": "github"
-      }
-    },
     "old-ghc-nix": {
       "flake": false,
       "locked": {
@@ -229,7 +213,6 @@
         "nixpkgs-stable": "nixpkgs-stable",
         "nixpkgs-unstable": "nixpkgs-unstable",
         "nur-no-pkgs": "nur-no-pkgs",
-        "nvimpager": "nvimpager",
         "old-ghc-nix": "old-ghc-nix",
         "sops-nix": "sops-nix"
       }
