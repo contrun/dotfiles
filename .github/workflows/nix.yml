@@ -67,38 +67,64 @@ jobs:
 
     - name: Setup Cachix
       if: ${{ steps.check-nix-inputs-update-available.conclusion != 'failure' }}
-      uses: cachix/cachix-action@v8
+      uses: cachix/cachix-action@565940cd14fa3685adb83359327b06de3e999f30
       with:
         name: ${{ github.repository_owner }}
         extraPullNames: iohk
         authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
+        pushFilter: "clion|webstorm|idea-ultimate|goland|pycharm-professional|datagrip|android-studio-dev|graalvm11-ce"
 
     # https://github.com/actions/virtual-environments/issues/2840#issuecomment-790492173
     # https://github.com/actions/virtual-environments/issues/709
     - name: Free some disk space
       if: ${{ steps.check-nix-inputs-update-available.conclusion != 'failure' }}
       run: |
-        df -h
-        echo "=============================================================================="
-        echo "Freeing up disk space on CI system"
+        set +e
         echo "=============================================================================="
         echo "Listing 100 largest packages"
+        echo "=============================================================================="
         dpkg-query -Wf '${Installed-Size}\t${Package}\n' | sort -n | tail -n 100
-        df -h
+        echo "=============================================================================="
         echo "Removing large packages"
-        sudo apt-get remove -y '^ghc-8.*'
+        echo "=============================================================================="
+        sudo snap remove chromium
+        sudo snap remove gnome
+        sudo snap remove lxd
+        sudo apt-get remove -y '^ghc-.*'
+        sudo apt-get remove -y '^adoptopenjdk-.*'
         sudo apt-get remove -y '^dotnet-.*'
         sudo apt-get remove -y '^llvm-.*'
+        sudo apt-get remove -y 'libllvm.*'
+        sudo apt-get remove -y 'libclang.*'
         sudo apt-get remove -y 'php.*'
-        sudo apt-get remove -y azure-cli google-cloud-sdk hhvm google-chrome-stable firefox powershell
-        sudo apt-get autoremove -y
+        sudo apt-get remove -y '^mysql-server.*'
+        sudo apt-get remove -y '^mongodb.*'
+        sudo apt-get remove -y azure-cli
+        sudo apt-get remove -y google-cloud-sdk
+        sudo apt-get remove -y hhvm
+        sudo apt-get remove -y google-chrome-stable
+        sudo apt-get remove -y firefox
+        sudo apt-get remove -y libgl1-mesa-dri
+        sudo apt-get remove -y powershell
+        sudo apt-get remove -y snapd
         sudo apt-get clean
-        df -h
+        echo "=============================================================================="
         echo "Removing large directories"
+        echo "=============================================================================="
         sudo rm -rf /usr/share/dotnet
         sudo rm -rf /opt/ghc
         sudo rm -rf "/usr/local/share/boost"
+        sudo rm -rf /root/.nuget
         sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+        sudo rm -rf /usr/local/lib/android
+        sudo rm -rf /usr/share/rust
+        sudo rm -rf /usr/share/swift
+        sudo rm -rf /var/lib/snapd
+        sudo rm -rf /usr/local/graalvm
+        sudo rm -rf /home/linuxbrew/.linuxbrew
+        echo "=============================================================================="
+        echo "Showing disk usage"
+        echo "=============================================================================="
         df -h
 
     - name: Build nixos
