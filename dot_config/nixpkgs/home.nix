@@ -1,11 +1,41 @@
-{ config, pkgs, ... }:
+{ config, pkgs, isMinimalSystem, ... }@args:
 let
+  largePackages = [
+    "jetbrains.idea-ultimate"
+    "jetbrains.clion"
+    "jetbrains.webstorm"
+    "jetbrains.datagrip"
+    "jetbrains.goland"
+    "jetbrains.pycharm-professional"
+    "kubernetes"
+    "minikube"
+    "k3s"
+    "gitkraken"
+    "flink"
+    "postman"
+    "libreoffice"
+    "myPackages.haskell"
+    "androidStudioPackages.dev"
+    "confluent-platform"
+    "qemu"
+    "clang"
+    "llvmPackages_latest.llvm"
+    "termonad-with-packages"
+    "steam"
+    "espeak"
+    "vagrant"
+    "firecracker"
+    "code-server"
+    "myPackages.texLive"
+    "clojure-lsp"
+  ];
   # To avoid clash within the buildEnv of home-manager
   overridePkg = pkg: func:
     if pkg ? overrideAttrs then
       pkg.overrideAttrs (oldAttrs: func oldAttrs)
     else
-      pkgs.lib.warn "${pkg.name} does not have attribute overrideAttrs" pkg;
+      pkgs.lib.warn "${pkg.name or pkg} does not have attribute overrideAttrs"
+      pkg;
   dontCheckPkg = pkg:
     overridePkg pkg (oldAttrs: {
       # Fuck, why every package has broken tests? I just want to trust the devil.
@@ -42,7 +72,11 @@ let
     else
       builtins.throw "${path} not found");
   # Emits a warning when package does not exist, instead of quitting immediately
-  getPkg = attrset: path: dontCheckPkg (getMyPkgOrPkg attrset path);
+  getPkg = attrset: path:
+    if isMinimalSystem && (builtins.elem path largePackages) then
+      builtins.trace "${path} will not be installed in a minimal system" null
+    else
+      (dontCheckPkg (getMyPkgOrPkg attrset path));
   getPackages = list:
     (builtins.filter (x: x != null) (builtins.map (x: getPkg pkgs x) list));
   allPackages = builtins.foldl' (acc: collection:
@@ -57,9 +91,7 @@ let
     {
       name = "command line tools (unstable)";
       priority = 48;
-      packages = getPackages [
-        "alacritty"
-      ];
+      packages = getPackages [ ];
     }
     {
       name = "command line tools";
@@ -429,7 +461,6 @@ let
         "pamixer"
         "imv"
         "cmus"
-        "steam"
         # "radiotray-ng"
         # "clementine"
         "rhythmbox"

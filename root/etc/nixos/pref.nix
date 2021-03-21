@@ -38,7 +38,7 @@ let
   (builtins.substring 0 8 hash);
 
   default = self: {
-    isMinimalSystem = false; # Things fail.
+    isMinimalSystem = false;
     enableAarch64Cross = false;
     owner = "e";
     ownerUid = 1000;
@@ -183,7 +183,14 @@ let
     enableRedshift = false;
     enablePostfix = true;
     enableNfs = true;
-    linkedJdks = [ "openjdk15" "openjdk14" "openjdk11" "openjdk8" ];
+    linkedJdks = if self.isMinimalSystem then
+      [ "openjdk8" ]
+    else [
+      "openjdk15"
+      "openjdk14"
+      "openjdk11"
+      "openjdk8"
+    ];
     enableNextcloudClient = false;
     enableTaskWarriorSync = true;
     enableHolePuncher = true;
@@ -194,9 +201,9 @@ let
     # Build of virtual box frequently fails. touching "$HOME/.cache/disable_virtual_box"
     # is less irritating than editing this file.
     enableVirtualboxHost = false;
-    enableDocker = true;
+    enableDocker = !self.isMinimalSystem;
     dockerStorageDriver = if self.enableZfs then "zfs" else "overlay2";
-    enableLibvirtd = true;
+    enableLibvirtd = !self.isMinimalSystem;
     enableAnbox = false;
     enableUnifi = false;
     enableUdisks2 = true;
@@ -251,7 +258,9 @@ let
   hostSpecific = self: super:
     {
       inherit hostname hostId;
-    } // (if hostname == "uzq" then {
+    } // (if hostname == "default" then {
+      isMinimalSystem = true;
+    } else if hostname == "uzq" then {
       enableHidpi = true;
       # enableAnbox = true;
       consoleFont = "${pkgs.terminus_font}/share/consolefonts/ter-g20n.psf.gz";
@@ -303,6 +312,7 @@ let
       ];
     } else if hostname == "shl" then {
       nixosSystem = "aarch64-linux";
+      isMinimalSystem = true;
       hostId = "6fce2459";
       kernelPackages = pkgs.linuxPackages_rpi4;
       enableCodeServer = false;

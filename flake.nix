@@ -51,9 +51,13 @@
         (import (myRootPath "/etc/nixos/pref.nix")) { inherit hostname; };
       generateHostConfigurations = hostname:
         let
-          isMinimalSystem = systems ? "${hostname}";
           prefs = getHostPreference hostname;
+          isMinimalSystem = prefs.isMinimalSystem;
           system = systems.hostname or prefs.nixosSystem or "x86_64-linux";
+          moduleArgs = {
+            inherit inputs system prefs hostname isMinimalSystem;
+          };
+
           flakeSupport = { lib, pkgs, config, ... }: {
             nix.package = pkgs.nixFlakes;
             nix.extraOptions =
@@ -695,16 +699,17 @@
             };
           } else
             { };
-          homeManagerConfiguration = {
+          homeManagerConfiguration = { ... }: {
             home-manager = {
               useGlobalPkgs = true;
               useUserPackages = true;
-            } // (if isMinimalSystem then
-              { }
-            else {
-              users.${prefs.owner} =
-                import (./. + "/dot_config/nixpkgs/home.nix");
-            });
+              users = {
+                ${prefs.owner} = {
+                  _module.args = moduleArgs;
+                  imports = [ (./. + "/dot_config/nixpkgs/home.nix") ];
+                };
+              };
+            };
           };
         in {
           "${hostname}" = inputs.nixpkgs.lib.nixosSystem {
@@ -724,13 +729,11 @@
               # overlaysConfiguration
             ];
 
-            specialArgs = {
-              inherit inputs system prefs hostname isMinimalSystem;
-            };
+            specialArgs = moduleArgs;
           };
         };
       allConfigurations = builtins.foldl'
         (acc: current: acc // generateHostConfigurations current) { }
-        ([ "ssg" "jxt" "shl" ] ++ systemsList);
+        ([ "default" "ssg" "jxt" "shl" ] ++ systemsList);
     in { nixosConfigurations = allConfigurations; };
 }
