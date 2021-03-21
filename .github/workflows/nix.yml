@@ -49,7 +49,24 @@ jobs:
           substituters = https://cache.nixos.org/ https://hydra.iohk.io
           trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ=
 
+    - name: Check inputs up to date
+      id: check-nix-inputs-update-available
+      continue-on-error: true
+      if: ${{ (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && success() }}
+      run: |
+        set -xe
+        nix flake update --recreate-lock-file
+        git status
+        if ! git diff; then
+            echo "Abort now. No updates available."
+            exit 1
+        fi
+        git config user.name github-actions
+        git config user.email github-actions@github.com
+        git commit --all --message "auto update nix inputs on $(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+
     - name: Setup Cachix
+      if: ${{ steps.check-nix-inputs-update-available.conclusion != 'failure' }}
       uses: cachix/cachix-action@v8
       with:
         name: ${{ github.repository_owner }}
@@ -59,6 +76,7 @@ jobs:
     # https://github.com/actions/virtual-environments/issues/2840#issuecomment-790492173
     # https://github.com/actions/virtual-environments/issues/709
     - name: Free some disk space
+      if: ${{ steps.check-nix-inputs-update-available.conclusion != 'failure' }}
       run: |
         df -h
         echo "=============================================================================="
@@ -83,23 +101,15 @@ jobs:
         sudo rm -rf "$AGENT_TOOLSDIRECTORY"
         df -h
 
-    - name: If scheduled, update inputs
-      if: ${{ (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && success() }}
-      run: |
-        nix flake update
-
     - name: Build nixos
+      if: ${{ steps.check-nix-inputs-update-available.conclusion != 'failure' }}
       run: |
         # Prevent conflict between Cachix installed by workflow and the one installed in the config
         nix-env --set-flag priority 1 cachix
         # Build and switch to home-manager env
         nix build .#nixosConfigurations.x86_64-linux.config.system.build.toplevel
 
-    - name: If scheduled, push commit with updated inputs
-      if: ${{ (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && success() }}
+    - name: Push commit with updated inputs
+      if: ${{ (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && steps.check-nix-inputs-update-available.conclusion != 'failure' && success() }}
       run: |
-        git config user.name github-actions
-        git config user.email github-actions@github.com
-        git aa
-        git cm "auto update nix inputs on $(date -u +"%Y-%m-%dT%H:%M:%SZ")"
         git push
