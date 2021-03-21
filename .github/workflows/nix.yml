@@ -24,7 +24,7 @@ on:
       - '**/*.nix'
       - '.github/workflows/nix.yml'
   schedule:
-    - cron: '0 0 * * *'
+    - cron: '0 16 * * *'
 
 jobs:
   build-linux-env:

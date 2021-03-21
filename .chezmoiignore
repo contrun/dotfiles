@@ -7,3 +7,4 @@ chezmoi.toml
 /flake.lock
 /.github
 /result
+*.qcow2

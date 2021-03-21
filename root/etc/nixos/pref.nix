@@ -71,8 +71,9 @@ let
     enableEternalTerminal = true;
     enableSmartdns = false;
     enablePrivoxy = false;
-    buildZerotierone = true;
-    enableZerotierone = true;
+    enableFallbackAccount = false;
+    buildZerotierone = !self.isMinimalSystem;
+    enableZerotierone = self.buildZerotierone;
     zerotieroneNetworks = [ "9bee8941b5ce6172" ];
     smartdnsSettings = {
       bind = ":5533 -no-rule -group example";
@@ -88,7 +89,7 @@ let
     };
     enableSslh = true;
     sslhPort = 44443;
-    enableTailScale = true;
+    enableTailScale = !self.isMinimalSystem;
     enableX2goServer = false;
     enableDebugInfo = false;
     enableZfs = true;
@@ -209,7 +210,7 @@ let
     enableUdisks2 = true;
     enableAvahi = true;
     enableGvfs = true;
-    enableCodeServer = true;
+    enableCodeServer = !self.isMinimalSystem;
     enablePrinting = true;
     enableBluetooth = true;
     enableAcpilight = true;

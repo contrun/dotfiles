@@ -354,9 +354,8 @@ in with prefs // { inherit (pkgs) stable unstable; }; {
     zsh = {
       enable = enableZSH;
       enableCompletion = true;
-      # ohMyZsh = {
-      #   enable = true;
-      # };
+      ohMyZsh = { enable = true; };
+      shellInit = "zsh-newuser-install() { :; }";
     };
     # light.enable = true;
     sway = {
@@ -906,15 +905,20 @@ in with prefs // { inherit (pkgs) stable unstable; }; {
       isNormalUser = true;
       uid = ownerUid;
       shell = if enableZSH then pkgs.zsh else pkgs.bash;
+      initialHashedPassword =
+        "$6$eE6pKPpxdZLueg$WHb./PjNICw7nYnPK8R4Vscu/Rw4l5Mk24/Gi4ijAsNP22LG9L471Ox..yUfFRy5feXtjvog9DM/jJl82VHuI1";
     };
+  } // (if enableFallbackAccount then {
     # Fallback user when "${owner}" encounters problems
     fallback = {
       createHome = true;
-      inherit extraGroups;
       isNormalUser = true;
       useDefaultShell = true;
+      initialHashedPassword =
+        "$6$nstJFDdZZ$uENeWO2lup09Je7UzVlJpwPlU1SvLwzTrbm/Gr.4PUpkKUuGcNEFmUrfgotWF3HoofVrGg1ENW.uzTGT6kX3v1";
     };
-  };
+  } else
+    { });
 
   users.groups."${ownerGroup}" = { gid = ownerGroupGid; };
 

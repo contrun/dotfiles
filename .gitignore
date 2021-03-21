@@ -214,3 +214,6 @@ cabal.project.local~
 .ghc.environment.*
 
 # End of https://www.gitignore.io/api/haskell
+
+*.qcow2
+/result
