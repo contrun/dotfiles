@@ -1,6 +1,9 @@
 { config, pkgs, ... }@args:
-let prefs = import ./pref.nix args;
-in with prefs // { inherit (pkgs) stable unstable; }; {
+let
+  prefs = import ./pref.nix args;
+  stable = pkgs.stable;
+  unstable = pkgs.unstable;
+in {
   imports =
     (builtins.filter (x: builtins.pathExists x) [ ./machine.nix ./cachix.nix ]);
   security = {
@@ -13,7 +16,7 @@ in with prefs // { inherit (pkgs) stable unstable; }; {
         "Certification Authority of WoSign G2"
       ];
       certificateFiles = let
-        mitmCA = let p = "${home}/.mitmproxy/mitmproxy-ca.pem";
+        mitmCA = let p = "${prefs.home}/.mitmproxy/mitmproxy-ca.pem";
         in pkgs.lib.optionals (builtins.pathExists p)
         [ (builtins.toFile "mitmproxy-ca.pem" (builtins.readFile p)) ];
         CAs = [ ];
@@ -31,8 +34,8 @@ in with prefs // { inherit (pkgs) stable unstable; }; {
           "<path>${pkgs.fuse}/bin:${pkgs.coreutils}/bin:${pkgs.utillinux}/bin:${pkgs.gocryptfs}/bin</path>"
         ];
       };
-      services."${owner}" = {
-        fprintAuth = enableFprintAuth;
+      services."${prefs.owner}" = {
+        fprintAuth = prefs.enableFprintAuth;
         limits = [
           {
             domain = "*";
@@ -47,7 +50,7 @@ in with prefs // { inherit (pkgs) stable unstable; }; {
             value = "51200";
           }
         ];
-        enableGnomeKeyring = enableGnomeKeyring;
+        enableGnomeKeyring = prefs.enableGnomeKeyring;
         pamMount = true;
         sshAgentAuth = true;
         setEnvironment = true;
@@ -56,17 +59,17 @@ in with prefs // { inherit (pkgs) stable unstable; }; {
   };
 
   networking = {
-    hostName = hostname;
-    hostId = hostId;
+    hostName = prefs.hostname;
+    hostId = prefs.hostId;
     wireless = {
-      enable = enableSupplicant;
+      enable = prefs.enableSupplicant;
       # userControlled = { enable = true; };
-      iwd.enable = enableIwd;
+      iwd.enable = prefs.enableIwd;
     };
-    supplicant = pkgs.lib.optionalAttrs enableSupplicant {
+    supplicant = pkgs.lib.optionalAttrs prefs.enableSupplicant {
       "WLAN" = {
         configFile = let
-          myPath = "${home}/.config/wpa_supplicant/wpa_supplicant.conf";
+          myPath = "${prefs.home}/.config/wpa_supplicant/wpa_supplicant.conf";
           defaultPath = "/etc/wpa_supplicant.conf";
           path = if builtins.pathExists myPath then myPath else defaultPath;
         in {
@@ -77,19 +80,19 @@ in with prefs // { inherit (pkgs) stable unstable; }; {
         };
       };
     };
-    proxy.default = proxy;
-    enableIPv6 = enableIPv6;
+    proxy.default = prefs.proxy;
+    enableIPv6 = prefs.enableIPv6;
   };
 
   console = {
-    keyMap = let p = "${home}/.local/share/kbd/keymaps/personal.map";
+    keyMap = let p = "${prefs.home}/.local/share/kbd/keymaps/personal.map";
     in if builtins.pathExists p then
       (builtins.toFile "personal-keymap" (builtins.readFile p))
     else
       "us";
-    font = if consoleFont != null then
-      consoleFont
-    else if enableHidpi then
+    font = if prefs.consoleFont != null then
+      prefs.consoleFont
+    else if prefs.enableHidpi then
       "${pkgs.terminus_font}/share/consolefonts/ter-g28n.psf.gz"
     else
       "${pkgs.terminus_font}/share/consolefonts/ter-g16n.psf.gz";
@@ -104,7 +107,7 @@ in with prefs // { inherit (pkgs) stable unstable; }; {
       "zh_CN.UTF-8/UTF-8"
     ];
     inputMethod = {
-      enabled = enabledInputMethod;
+      enabled = prefs.enabledInputMethod;
       ibus.engines = with pkgs.ibus-engines; [
         libpinyin
         table
@@ -129,14 +132,14 @@ in with prefs // { inherit (pkgs) stable unstable; }; {
   environment = {
     etc = {
       "davfs2/secrets" = {
-        enable = enableDavfs2 && builtins.pathExists davfs2Secrets;
+        enable = prefs.enableDavfs2 && builtins.pathExists prefs.davfs2Secrets;
         mode = "0600";
-        source = davfs2Secrets;
+        source = prefs.davfs2Secrets;
       };
       hosts.mode = "0644";
     };
 
-    extraOutputsToInstall = extraOutputsToInstall;
+    extraOutputsToInstall = prefs.extraOutputsToInstall;
     systemPackages = with pkgs;
       builtins.filter (x: x != null) [
         manpages
@@ -275,65 +278,70 @@ in with prefs // { inherit (pkgs) stable unstable; }; {
         xvkbd
         fcron
         gmp
-      ] ++ (if (enableTailScale) then [ tailscale ] else [ ])
-      ++ (if (enableCodeServer) then [ code-server ] else [ ])
-      ++ (if (nixosSystem == "x86_64-linux") then [
+      ] ++ (if (prefs.enableTailScale) then [ tailscale ] else [ ])
+      ++ (if (prefs.enableCodeServer) then [ code-server ] else [ ])
+      ++ (if (prefs.nixosSystem == "x86_64-linux") then [
         xmobar
         hardinfo
         steam-run-native
         # aqemu
         wine
-        kernelPackages.perf
-        kernelPackages.bpftrace
-        kernelPackages.bcc
+        prefs.kernelPackages.perf
+        prefs.kernelPackages.bpftrace
+        prefs.kernelPackages.bcc
       ] else
         [ ]);
-    enableDebugInfo = enableDebugInfo;
+    enableDebugInfo = prefs.enableDebugInfo;
     shellAliases = {
       ssh = "ssh -C";
       bc = "bc -l";
     };
-    sessionVariables = pkgs.lib.optionalAttrs (enableSessionVariables) (rec {
-      MYSHELL = if enableZSH then "zsh" else "bash";
-      MYTERMINAL = "alacritty";
-      GOPATH = "$HOME/.go";
-      CABALPATH = "$HOME/.cabal";
-      CARGOPATH = "$HOME/.cargo";
-      NODE_PATH = "$HOME/.node";
-      PERLBREW_ROOT = "$HOME/.perlbrew-root";
-      LOCALBINPATH = "$HOME/.local/bin";
-      # help building locally compiled programs
-      LIBRARY_PATH = "$HOME/.nix-profile/lib:/run/current-system/sw/lib";
-      # Don't set LD_LIBRARY_PATH here, there will be various problems.
-      MY_LD_LIBRARY_PATH = "$HOME/.nix-profile/lib:/run/current-system/sw/lib";
-      # cmake does not respect LIBRARY_PATH
-      CMAKE_LIBRARY_PATH = "$HOME/.nix-profile/lib:/run/current-system/sw/lib";
-      # Linking can sometimes fails because ld is unable to find libraries like libstdc++.
-      # export LIBRARY_PATH="$LIBRARY_PATH:$CC_LIBRARY_PATH"
-      CC_LIBRARY_PATH = "/local/lib";
-      # header files
-      CPATH = "$HOME/.nix-profile/include:/run/current-system/sw/include";
-      C_INCLUDE_PATH =
-        "$HOME/.nix-profile/include:/run/current-system/sw/include";
-      CPLUS_INCLUDE_PATH =
-        "$HOME/.nix-profile/include:/run/current-system/sw/include";
-      CMAKE_INCLUDE_PATH =
-        "$HOME/.nix-profile/include:/run/current-system/sw/include";
-      # pkg-config
-      PKG_CONFIG_PATH =
-        "$HOME/.nix-profile/lib/pkgconfig:$HOME/.nix-profile/share/pkgconfig:/run/current-system/sw/lib/pkgconfig:/run/current-system/sw/share/pkgconfig";
-      PATH = [ "$HOME/.bin" "$HOME/.local/bin" ]
-        ++ (map (x: x + "/bin") [ CABALPATH CARGOPATH GOPATH ])
-        ++ [ "${NODE_PATH}/node_modules/.bin" ] ++ [ "/usr/local/bin" ];
-      LESS = "-F -X -R";
-      EDITOR = "nvim";
-    } // pkgs.lib.optionalAttrs (pkgs ? myPackages) {
-      # export PYTHONPATH="$MYPYTHONPATH:$PYTHONPATH"
-      MYPYTHONPATH =
-        (pkgs.myPackages.pythonPackages.makePythonPath or pkgs.python3Packages.makePythonPath)
-        [ (pkgs.myPackages.python or pkgs.python) ];
-      PAGER = "nvimpager";
-    });
+    sessionVariables = pkgs.lib.optionalAttrs (prefs.enableSessionVariables)
+      (rec {
+        MYSHELL = if prefs.enableZSH then "zsh" else "bash";
+        MYTERMINAL = "alacritty";
+        GOPATH = "$PREFS.HOME/.go";
+        CABALPATH = "$PREFS.HOME/.cabal";
+        CARGOPATH = "$PREFS.HOME/.cargo";
+        NODE_PATH = "$PREFS.HOME/.node";
+        PERLBREW_ROOT = "$PREFS.HOME/.perlbrew-root";
+        LOCALBINPATH = "$PREFS.HOME/.local/bin";
+        # help building locally compiled programs
+        LIBRARY_PATH =
+          "$PREFS.HOME/.nix-profile/lib:/run/current-system/sw/lib";
+        # Don't set LD_LIBRARY_PATH here, there will be various problems.
+        MY_LD_LIBRARY_PATH =
+          "$PREFS.HOME/.nix-profile/lib:/run/current-system/sw/lib";
+        # cmake does not respect LIBRARY_PATH
+        CMAKE_LIBRARY_PATH =
+          "$PREFS.HOME/.nix-profile/lib:/run/current-system/sw/lib";
+        # Linking can sometimes fails because ld is unable to find libraries like libstdc++.
+        # export LIBRARY_PATH="$LIBRARY_PATH:$CC_LIBRARY_PATH"
+        CC_LIBRARY_PATH = "/local/lib";
+        # header files
+        CPATH =
+          "$PREFS.HOME/.nix-profile/include:/run/current-system/sw/include";
+        C_INCLUDE_PATH =
+          "$PREFS.HOME/.nix-profile/include:/run/current-system/sw/include";
+        CPLUS_INCLUDE_PATH =
+          "$PREFS.HOME/.nix-profile/include:/run/current-system/sw/include";
+        CMAKE_INCLUDE_PATH =
+          "$PREFS.HOME/.nix-profile/include:/run/current-system/sw/include";
+        # pkg-config
+        PKG_CONFIG_PATH =
+          "$PREFS.HOME/.nix-profile/lib/pkgconfig:$PREFS.HOME/.nix-profile/share/pkgconfig:/run/current-system/sw/lib/pkgconfig:/run/current-system/sw/share/pkgconfig";
+        PATH = [ "$PREFS.HOME/.bin" "$PREFS.HOME/.local/bin" ]
+          ++ (map (x: x + "/bin") [ CABALPATH CARGOPATH GOPATH ])
+          ++ [ "${NODE_PATH}/node_modules/.bin" ] ++ [ "/usr/local/bin" ];
+        LESS = "-F -X -R";
+        EDITOR = "nvim";
+      } // pkgs.lib.optionalAttrs (pkgs ? myPackages) {
+        # export PYTHONPATH="$MYPYTHONPATH:$PYTHONPATH"
+        MYPYTHONPATH =
+          (pkgs.myPackages.pythonPackages.makePythonPath or pkgs.python3Packages.makePythonPath)
+          [ (pkgs.myPackages.python or pkgs.python) ];
+        PAGER = "nvimpager";
+      });
     variables = {
       # systemctl --user does not work without this
       # https://serverfault.com/questions/887283/systemctl-user-process-org-freedesktop-systemd1-exited-with-status-1/887298#887298
@@ -342,17 +350,17 @@ in with prefs // { inherit (pkgs) stable unstable; }; {
   };
 
   programs = {
-    ccache = { enable = enableCcache; };
-    java = { enable = enableJava; };
-    gnupg.agent = { enable = enableGPGAgent; };
+    ccache = { enable = prefs.enableCcache; };
+    java = { enable = prefs.enableJava; };
+    gnupg.agent = { enable = prefs.enableGPGAgent; };
     ssh = { startAgent = true; };
     # vim.defaultEditor = true;
-    adb.enable = enableADB;
-    slock.enable = enableSlock;
+    adb.enable = prefs.enableADB;
+    slock.enable = prefs.enableSlock;
     bash = { enableCompletion = true; };
-    x2goserver = { enable = enableX2goServer; };
+    x2goserver = { enable = prefs.enableX2goServer; };
     zsh = {
-      enable = enableZSH;
+      enable = prefs.enableZSH;
       enableCompletion = true;
       ohMyZsh = { enable = true; };
       shellInit = "zsh-newuser-install() { :; }";
@@ -363,7 +371,7 @@ in with prefs // { inherit (pkgs) stable unstable; }; {
       extraPackages = with pkgs; [ swaylock swayidle alacritty dmenu ];
     };
     tmux = { enable = true; };
-    wireshark.enable = enableWireshark;
+    wireshark.enable = prefs.enableWireshark;
   };
 
   fonts = {
@@ -406,15 +414,15 @@ in with prefs // { inherit (pkgs) stable unstable; }; {
   # networking.firewall.allowedTCPPorts = [ ... ];
   # networking.firewall.allowedUDPPorts = [ ... ];
   # Or disable the firewall altogether.
-  networking.firewall.enable = enableFirewall;
+  networking.firewall.enable = prefs.enableFirewall;
 
   sound = {
     enable = true;
-    mediaKeys = { enable = enableMediaKeys; };
+    mediaKeys = { enable = prefs.enableMediaKeys; };
   };
 
   nixpkgs = let
-    cross = if enableAarch64Cross then rec {
+    cross = if prefs.enableAarch64Cross then rec {
       crossSystem = (import <nixpkgs>
         { }).pkgsCross.aarch64-multiplatform.stdenv.targetPlatform;
       localSystem = crossSystem;
@@ -428,11 +436,12 @@ in with prefs // { inherit (pkgs) stable unstable; }; {
         experimental-features = "nix-command flakes";
       };
     };
-    overlaysAttr = let overlaysFile = "${home}/.config/nixpkgs/overlays.nix";
-    in if (builtins.pathExists overlaysFile) then {
-      overlays = import overlaysFile;
-    } else
-      { };
+    overlaysAttr =
+      let overlaysFile = "${prefs.home}/.config/nixpkgs/overlays.nix";
+      in if (builtins.pathExists overlaysFile) then {
+        overlays = import overlaysFile;
+      } else
+        { };
   in overlaysAttr // configAttr // cross;
 
   hardware = {
@@ -443,7 +452,7 @@ in with prefs // { inherit (pkgs) stable unstable; }; {
       driSupport = true;
     };
     bumblebee = {
-      enable = enableBumblebee;
+      enable = prefs.enableBumblebee;
       connectDisplay = true;
     };
     pulseaudio = {
@@ -454,11 +463,11 @@ in with prefs // { inherit (pkgs) stable unstable; }; {
       extraModules = [ pkgs.pulseaudio-modules-bt ];
     };
     bluetooth = {
-      enable = enableBluetooth;
+      enable = prefs.enableBluetooth;
       package = pkgs.bluezFull;
-      powerOnBoot = enableBluetooth;
+      powerOnBoot = prefs.enableBluetooth;
     };
-    acpilight = { enable = enableAcpilight; };
+    acpilight = { enable = prefs.enableAcpilight; };
   };
 
   location = {
@@ -468,13 +477,13 @@ in with prefs // { inherit (pkgs) stable unstable; }; {
 
   system = {
     activationScripts = let
-      jdks = builtins.filter (x: pkgs ? x) linkedJdks;
+      jdks = builtins.filter (x: pkgs ? x) prefs.linkedJdks;
       addjdk = jdk:
         if pkgs ? jdk then
-          let p = pkgs.${jdk}.home; in "ln -sfn ${p} /local/jdks/${jdk}"
+          let p = pkgs.${jdk}.prefs.home; in "ln -sfn ${p} /local/jdks/${jdk}"
         else
           "";
-    in pkgs.lib.optionalAttrs (enableJava && jdks != [ ]) {
+    in pkgs.lib.optionalAttrs (prefs.enableJava && jdks != [ ]) {
       jdks = {
         text = pkgs.lib.concatMapStringsSep "\n" addjdk jdks;
         deps = [ "local" ];
@@ -507,13 +516,15 @@ in with prefs // { inherit (pkgs) stable unstable; }; {
 
       # sftpman
       mntsshfs = {
-        text = "install -d -m 0700 -o ${owner} -g ${ownerGroup} /mnt/sshfs";
+        text =
+          "install -d -m 0700 -o ${prefs.owner} -g ${prefs.ownerGroup} /mnt/sshfs";
         deps = [ ];
       };
 
       # rclone
       mntrclone = {
-        text = "install -d -m 0700 -o ${owner} -g ${ownerGroup} /mnt/rclone";
+        text =
+          "install -d -m 0700 -o ${prefs.owner} -g ${prefs.ownerGroup} /mnt/rclone";
         deps = [ ];
       };
 
@@ -551,38 +562,38 @@ in with prefs // { inherit (pkgs) stable unstable; }; {
   };
 
   services = {
-    arbtt = { enable = enableArbtt; };
-    compton = { enable = enableCompton; };
-    connman = { enable = enableConnman; };
+    arbtt = { enable = prefs.enableArbtt; };
+    compton = { enable = prefs.enableCompton; };
+    connman = { enable = prefs.enableConnman; };
     # calibre-server = {
-    #   enable = enableCalibreServer;
+    #   enable = prefs.enableCalibreServer;
     #   libraries = calibreServerLibraries;
     # };
     vsftpd = {
-      enable = enableVsftpd;
-      userlist = [ owner ];
+      enable = prefs.enableVsftpd;
+      userlist = [ prefs.owner ];
       userlistEnable = true;
     };
     fcron = {
-      enable = enableFcron;
+      enable = prefs.enableFcron;
       maxSerialJobs = 5;
       systab = "";
     };
     offlineimap = {
-      enable = enableOfflineimap;
+      enable = prefs.enableOfflineimap;
       install = true;
       path = [ pkgs.libsecret pkgs.dbus ];
     };
-    davfs2 = { enable = enableDavfs2; };
+    davfs2 = { enable = prefs.enableDavfs2; };
     dnsmasq = {
-      enable = enableDnsmasq;
-      resolveLocalQueries = dnsmasqResolveLocalQueries;
-      servers = dnsmasqServers;
-      extraConfig = dnsmasqExtraConfig;
+      enable = prefs.enableDnsmasq;
+      resolveLocalQueries = prefs.dnsmasqResolveLocalQueries;
+      servers = prefs.dnsmasqServers;
+      extraConfig = prefs.dnsmasqExtraConfig;
     };
     smartdns = {
-      enable = enableSmartdns;
-      settings = smartdnsSettings;
+      enable = prefs.enableSmartdns;
+      settings = prefs.smartdnsSettings;
     };
     openssh = {
       enable = true;
@@ -593,7 +604,7 @@ in with prefs // { inherit (pkgs) stable unstable; }; {
       startWhenNeeded = true;
     };
     samba = {
-      enable = enableSamba;
+      enable = prefs.enableSamba;
       extraConfig = ''
         workgroup = WORKGROUP
         security = user
@@ -601,12 +612,12 @@ in with prefs // { inherit (pkgs) stable unstable; }; {
       shares = {
         owner = {
           comment = "home folder";
-          path = home;
+          path = prefs.home;
           public = "no";
           writable = "yes";
           printable = "no";
           "create mask" = "0644";
-          "force user" = owner;
+          "force user" = prefs.owner;
           "force group" = "users";
         };
         data = {
@@ -616,18 +627,18 @@ in with prefs // { inherit (pkgs) stable unstable; }; {
           writable = "yes";
           printable = "no";
           "create mask" = "0644";
-          "force user" = owner;
+          "force user" = prefs.owner;
           "force group" = "users";
         };
       };
     };
     privoxy = {
-      enable = enablePrivoxy;
+      enable = prefs.enablePrivoxy;
       settings = { listen-address = "0.0.0.0:8118"; };
     };
-    redshift = { enable = enableRedshift; };
+    redshift = { enable = prefs.enableRedshift; };
     avahi = {
-      enable = enableAvahi;
+      enable = prefs.enableAvahi;
       nssmdns = true;
       publish = {
         enable = true;
@@ -666,16 +677,16 @@ in with prefs // { inherit (pkgs) stable unstable; }; {
 
     };
     nfs.server = {
-      enable = enableNfs;
+      enable = prefs.enableNfs;
       extraNfsdConfig = ''
         udp=y
       '';
     };
     zfs = {
-      autoScrub.enable = enableZfs;
+      autoScrub.enable = prefs.enableZfs;
 
       autoSnapshot = {
-        enable = enableZfs;
+        enable = prefs.enableZfs;
         frequent = 8;
         hourly = 24;
         daily = 0;
@@ -685,69 +696,71 @@ in with prefs // { inherit (pkgs) stable unstable; }; {
     };
 
     autossh = {
-      sessions = pkgs.lib.optionals (enableAutossh && myLibs ? myAutossh) (let
-        go = server:
-          let
-            sshPort = if enableSslh then sslhPort else 22;
-            autosshPorts = myLibs.myAutossh {
-              hostname = hostname;
-              serverName = server;
+      sessions =
+        pkgs.lib.optionals (prefs.enableAutossh && prefs.myLibs ? myAutossh)
+        (let
+          go = server:
+            let
+              sshPort = if prefs.enableSslh then prefs.sslhPort else 22;
+              autosshPorts = prefs.myLibs.myAutossh {
+                hostname = prefs.hostname;
+                serverName = server;
+              };
+              extraArguments = let
+                getReverseArgument = port:
+                  "-R :${builtins.toString port}:localhost:${
+                    builtins.toString sshPort
+                  }";
+                reversePorts = builtins.concatStringsSep " "
+                  (builtins.map (x: getReverseArgument x) autosshPorts);
+              in "-o ServerAliveInterval=15 -o ServerAliveCountMax=4 -N ${reversePorts} ${server}";
+            in {
+              extraArguments = extraArguments;
+              name = server;
+              user = prefs.owner;
             };
-            extraArguments = let
-              getReverseArgument = port:
-                "-R :${builtins.toString port}:localhost:${
-                  builtins.toString sshPort
-                }";
-              reversePorts = builtins.concatStringsSep " "
-                (builtins.map (x: getReverseArgument x) autosshPorts);
-            in "-o ServerAliveInterval=15 -o ServerAliveCountMax=4 -N ${reversePorts} ${server}";
-          in {
-            extraArguments = extraArguments;
-            name = server;
-            user = owner;
-          };
-      in map go autosshServers);
+        in map go prefs.autosshServers);
     };
-    eternal-terminal = { enable = enableEternalTerminal; };
+    eternal-terminal = { enable = prefs.enableEternalTerminal; };
     printing = {
-      enable = enablePrinting;
+      enable = prefs.enablePrinting;
       drivers = [ pkgs.hplip ];
     };
-    tailscale = { enable = enableTailScale; };
+    tailscale = { enable = prefs.enableTailScale; };
     zerotierone = {
-      enable = buildZerotierone;
-      joinNetworks = zerotieroneNetworks;
+      enable = prefs.buildZerotierone;
+      joinNetworks = prefs.zerotieroneNetworks;
     };
-    system-config-printer.enable = enablePrinting;
+    system-config-printer.enable = prefs.enablePrinting;
     logind.extraConfig = ''
       HandlePowerKey=suspend
       HandleLidSwitch=ignore
       RuntimeDirectorySize=50%
     '';
     postfix = {
-      enable = enablePostfix;
-      rootAlias = owner;
+      enable = prefs.enablePostfix;
+      rootAlias = prefs.owner;
       extraConfig = ''
-        myhostname = ${hostname}
+        myhostname = ${prefs.hostname}
         mydomain = localdomain
         mydestination = $myhostname, localhost.$mydomain, localhost
         mynetworks_style = host
       '';
     };
-    postgresql.enable = enablePostgres;
-    udisks2.enable = enableUdisks2;
-    redis.enable = enableRedis;
-    fail2ban.enable = enableFail2ban && config.networking.firewall.enable;
-    mpd.enable = enbleMpd;
+    postgresql.enable = prefs.enablePostgres;
+    udisks2.enable = prefs.enableUdisks2;
+    redis.enable = prefs.enableRedis;
+    fail2ban.enable = prefs.enableFail2ban && config.networking.firewall.enable;
+    mpd.enable = prefs.enableMpd;
     # mosquitto.enable = true;
-    rsyncd.enable = enableRsyncd;
-    # accounts-daemon.enable = enableAccountsDaemon || enableFlatpak;
-    flatpak.enable = enableFlatpak;
-    thermald = { enable = enableThermald; };
-    gnome3 = { gnome-keyring.enable = enableGnomeKeyring; };
+    rsyncd.enable = prefs.enableRsyncd;
+    # accounts-daemon.enable = prefs.enableAccountsDaemon || prefs.enableFlatpak;
+    flatpak.enable = prefs.enableFlatpak;
+    thermald = { enable = prefs.enableThermald; };
+    gnome3 = { gnome-keyring.enable = prefs.enableGnomeKeyring; };
 
     locate = {
-      enable = enableLocate;
+      enable = prefs.enableLocate;
       locate = pkgs.mlocate;
       localuser = null;
       interval = "hourly";
@@ -758,49 +771,49 @@ in with prefs // { inherit (pkgs) stable unstable; }; {
     # sudo chown -R e /etc/rancher/k3s/
     # k3s kubectl patch service traefik -n kube-system -p '{"spec": {"ports": [{"port": 443,"targetPort": 443, "nodePort": 30443, "protocol": "TCP", "name": "https"},{"port": 80,"targetPort": 80, "nodePort": 30080, "protocol": "TCP", "name": "http"}], "type": "LoadBalancer"}}'
     k3s = {
-      enable = enableK3s;
+      enable = prefs.enableK3s;
       docker = true;
     };
 
     sslh = {
-      enable = enableSslh;
-      port = sslhPort;
+      enable = prefs.enableSslh;
+      port = prefs.sslhPort;
       transparent = false;
       verbose = true;
-    } // (let p = "${home}/.config/sslh/sslh.conf";
+    } // (let p = "${prefs.home}/.config/sslh/sslh.conf";
     in pkgs.lib.optionalAttrs (builtins.pathExists p) {
       appendConfig = (builtins.readFile p);
     });
 
-    unifi.enable = enableUnifi;
+    unifi.enable = prefs.enableUnifi;
 
-    gvfs.enable = enableGvfs;
+    gvfs.enable = prefs.enableGvfs;
 
     emacs = {
-      enable = enableEmacs;
-      install = enableEmacs;
+      enable = prefs.enableEmacs;
+      install = prefs.enableEmacs;
       package = pkgs.myPackages.emacs or pkgs.emacs;
     };
 
     syncthing = {
-      enable = enableSyncthing;
-      user = owner;
+      enable = prefs.enableSyncthing;
+      user = prefs.owner;
       group = "users";
-      dataDir = home;
+      dataDir = prefs.home;
       systemService = false;
     };
 
-    # yandex-disk = { enable = enableYandexDisk; } // yandexConfig;
+    # yandex-disk = { enable = prefs.enableYandexDisk; } // yandexConfig;
 
     xserver = {
-      enable = enableXserver;
+      enable = prefs.enableXserver;
       verbose = 7;
       autorun = true;
       exportConfiguration = true;
       layout = "us";
-      dpi = dpi;
+      dpi = prefs.dpi;
       libinput = {
-        enable = enableLibInput;
+        enable = prefs.enableLibInput;
         touchpad = {
           tapping = true;
           disableWhileTyping = true;
@@ -818,12 +831,12 @@ in with prefs // { inherit (pkgs) stable unstable; }; {
           ''${pkgs.libnotify}/bin/notify-send "Locking in 10 seconds"'';
       in {
         inherit locker killer notifier;
-        enable = enableXautolock;
+        enable = prefs.enableXautolock;
         enableNotifier = true;
         nowlocker = locker;
       };
       # desktopManager.xfce.enable = true;
-      desktopManager.gnome3.enable = enableGnome;
+      desktopManager.gnome3.enable = prefs.enableGnome;
       # desktopManager.plasma5.enable = true;
       # desktopManager.xfce.enableXfwm = false;
       windowManager = {
@@ -832,7 +845,7 @@ in with prefs // { inherit (pkgs) stable unstable; }; {
           package = pkgs.i3-gaps;
         };
         awesome.enable = true;
-      } // (if (enableXmonad) then {
+      } // (if (prefs.enableXmonad) then {
         xmonad = {
           enable = true;
           enableContribAndExtras = true;
@@ -853,26 +866,26 @@ in with prefs // { inherit (pkgs) stable unstable; }; {
       } else
         { });
       displayManager = let
-        defaultSession = xDefaultSession;
+        defaultSession = prefs.xDefaultSession;
         autoLogin = {
-          enable = enableAutoLogin;
-          user = owner;
+          enable = prefs.enableAutoLogin;
+          user = prefs.owner;
         };
       in {
-        sessionCommands = xSessionCommands;
-        startx = { enable = xDisplayManager == "startx"; };
+        sessionCommands = prefs.xSessionCommands;
+        startx = { enable = prefs.xDisplayManager == "startx"; };
         sddm = {
-          enable = xDisplayManager == "sddm";
-          enableHidpi = enableHidpi;
+          enable = prefs.xDisplayManager == "sddm";
+          enableHidpi = prefs.enableHidpi;
           autoNumlock = true;
         };
-        gdm = { enable = xDisplayManager == "gdm"; };
-        lightdm = { enable = xDisplayManager == "lightdm"; };
+        gdm = { enable = prefs.xDisplayManager == "gdm"; };
+        lightdm = { enable = prefs.xDisplayManager == "lightdm"; };
       };
     };
   };
 
-  # xdg.portal.enable = enableXdgPortal || enableFlatpak;
+  # xdg.portal.enable = prefs.enableXdgPortal || prefs.enableFlatpak;
 
   users.users = let
     extraGroups = [
@@ -897,19 +910,19 @@ in with prefs // { inherit (pkgs) stable unstable; }; {
       "postfix"
     ];
   in {
-    "${owner}" = {
+    "${prefs.owner}" = {
       createHome = true;
       inherit extraGroups;
-      group = ownerGroup;
-      home = home;
+      group = prefs.ownerGroup;
+      home = prefs.home;
       isNormalUser = true;
-      uid = ownerUid;
-      shell = if enableZSH then pkgs.zsh else pkgs.bash;
+      uid = prefs.ownerUid;
+      shell = if prefs.enableZSH then pkgs.zsh else pkgs.bash;
       initialHashedPassword =
         "$6$eE6pKPpxdZLueg$WHb./PjNICw7nYnPK8R4Vscu/Rw4l5Mk24/Gi4ijAsNP22LG9L471Ox..yUfFRy5feXtjvog9DM/jJl82VHuI1";
     };
-  } // (if enableFallbackAccount then {
-    # Fallback user when "${owner}" encounters problems
+  } // (if prefs.enableFallbackAccount then {
+    # Fallback user when "${prefs.owner}" encounters problems
     fallback = {
       createHome = true;
       isNormalUser = true;
@@ -920,27 +933,27 @@ in with prefs // { inherit (pkgs) stable unstable; }; {
   } else
     { });
 
-  users.groups."${ownerGroup}" = { gid = ownerGroupGid; };
+  users.groups."${prefs.ownerGroup}" = { gid = prefs.ownerGroupGid; };
 
   virtualisation = {
-    libvirtd = { enable = enableLibvirtd; };
+    libvirtd = { enable = prefs.enableLibvirtd; };
     virtualbox.host = {
       # package = stable.virtuablbox or pkgs.virtualbox;
-      enable = enableVirtualboxHost;
-      enableExtensionPack = enableVirtualboxHost;
+      enable = prefs.enableVirtualboxHost;
+      enableExtensionPack = prefs.enableVirtualboxHost;
       # enableHardening = false;
     };
     podman = {
-      enable = enablePodman;
-      dockerCompat = replaceDockerWithPodman;
+      enable = prefs.enablePodman;
+      dockerCompat = prefs.replaceDockerWithPodman;
     };
     docker = {
-      enable = enableDocker && !replaceDockerWithPodman;
+      enable = prefs.enableDocker && !prefs.replaceDockerWithPodman;
       package = unstable.docker or pkgs.docker;
-      storageDriver = dockerStorageDriver;
+      storageDriver = prefs.dockerStorageDriver;
       autoPrune.enable = true;
     };
-    anbox = { enable = enableAnbox; };
+    anbox = { enable = prefs.enableAnbox; };
   };
   # powerManagement = {
   #   enable = true;
@@ -955,7 +968,7 @@ in with prefs // { inherit (pkgs) stable unstable; }; {
         serviceConfig = {
           Type = "oneshot";
           ExecStart = ''
-            ${pkgs.bash}/bin/bash -c "${pkgs.mailutils}/bin/mail --set=noASKCC --subject 'Systemd unit %i failed' ${owner} < /dev/null"
+            ${pkgs.bash}/bin/bash -c "${pkgs.mailutils}/bin/mail --set=noASKCC --subject 'Systemd unit %i failed' ${prefs.owner} < /dev/null"
           '';
         };
       };
@@ -964,26 +977,26 @@ in with prefs // { inherit (pkgs) stable unstable; }; {
     systemdMounts = {
       automounts = let
         nextcloud = {
-          enable = enableNextcloud;
+          enable = prefs.enableNextcloud;
           description = "Automount nextcloud sync directory.";
-          where = nextcloudWhere;
+          where = prefs.nextcloudWhere;
           wantedBy = [ "multi-user.target" ];
         };
         yandex = {
-          enable = enableYandex;
+          enable = prefs.enableYandex;
           description = "Automount yandex sync directory.";
-          where = yandexWhere;
+          where = prefs.yandexWhere;
           wantedBy = [ "multi-user.target" ];
         };
       in [ nextcloud yandex ];
       mounts = let
         nextcloud = {
-          enable = enableNextcloud;
-          where = nextcloudWhere;
-          what = nextcloudWhat;
+          enable = prefs.enableNextcloud;
+          where = prefs.nextcloudWhere;
+          what = prefs.nextcloudWhat;
           type = "davfs";
-          options = "rw,uid=${builtins.toString ownerUid},gid=${
-              builtins.toString ownerGroupGid
+          options = "rw,uid=${builtins.toString prefs.ownerUid},gid=${
+              builtins.toString prefs.ownerGroupGid
             }";
           wants = [ "network-online.target" ];
           wantedBy = [ "remote-fs.target" ];
@@ -991,12 +1004,12 @@ in with prefs // { inherit (pkgs) stable unstable; }; {
           unitConfig = { path = [ pkgs.utillinux ]; };
         };
         yandex = {
-          enable = enableYandex;
-          where = yandexWhere;
-          what = yandexWhat;
+          enable = prefs.enableYandex;
+          where = prefs.yandexWhere;
+          what = prefs.yandexWhat;
           type = "davfs";
-          options = "rw,user=uid=${builtins.toString ownerUid},gid=${
-              builtins.toString ownerGroupGid
+          options = "rw,user=uid=${builtins.toString prefs.ownerUid},gid=${
+              builtins.toString prefs.ownerGroupGid
             }";
           wants = [ "network-online.target" ];
           wantedBy = [ "remote-fs.target" ];
@@ -1029,26 +1042,26 @@ in with prefs // { inherit (pkgs) stable unstable; }; {
 
     timers = { };
 
-    services = notify-systemd-unit-failures // (if enableZerotierone then
+    services = notify-systemd-unit-failures // (if prefs.enableZerotierone then
       { }
     else {
-      # build zero tier one anyway, but enable it on enableZerotierone is true;
+      # build zero tier one anyway, but enable it on prefs.enableZerotierone is true;
       "zerotierone" = { wantedBy = pkgs.lib.mkForce [ ]; };
-    }) // pkgs.lib.optionalAttrs (enableK3s) {
+    }) // pkgs.lib.optionalAttrs (prefs.enableK3s) {
       "k3s" = let
         k3sPatchScript = pkgs.writeShellScript "add-k3s-config" ''
           if k3s kubectl patch -n kube-system services traefik; then
               ${pkgs.k3s}/bin/k3s kubectl patch -n kube-system services traefik -p '{"spec":{"ports":[{"name":"http","nodePort":30080,"port":80,"protocol":"TCP","targetPort":"http"},{"name":"https","nodePort":30443,"port":443,"protocol":"TCP","targetPort":"https"}]}}'
           fi
           if [[ -f /etc/rancher/k3s/k3s.yaml ]]; then
-              ${pkgs.coreutils}/bin/chown ${owner} /etc/rancher/k3s/k3s.yaml
+              ${pkgs.coreutils}/bin/chown ${prefs.owner} /etc/rancher/k3s/k3s.yaml
           fi
         '';
       in {
-        path = if enableZfs then [ pkgs.zfs ] else [ ];
+        path = if prefs.enableZfs then [ pkgs.zfs ] else [ ];
         serviceConfig = { ExecStartPost = [ "${k3sPatchScript}" ]; };
       };
-    } // pkgs.lib.optionalAttrs (enableCodeServer) {
+    } // pkgs.lib.optionalAttrs (prefs.enableCodeServer) {
       "code-server" = {
         enable = true;
         description = "Remote VSCode Server";
@@ -1059,11 +1072,11 @@ in with prefs // { inherit (pkgs) stable unstable; }; {
         serviceConfig = {
           Type = "simple";
           ExecStart =
-            "${pkgs.code-server}/bin/code-server --user-data-dir ${home}/.vscode --disable-telemetry";
-          WorkingDirectory = home;
+            "${pkgs.code-server}/bin/code-server --user-data-dir ${prefs.home}/.vscode --disable-telemetry";
+          WorkingDirectory = prefs.home;
           NoNewPrivileges = true;
-          User = owner;
-          Group = ownerGroup;
+          User = prefs.owner;
+          Group = prefs.ownerGroup;
         };
       };
     };
@@ -1089,7 +1102,7 @@ in with prefs // { inherit (pkgs) stable unstable; }; {
       in {
         services.${unitName} = {
           description = "ddns worker";
-          enable = enableDdns;
+          enable = prefs.enableDdns;
           wantedBy = [ "default.target" ];
           path = [
             pkgs.coreutils
@@ -1108,7 +1121,7 @@ in with prefs // { inherit (pkgs) stable unstable; }; {
           };
         };
         timers.${unitName} = {
-          enable = enableDdns;
+          enable = prefs.enableDdns;
           wantedBy = [ "default.target" ];
           onFailure = [ "notify-systemd-unit-failures@%i.service" ];
           timerConfig = {
@@ -1121,7 +1134,7 @@ in with prefs // { inherit (pkgs) stable unstable; }; {
 
       nextcloud-client = {
         services.nextcloud-client = {
-          enable = enableNextcloudClient;
+          enable = prefs.enableNextcloudClient;
           description = "nextcloud client";
           wantedBy = [ "default.target" ];
           serviceConfig = {
@@ -1130,7 +1143,7 @@ in with prefs // { inherit (pkgs) stable unstable; }; {
           };
           path = [ pkgs.nextcloud-client pkgs.inotify-tools ];
           script = ''
-            mkdir -p "$HOME/$localFolder"
+            mkdir -p "$PREFS.HOME/$localFolder"
             while true; do
                   nextcloudcmd --non-interactive --silent --user "$user" --password "$password" "$localFolder" "$remoteUrl" || true
                   inotifywait -t 120 "$localFolder" > /dev/null 2>&1 || true
@@ -1144,7 +1157,9 @@ in with prefs // { inherit (pkgs) stable unstable; }; {
         unitName = "${name}@";
         script = pkgs.writeShellScript "hole-puncher" ''
           set -eu
-          instance="${builtins.toString sslhPort}-${builtins.toString sslhPort}"
+          instance="${builtins.toString prefs.sslhPort}-${
+            builtins.toString prefs.sslhPort
+          }"
           if [[ -n "$1" ]] && grep -Eq '[0-9]+-[0-9]+' <<< "$1"; then instance="$1"; fi
           externalPort="$(awk -F- '{print $2}' <<< "$instance")"
           internalPort="$(awk -F- '{print $1}' <<< "$instance")"
@@ -1157,7 +1172,7 @@ in with prefs // { inherit (pkgs) stable unstable; }; {
       in {
         services.${unitName} = {
           description = "NAT traversal worker";
-          enable = enableHolePuncher && enableSslh;
+          enable = prefs.enableHolePuncher && prefs.enableSslh;
           wantedBy = [ "default.target" ];
           path = [
             pkgs.coreutils
@@ -1172,7 +1187,7 @@ in with prefs // { inherit (pkgs) stable unstable; }; {
           };
         };
         timers.${unitName} = {
-          enable = enableHolePuncher;
+          enable = prefs.enableHolePuncher;
           wantedBy = [ "default.target" ];
           onFailure = [ "notify-systemd-unit-failures@%i.service" ];
           timerConfig = {
@@ -1187,7 +1202,7 @@ in with prefs // { inherit (pkgs) stable unstable; }; {
       in {
         services.${name} = {
           description = "sync task warrior tasks";
-          enable = enableTaskWarriorSync;
+          enable = prefs.enableTaskWarriorSync;
           wantedBy = [ "default.target" ];
           serviceConfig = {
             Type = "oneshot";
@@ -1195,7 +1210,7 @@ in with prefs // { inherit (pkgs) stable unstable; }; {
           };
         };
         timers.${name} = {
-          enable = enableTaskWarriorSync;
+          enable = prefs.enableTaskWarriorSync;
           onFailure = [ "notify-systemd-unit-failures@%i.service" ];
           wantedBy = [ "default.target" ];
           timerConfig = {
@@ -1208,8 +1223,8 @@ in with prefs // { inherit (pkgs) stable unstable; }; {
 
       yandex-disk = let
         name = "yandex-disk";
-        syncFolder = "${home}/Sync";
-      in if enableYandexDisk then {
+        syncFolder = "${prefs.home}/Sync";
+      in if prefs.enableYandexDisk then {
         services.${name} = {
           enable = true;
           description = "Yandex-disk server";
@@ -1220,7 +1235,7 @@ in with prefs // { inherit (pkgs) stable unstable; }; {
           serviceConfig = {
             Restart = "always";
             ExecStart =
-              "${pkgs.yandex-disk}/bin/yandex-disk start --no-daemon --auth=/run/secrets/yandex-passwd --dir='${syncFolder}' --exclude-dirs='${yandexExcludedFiles}'";
+              "${pkgs.yandex-disk}/bin/yandex-disk start --no-daemon --auth=/run/secrets/yandex-passwd --dir='${syncFolder}' --exclude-dirs='${prefs.yandexExcludedFiles}'";
           };
         };
       } else
@@ -1238,7 +1253,7 @@ in with prefs // { inherit (pkgs) stable unstable; }; {
   };
 
   nix = {
-    inherit buildMachines buildCores maxJobs distributedBuilds;
+    inherit (prefs) buildMachines buildCores maxJobs distributedBuilds;
     package = pkgs.nixFlakes;
     extraOptions =
       pkgs.lib.optionalString (config.nix.package == pkgs.nixFlakes)
@@ -1256,12 +1271,13 @@ in with prefs // { inherit (pkgs) stable unstable; }; {
   };
 
   boot = {
-    binfmt = { inherit emulatedSystems; };
-    inherit kernelParams extraModulePackages kernelPatches kernelPackages;
-    kernel.sysctl = kernelSysctl;
+    binfmt = { inherit (prefs) emulatedSystems; };
+    inherit (prefs)
+      kernelParams extraModulePackages kernelPatches kernelPackages;
+    kernel.sysctl = prefs.kernelSysctl;
     loader = {
       efi.canTouchEfiVariables = false;
-    } // (if enableGrub then {
+    } // (if prefs.enableGrub then {
       grub = {
         enable = true;
         copyKernels = true;
@@ -1271,32 +1287,32 @@ in with prefs // { inherit (pkgs) stable unstable; }; {
         useOSProber = true;
       };
     } else
-      { }) // (if isRaspberryPi then {
+      { }) // (if prefs.isRaspberryPi then {
         raspberryPi = {
           enable = true;
-          version = raspberryPiVersion;
+          version = prefs.raspberryPiVersion;
         };
       } else
         { });
 
-    supportedFilesystems = if (enableZfs) then [ "zfs" ] else [ ];
-    zfs = { enableUnstable = enableZfsUnstable; };
-    crashDump = { enable = enableCrashDump; };
+    supportedFilesystems = if (prefs.enableZfs) then [ "zfs" ] else [ ];
+    zfs = { enableUnstable = prefs.enableZfsUnstable; };
+    crashDump = { enable = prefs.enableCrashDump; };
     initrd.network = {
       enable = true;
       ssh = let
-        f = "${home}/.ssh/authorized_keys";
+        f = "${prefs.home}/.ssh/authorized_keys";
         authorizedKeys = pkgs.lib.optionals (builtins.pathExists f)
           (builtins.filter (x: x != "")
             (pkgs.lib.splitString "\n" (builtins.readFile f)));
         hostKeys = builtins.filter (x: builtins.pathExists x) [
-          "${home}/.local/secrets/initrd/ssh_host_rsa_key"
-          "${home}/.local/secrets/initrd/ssh_host_ed25519_key"
+          "${prefs.home}/.local/secrets/initrd/ssh_host_rsa_key"
+          "${prefs.home}/.local/secrets/initrd/ssh_host_ed25519_key"
         ];
       in {
-        inherit authorizedKeys hostKeys;
-        enable = false && enableBootSSH && authorizedKeys != [ ] && hostKeys
-          != [ ];
+        inherit (prefs) authorizedKeys hostKeys;
+        enable = false && prefs.enableBootSSH && prefs.authorizedKeys != [ ]
+          && prefs.hostKeys != [ ];
       };
     };
   };

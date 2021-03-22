@@ -147,7 +147,7 @@ let
     enableRedis = false;
     enableVsftpd = true;
     enableRsyncd = false;
-    enbleMpd = false;
+    enableMpd = false;
     enableAccountsDaemon = true;
     enableFlatpak = false;
     enableXdgPortal = false;
