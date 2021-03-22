@@ -59,7 +59,7 @@ nixos-rebuild: install
 	git diff --exit-code && sudo nixos-rebuild switch --flake .#$(HOST) --show-trace --keep-going || (git stash; sudo nixos-rebuild switch --flake .#$(HOST) --show-trace --keep-going; git stash pop;)
 
 cachix-push: nixos-rebuild
-	nix path-info .#nixosConfigurations.$(HOST).config.system.build.toplevel -r | grep -vE "clion|webstorm|idea-ultimate|goland|pycharm-professional|datagrip|android-studio-dev|graalvm11-ce" | cachix push contrun
+	nix path-info .#nixosConfigurations.$(HOST).config.system.build.toplevel -r | grep -vE "clion|webstorm|idea-ultimate|goland|pycharm-professional|datagrip|android-studio-dev|graalvm11-ce|lock$|-source$" | cachix push contrun
 
 nixos-update-channels:
 	sudo nix-channel --update

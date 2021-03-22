@@ -1239,15 +1239,9 @@ in with prefs // { inherit (pkgs) stable unstable; }; {
     extraOptions =
       pkgs.lib.optionalString (config.nix.package == pkgs.nixFlakes)
       "experimental-features = nix-command flakes";
-    binaryCaches = [
-      "https://mirrors.tuna.tsinghua.edu.cn/nix-channels/store"
-      "https://cache.nixos.org"
-      "https://hydra.iohk.io"
-    ];
-    binaryCachePublicKeys = [
-      "hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ=" # cardano
-      "ryantrinkle.com-1:JJiAKaRv9mWgpVAz8dwewnZe0AzzEAzPkagE9SP5NWI=" # reflex
-    ];
+    binaryCaches =
+      [ "https://mirrors.tuna.tsinghua.edu.cn/nix-channels/store" ];
+    binaryCachePublicKeys = [ ];
     useSandbox = "relaxed";
     gc = {
       automatic = true;

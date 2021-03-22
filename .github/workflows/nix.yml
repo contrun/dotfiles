@@ -12,6 +12,7 @@ on:
       - 'releases/*'
     paths:
       - '**/*.nix'
+      - '**/flake.lock'
       - '.github/workflows/nix.yml'
   push:
     branches:
@@ -22,9 +23,11 @@ on:
       - 'releases/*'
     paths:
       - '**/*.nix'
+      - '**/flake.lock'
       - '.github/workflows/nix.yml'
   schedule:
-    - cron: '0 16 * * *'
+    - cron: '0 6 * * 4'
+    - cron: '0 16 * * 6'
 
 jobs:
   build-linux-env:
@@ -61,9 +64,7 @@ jobs:
             echo "Abort now. No updates available."
             exit 1
         fi
-        git config user.name github-actions
-        git config user.email github-actions@github.com
-        git commit --all --message "auto update nix inputs on $(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+        git commit --all --author "github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>" --message "auto update nix inputs at $(date -u +"%Y-%m-%dT%H:%M:%SZ")"
 
     - name: Setup Cachix
       if: ${{ steps.check-nix-inputs-update-available.conclusion != 'failure' }}
@@ -72,7 +73,7 @@ jobs:
         name: ${{ github.repository_owner }}
         extraPullNames: iohk
         authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
-        pushFilter: "clion|webstorm|idea-ultimate|goland|pycharm-professional|datagrip|android-studio-dev|graalvm11-ce"
+        pushFilter: "clion|webstorm|idea-ultimate|goland|pycharm-professional|datagrip|android-studio-dev|graalvm11-ce|lock$|-source$"
 
     # https://github.com/actions/virtual-environments/issues/2840#issuecomment-790492173
     # https://github.com/actions/virtual-environments/issues/709
@@ -134,6 +135,7 @@ jobs:
         nix-env --set-flag priority 1 cachix
         # Build and switch to home-manager env
         nix build .#nixosConfigurations.x86_64-linux.config.system.build.toplevel
+        nix path-info .#nixosConfigurations.x86_64-linux.config.system.build.toplevel -sShr | sort -h -k2
 
     - name: Push commit with updated inputs
       if: ${{ (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && steps.check-nix-inputs-update-available.conclusion != 'failure' && success() }}
