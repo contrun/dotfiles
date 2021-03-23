@@ -259,6 +259,7 @@ let
         "git-crypt"
         "gitkraken"
         "gitAndTools.hub"
+        "gitAndTools.gh"
         "gitAndTools.lab"
         "gitAndTools.tig"
         "gitAndTools.git-extras"

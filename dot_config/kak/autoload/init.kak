@@ -18,6 +18,9 @@ map global normal <a-s> ': write<ret>'
 
 addhl global/ wrap
 
+set global ui_options ncurses_assistant=off
+set global ui_options ncurses_assistant=none
+
 hook global WinSetOption filetype=mail %{
     set window autowrap_column 72
     autowrap-enable
@@ -82,7 +85,9 @@ plug "kak-lsp/kak-lsp" do %{
     hook global WinSetOption filetype=(c|cpp|cc|rust|javascript|typescript|go|haskell|sh|css|html|latex|nix|python|ruby|terraform|scala) %{
         set-option window lsp_auto_highlight_references true
         set-option window lsp_hover_anchor false
+        map global user l %{: enter-user-mode lsp<ret>} -docstring "LSP mode"
         lsp-auto-hover-enable
+        lsp-inlay-diagnostics-enable global
         echo "Enabling LSP for filtetype %opt{filetype}"
         lsp-enable-window
     }
