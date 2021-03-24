@@ -300,37 +300,37 @@ in {
       (rec {
         MYSHELL = if prefs.enableZSH then "zsh" else "bash";
         MYTERMINAL = "alacritty";
-        GOPATH = "$PREFS.HOME/.go";
-        CABALPATH = "$PREFS.HOME/.cabal";
-        CARGOPATH = "$PREFS.HOME/.cargo";
-        NODE_PATH = "$PREFS.HOME/.node";
-        PERLBREW_ROOT = "$PREFS.HOME/.perlbrew-root";
-        LOCALBINPATH = "$PREFS.HOME/.local/bin";
+        GOPATH = "$HOME/.go";
+        CABALPATH = "$HOME/.cabal";
+        CARGOPATH = "$HOME/.cargo";
+        NODE_PATH = "$HOME/.node";
+        PERLBREW_ROOT = "$HOME/.perlbrew-root";
+        LOCALBINPATH = "$HOME/.local/bin";
         # help building locally compiled programs
         LIBRARY_PATH =
-          "$PREFS.HOME/.nix-profile/lib:/run/current-system/sw/lib";
+          "$HOME/.nix-profile/lib:/run/current-system/sw/lib";
         # Don't set LD_LIBRARY_PATH here, there will be various problems.
         MY_LD_LIBRARY_PATH =
-          "$PREFS.HOME/.nix-profile/lib:/run/current-system/sw/lib";
+          "$HOME/.nix-profile/lib:/run/current-system/sw/lib";
         # cmake does not respect LIBRARY_PATH
         CMAKE_LIBRARY_PATH =
-          "$PREFS.HOME/.nix-profile/lib:/run/current-system/sw/lib";
+          "$HOME/.nix-profile/lib:/run/current-system/sw/lib";
         # Linking can sometimes fails because ld is unable to find libraries like libstdc++.
         # export LIBRARY_PATH="$LIBRARY_PATH:$CC_LIBRARY_PATH"
         CC_LIBRARY_PATH = "/local/lib";
         # header files
         CPATH =
-          "$PREFS.HOME/.nix-profile/include:/run/current-system/sw/include";
+          "$HOME/.nix-profile/include:/run/current-system/sw/include";
         C_INCLUDE_PATH =
-          "$PREFS.HOME/.nix-profile/include:/run/current-system/sw/include";
+          "$HOME/.nix-profile/include:/run/current-system/sw/include";
         CPLUS_INCLUDE_PATH =
-          "$PREFS.HOME/.nix-profile/include:/run/current-system/sw/include";
+          "$HOME/.nix-profile/include:/run/current-system/sw/include";
         CMAKE_INCLUDE_PATH =
-          "$PREFS.HOME/.nix-profile/include:/run/current-system/sw/include";
+          "$HOME/.nix-profile/include:/run/current-system/sw/include";
         # pkg-config
         PKG_CONFIG_PATH =
-          "$PREFS.HOME/.nix-profile/lib/pkgconfig:$PREFS.HOME/.nix-profile/share/pkgconfig:/run/current-system/sw/lib/pkgconfig:/run/current-system/sw/share/pkgconfig";
-        PATH = [ "$PREFS.HOME/.bin" "$PREFS.HOME/.local/bin" ]
+          "$HOME/.nix-profile/lib/pkgconfig:$HOME/.nix-profile/share/pkgconfig:/run/current-system/sw/lib/pkgconfig:/run/current-system/sw/share/pkgconfig";
+        PATH = [ "$HOME/.bin" "$HOME/.local/bin" ]
           ++ (map (x: x + "/bin") [ CABALPATH CARGOPATH GOPATH ])
           ++ [ "${NODE_PATH}/node_modules/.bin" ] ++ [ "/usr/local/bin" ];
         LESS = "-F -X -R";
@@ -1143,7 +1143,7 @@ in {
           };
           path = [ pkgs.nextcloud-client pkgs.inotify-tools ];
           script = ''
-            mkdir -p "$PREFS.HOME/$localFolder"
+            mkdir -p "$HOME/$localFolder"
             while true; do
                   nextcloudcmd --non-interactive --silent --user "$user" --password "$password" "$localFolder" "$remoteUrl" || true
                   inotifywait -t 120 "$localFolder" > /dev/null 2>&1 || true
