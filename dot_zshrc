@@ -2,6 +2,9 @@
 [[ $TERM == "tramp" ]] && unsetopt zle && PS1='$ ' && return
 # [ -f /etc/profile.d/my.sh ] && . /etc/profile.d/my.sh
 ZSH_CONF="full"
+if fzf_base="$(dirname "$(dirname "$(realpath "$(which fzf)")")")/share/fzf" && [[ -d $fzf_base ]]; then
+    export FZF_BASE="$fzf_base"
+fi
 [[ -f ~/.zsh_conf ]] && ZSH_CONF="$(cat ~/.zsh_conf)"
 
 add_to_path() {
