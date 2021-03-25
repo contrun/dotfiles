@@ -291,7 +291,8 @@ let
   };
 
   hostSpecific = self: super:
-    {
+    let rtl8188gu = (self.kernelPackages.callPackage ./rtl8188gu.nix { });
+    in {
       inherit hostname hostId;
     } // (if hostname == "default" then {
       isMinimalSystem = true;
@@ -321,9 +322,11 @@ let
       maxJobs = 6;
       enableK3s = true;
       enableWireless = true;
+      extraModulePackages = [ rtl8188gu ];
       consoleFont = "${pkgs.terminus_font}/share/consolefonts/ter-g20n.psf.gz";
     } else if hostname == "jxt" then {
       hostId = "5ee92b8d";
+      extraModulePackages = [ rtl8188gu ];
       enableHolePuncher = false;
       enableAutossh = false;
       enablePrinting = false;

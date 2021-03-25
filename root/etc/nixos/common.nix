@@ -307,8 +307,7 @@ in {
         PERLBREW_ROOT = "$HOME/.perlbrew-root";
         LOCALBINPATH = "$HOME/.local/bin";
         # help building locally compiled programs
-        LIBRARY_PATH =
-          "$HOME/.nix-profile/lib:/run/current-system/sw/lib";
+        LIBRARY_PATH = "$HOME/.nix-profile/lib:/run/current-system/sw/lib";
         # Don't set LD_LIBRARY_PATH here, there will be various problems.
         MY_LD_LIBRARY_PATH =
           "$HOME/.nix-profile/lib:/run/current-system/sw/lib";
@@ -319,8 +318,7 @@ in {
         # export LIBRARY_PATH="$LIBRARY_PATH:$CC_LIBRARY_PATH"
         CC_LIBRARY_PATH = "/local/lib";
         # header files
-        CPATH =
-          "$HOME/.nix-profile/include:/run/current-system/sw/include";
+        CPATH = "$HOME/.nix-profile/include:/run/current-system/sw/include";
         C_INCLUDE_PATH =
           "$HOME/.nix-profile/include:/run/current-system/sw/include";
         CPLUS_INCLUDE_PATH =
