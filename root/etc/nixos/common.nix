@@ -280,6 +280,7 @@ in {
         gmp
       ] ++ (if (prefs.enableTailScale) then [ tailscale ] else [ ])
       ++ (if (prefs.enableCodeServer) then [ code-server ] else [ ])
+      ++ (if (prefs.enableZfs) then [ zfsbackup ] else [ ])
       ++ (if (prefs.nixosSystem == "x86_64-linux") then [
         xmobar
         hardinfo
