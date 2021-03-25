@@ -26,8 +26,8 @@ on:
       - '**/flake.lock'
       - '.github/workflows/nix.yml'
   schedule:
-    - cron: '0 6 * * 4'
-    - cron: '0 16 * * 6'
+    - cron: '0 6 * * 5'
+    - cron: '0 20 * * 6'
 
 jobs:
   build-linux-env:
@@ -57,14 +57,14 @@ jobs:
       continue-on-error: true
       if: ${{ (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && success() }}
       run: |
-        set -xe
+        set -xeu
         nix flake update --recreate-lock-file
         git status
         if ! git diff; then
             echo "Abort now. No updates available."
             exit 1
         fi
-        git commit --all --author "github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>" --message "auto update nix inputs at $(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+        env GIT_AUTHOR_EMAIL="41898282+github-actions[bot]@users.noreply.github.com" GIT_AUTHOR_NAME="github-actions[bot]" git commit --all --message "auto update nix inputs at $(date -u +"%Y-%m-%dT%H:%M:%SZ")"
 
     - name: Setup Cachix
       if: ${{ steps.check-nix-inputs-update-available.conclusion != 'failure' }}
@@ -133,9 +133,11 @@ jobs:
       run: |
         # Prevent conflict between Cachix installed by workflow and the one installed in the config
         nix-env --set-flag priority 1 cachix
-        # Build and switch to home-manager env
-        nix build .#nixosConfigurations.x86_64-linux.config.system.build.toplevel
-        nix path-info .#nixosConfigurations.x86_64-linux.config.system.build.toplevel -sShr | sort -h -k2
+        # Build a minimal nixos system
+        # github actions does not support virtualization yet https://github.com/actions/virtual-environments/issues/183
+        nix build '.#nixosConfigurations.x86_64-linux.config.system.build.toplevel'
+        nix path-info '.#nixosConfigurations.x86_64-linux.config.system.build.toplevel' -sShr | sort -h -k2
+        df -h
 
     - name: Push commit with updated inputs
       if: ${{ (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && steps.check-nix-inputs-update-available.conclusion != 'failure' && success() }}
