@@ -37,6 +37,8 @@ start() {
     parse_config
     run_clash
     if [[ -z "${DONT_TOUCH_IPTABLES:-}" ]]; then
+        # Make sure iptables cleared to avoid Chain already exists.
+        cleanup_iptables "$@"
         setup_iptables "$@"
     fi
 }
@@ -51,7 +53,7 @@ run_clash() {
     useradd --system --no-create-home "$CLASH_USER" >/dev/null 2>&1 || true
     install -d -m 0777 -o clash "$CLASH_DIR"
     CLASH_UID="$(id -u "$CLASH_USER")"
-    capsh --user="$CLASH_USER" --caps='cap_net_admin+eip cap_setpcap,cap_setuid,cap_setgid+ep' --addamb=cap_net_admin -- -c "echo \$\$ > $PID_FILE; exec $(realpath "$(which clash)") -d $CLASH_DIR -f $CLASH_CONFIG >> $LOG_FILE" &
+    capsh --user="$CLASH_USER" --caps='cap_net_admin+eip cap_setpcap,cap_setuid,cap_setgid+ep' --addamb=cap_net_admin -- -c "echo \$\$ > $PID_FILE; exec $(realpath "$(command -v clash)") -d $CLASH_DIR -f $CLASH_CONFIG >> $LOG_FILE" &
 }
 
 setup_iptables() {

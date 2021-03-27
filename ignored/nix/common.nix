@@ -1056,12 +1056,8 @@ in {
         } // pkgs.lib.optionalAttrs (prefs.enableK3s) {
           "k3s" = let
             k3sPatchScript = pkgs.writeShellScript "add-k3s-config" ''
-              if k3s kubectl patch -n kube-system services traefik; then
-                  ${pkgs.k3s}/bin/k3s kubectl patch -n kube-system services traefik -p '{"spec":{"ports":[{"name":"http","nodePort":30080,"port":80,"protocol":"TCP","targetPort":"http"},{"name":"https","nodePort":30443,"port":443,"protocol":"TCP","targetPort":"https"}]}}'
-              fi
-              if [[ -f /etc/rancher/k3s/k3s.yaml ]]; then
-                  ${pkgs.coreutils}/bin/chown ${prefs.owner} /etc/rancher/k3s/k3s.yaml
-              fi
+              ${pkgs.k3s}/bin/k3s kubectl patch -n kube-system services traefik -p '{"spec":{"ports":[{"name":"http","nodePort":30080,"port":30080,"protocol":"TCP","targetPort":"http"},{"name":"https","nodePort":30443,"port":30443,"protocol":"TCP","targetPort":"https"}]}}' || ${pkgs.coreutils}/bin/true
+              ${pkgs.coreutils}/bin/chown ${prefs.owner} /etc/rancher/k3s/k3s.yaml || ${pkgs.coreutils}/bin/true
             '';
           in {
             path = if prefs.enableZfs then [ pkgs.zfs ] else [ ];
@@ -1088,11 +1084,91 @@ in {
         };
     };
 
+    clash-redir = let
+      name = "clash-redir";
+      updaterName = "${name}-config-updater";
+      script = builtins.path {
+        inherit name;
+        path = prefs.myDotfilePath "dot_bin/executable_clash-redir";
+      };
+    in {
+      services."${name}" = {
+        description = "transparent proxy with clash";
+        enable = prefs.enableClashRedir;
+        wantedBy = [ "default.target" ];
+        wants = [ "network-online.target" ];
+        after = [ "network-online.target" ];
+        path = [
+          pkgs.coreutils
+          pkgs.clash
+          pkgs.libcap
+          pkgs.iptables
+          pkgs.iproute
+          pkgs.bash
+          pkgs.gawk
+        ];
+        serviceConfig = {
+          Type = "forking";
+          ExecStart = "${script} start";
+          ExecStop = "${script} stop";
+        };
+      };
+      services."${updaterName}" = let
+        clash-config-update-script =
+          pkgs.writeShellScript "clash-config-update-script" ''
+            set -xeu
+            if ! CLASH_URL="$(cat /run/secrets/clash-config-url)"; then
+                exit 0
+            fi
+            CLASH_USER=clash
+            CLASH_UID="$(id -u "$CLASH_USER")"
+            CLASH_TEMP_CONFIG="''${TMPDIR:-/tmp}/clash-config-$(date -u +"%Y-%m-%dT%H:%M:%SZ").yaml"
+            CLASH_CONFIG=/etc/clash-redir/default.yaml
+            if ! sudo -u "$CLASH_USER" curl "$CLASH_URL" -o "$CLASH_TEMP_CONFIG"; then
+                if ! curl "$CLASH_URL" -o "$CLASH_TEMP_CONFIG"; then
+                    >&2 echo "Failed to download clash config"
+                    exit 1
+                fi
+            fi
+            if diff "$CLASH_TEMP_CONFIG" "$CLASH_CONFIG";
+                then exit 0
+            fi
+            cp "$CLASH_TEMP_CONFIG" "$CLASH_CONFIG"
+            if ! curl -X PUT -H 'content-type: application/json' -d "{\"path\": \"$CLASH_CONFIG\"}" 'http://localhost:9090/configs/'; then
+                systemctl restart ${name}
+            fi
+          '';
+      in {
+        description = "update clash config";
+        enable = prefs.enableClashRedir;
+        wantedBy = [ "default.target" ];
+        wants = [ "network-online.target" ];
+        after = [ "network-online.target" ];
+        path =
+          [ pkgs.coreutils pkgs.systemd pkgs.curl pkgs.diffutils pkgs.libcap ];
+        serviceConfig = {
+          Type = "oneshot";
+          ExecStart = "${clash-config-update-script}";
+        };
+      };
+      timers."${updaterName}" = {
+        enable = prefs.enableClashRedir;
+        wantedBy = [ "default.target" ];
+        onFailure = [ "notify-systemd-unit-failures@${updaterName}.service" ];
+        timerConfig = {
+          OnCalendar = "hourly";
+          Unit = "${name}-config-updater.service";
+          Persistent = true;
+        };
+      };
+    };
+
     all = [
       myMounts
       # The following is not pure, disable it for now.
       # myPackages
       myServices
+      clash-redir
     ];
   in (builtins.foldl' (a: e: pkgs.lib.recursiveUpdate a e) { } all) // {
     user = let

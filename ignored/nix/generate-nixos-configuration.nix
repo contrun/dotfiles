@@ -66,11 +66,7 @@ let
         path = sopsSecretsFile;
       }}";
       secrets = {
-        hello = {
-          mode = "0440";
-          owner = prefs.owner;
-          group = prefs.ownerGroup;
-        };
+        clash-config-url = { };
         yandex-passwd = {
           mode = "0400";
           owner = prefs.owner;
