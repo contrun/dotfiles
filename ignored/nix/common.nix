@@ -705,30 +705,28 @@ in {
     };
 
     autossh = {
-      sessions =
-        pkgs.lib.optionals (prefs.enableAutossh && prefs.myLibs ? myAutossh)
-        (let
-          go = server:
-            let
-              sshPort = if prefs.enableSslh then prefs.sslhPort else 22;
-              autosshPorts = prefs.myLibs.myAutossh {
-                hostname = prefs.hostname;
-                serverName = server;
-              };
-              extraArguments = let
-                getReverseArgument = port:
-                  "-R :${builtins.toString port}:localhost:${
-                    builtins.toString sshPort
-                  }";
-                reversePorts = builtins.concatStringsSep " "
-                  (builtins.map (x: getReverseArgument x) autosshPorts);
-              in "-o ServerAliveInterval=15 -o ServerAliveCountMax=4 -N ${reversePorts} ${server}";
-            in {
-              extraArguments = extraArguments;
-              name = server;
-              user = prefs.owner;
+      sessions = pkgs.lib.optionals (prefs.enableAutossh) (let
+        go = server:
+          let
+            sshPort = if prefs.enableSslh then prefs.sslhPort else 22;
+            autosshPorts = prefs.myLib.autossh {
+              hostname = prefs.hostname;
+              serverName = server;
             };
-        in map go prefs.autosshServers);
+            extraArguments = let
+              getReverseArgument = port:
+                "-R :${builtins.toString port}:localhost:${
+                  builtins.toString sshPort
+                }";
+              reversePorts = builtins.concatStringsSep " "
+                (builtins.map (x: getReverseArgument x) autosshPorts);
+            in "-o ServerAliveInterval=15 -o ServerAliveCountMax=4 -N ${reversePorts} ${server}";
+          in {
+            extraArguments = extraArguments;
+            name = server;
+            user = prefs.owner;
+          };
+      in map go prefs.autosshServers);
     };
     eternal-terminal = { enable = prefs.enableEternalTerminal; };
     printing = {

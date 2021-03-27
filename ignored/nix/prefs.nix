@@ -56,11 +56,8 @@ let
     nixosSystem = "x86_64-linux";
     myNixConfigPath = path: ./. + "/${path}";
     myDotfilePath = path: ./../.. + "/${path}";
-    myLibsPath = ./libs;
-    myLibs = if (builtins.pathExists self.myLibsPath) then
-      (import self.myLibsPath)
-    else
-      { };
+    myLibPath = self.myNixConfigPath "lib/mkLib.nix";
+    myLib = import self.myLibPath { inherit pkgs; };
     consoleFont = null;
     hostname = "hostname";
     hostId = "346b7a87";
