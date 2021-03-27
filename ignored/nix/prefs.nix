@@ -46,7 +46,7 @@ let
     ownerGroupGid = 100;
     home = "/home/${self.owner}";
     nixosSystem = "x86_64-linux";
-    myLibsPath = "${self.home}/.config/nixpkgs/libs";
+    myLibsPath = ./libs;
     myLibs = if (builtins.pathExists self.myLibsPath) then
       (import self.myLibsPath)
     else
