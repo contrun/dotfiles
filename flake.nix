@@ -27,7 +27,7 @@
     };
   };
 
-  outputs = { self, ... }@inputs:
+  outputs = { ... }@inputs:
     let
       systemsList = [
         "x86_64-linux"
@@ -40,27 +40,35 @@
       systems =
         builtins.foldl' (acc: current: acc // { "${current}" = current; }) { }
         systemsList;
+
       myRootPath = path: ./. + "/root${path}";
       pathOr = path: default:
         if (builtins.pathExists path) then path else default;
+
       getHostPreference = hostname:
-        (import (myRootPath "/etc/nixos/pref.nix")) { inherit hostname; };
-      generateHostConfigurations = hostname:
+        let
+          old =
+            (import (myRootPath "/etc/nixos/prefs.nix")) { inherit hostname; };
+        in old // {
+          system = systems.hostname or old.nixosSystem or "x86_64-linux";
+        };
+
+      generateHostConfigurations = hostname: inputs:
         let
           prefs = getHostPreference hostname;
-          isMinimalSystem = prefs.isMinimalSystem;
-          system = systems.hostname or prefs.nixosSystem or "x86_64-linux";
+          inherit (prefs) isMinimalSystem system;
+
           moduleArgs = {
-            inherit inputs system prefs hostname isMinimalSystem;
+            inherit inputs hostname prefs isMinimalSystem system;
           };
 
           systemInfo = { lib, pkgs, config, ... }: {
-            system.configurationRevision = lib.mkIf (self ? rev) self.rev;
-            system.nixos.label = lib.mkIf
-              (self.sourceInfo ? lastModifiedDate && self.sourceInfo ? shortRev)
-              "flake.${
-                builtins.substring 0 8 self.sourceInfo.lastModifiedDate
-              }.${self.sourceInfo.shortRev}";
+            system.configurationRevision =
+              lib.mkIf (inputs.self ? rev) inputs.self.rev;
+            system.nixos.label = lib.mkIf (inputs.self.sourceInfo
+              ? lastModifiedDate && inputs.self.sourceInfo ? shortRev) "flake.${
+                builtins.substring 0 8 inputs.self.sourceInfo.lastModifiedDate
+              }.${inputs.self.sourceInfo.shortRev}";
           };
           nixpkgsOverlay = { config, pkgs, system, inputs, ... }: {
             nixpkgs.overlays = [
@@ -710,8 +718,9 @@
             specialArgs = moduleArgs;
           };
         };
-      allConfigurations = builtins.foldl'
-        (acc: current: acc // generateHostConfigurations current) { }
+    in {
+      nixosConfigurations = builtins.foldl'
+        (acc: current: acc // generateHostConfigurations current inputs) { }
         ([ "default" "ssg" "jxt" "shl" ] ++ systemsList);
-    in { nixosConfigurations = allConfigurations; };
+    };
 }

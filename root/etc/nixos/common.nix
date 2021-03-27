@@ -1,6 +1,6 @@
 { config, pkgs, ... }@args:
 let
-  prefs = import ./pref.nix args;
+  prefs = import ./prefs.nix args;
   stable = pkgs.stable;
   unstable = pkgs.unstable;
 in {
@@ -774,6 +774,8 @@ in {
       docker = true;
     };
 
+    cfssl = { enable = prefs.enableCfssl; };
+
     sslh = {
       enable = prefs.enableSslh;
       port = prefs.sslhPort;
@@ -973,7 +975,7 @@ in {
       };
     };
 
-    systemdMounts = {
+    myMounts = {
       automounts = let
         nextcloud = {
           enable = prefs.enableNextcloud;
@@ -1017,69 +1019,75 @@ in {
         };
       in [ nextcloud yandex ];
     };
-  in {
-    inherit (systemdMounts) automounts mounts;
 
-    packages = let
-      usrLocalPrefix = "/usr/local/lib/systemd/system";
-      etcPrefix = "/etc/systemd/system";
-      makeUnit = from: to: unit:
-        pkgs.writeTextFile {
-          name = builtins.replaceStrings [ "@" ] [ "__" ] unit;
-          text = builtins.readFile "${from}/${unit}";
-          destination = "${to}/${unit}";
-        };
-      getAllUnits = from: to:
-        let
-          files = builtins.readDir from;
-          units = pkgs.lib.attrNames
-            (pkgs.lib.filterAttrs (n: v: v == "regular" || v == "symlink")
-              files);
-          newUnits = map (unit: makeUnit from to unit) units;
-        in pkgs.lib.optionals (builtins.pathExists from) newUnits;
-    in getAllUnits usrLocalPrefix etcPrefix;
-
-    timers = { };
-
-    services = notify-systemd-unit-failures // (if prefs.enableZerotierone then
-      { }
-    else {
-      # build zero tier one anyway, but enable it on prefs.enableZerotierone is true;
-      "zerotierone" = { wantedBy = pkgs.lib.mkForce [ ]; };
-    }) // pkgs.lib.optionalAttrs (prefs.enableK3s) {
-      "k3s" = let
-        k3sPatchScript = pkgs.writeShellScript "add-k3s-config" ''
-          if k3s kubectl patch -n kube-system services traefik; then
-              ${pkgs.k3s}/bin/k3s kubectl patch -n kube-system services traefik -p '{"spec":{"ports":[{"name":"http","nodePort":30080,"port":80,"protocol":"TCP","targetPort":"http"},{"name":"https","nodePort":30443,"port":443,"protocol":"TCP","targetPort":"https"}]}}'
-          fi
-          if [[ -f /etc/rancher/k3s/k3s.yaml ]]; then
-              ${pkgs.coreutils}/bin/chown ${prefs.owner} /etc/rancher/k3s/k3s.yaml
-          fi
-        '';
-      in {
-        path = if prefs.enableZfs then [ pkgs.zfs ] else [ ];
-        serviceConfig = { ExecStartPost = [ "${k3sPatchScript}" ]; };
-      };
-    } // pkgs.lib.optionalAttrs (prefs.enableCodeServer) {
-      "code-server" = {
-        enable = true;
-        description = "Remote VSCode Server";
-        after = [ "network.target" ];
-        wantedBy = [ "multi-user.target" ];
-        path = [ pkgs.go pkgs.git pkgs.direnv ];
-
-        serviceConfig = {
-          Type = "simple";
-          ExecStart =
-            "${pkgs.code-server}/bin/code-server --user-data-dir ${prefs.home}/.vscode --disable-telemetry";
-          WorkingDirectory = prefs.home;
-          NoNewPrivileges = true;
-          User = prefs.owner;
-          Group = prefs.ownerGroup;
-        };
-      };
+    myPackages = {
+      packages = let
+        usrLocalPrefix = "/usr/local/lib/systemd/system";
+        etcPrefix = "/etc/systemd/system";
+        makeUnit = from: to: unit:
+          pkgs.writeTextFile {
+            name = builtins.replaceStrings [ "@" ] [ "__" ] unit;
+            text = builtins.readFile "${from}/${unit}";
+            destination = "${to}/${unit}";
+          };
+        getAllUnits = from: to:
+          let
+            files = builtins.readDir from;
+            units = pkgs.lib.attrNames
+              (pkgs.lib.filterAttrs (n: v: v == "regular" || v == "symlink")
+                files);
+            newUnits = map (unit: makeUnit from to unit) units;
+          in pkgs.lib.optionals (builtins.pathExists from) newUnits;
+      in getAllUnits usrLocalPrefix etcPrefix;
     };
 
+    myServices = {
+      services = notify-systemd-unit-failures // pkgs.lib.optionalAttrs
+        (prefs.buildZerotierone && !prefs.enableZerotierone) {
+          # build zero tier one anyway, but enable it on prefs.enableZerotierone is true;
+          "zerotierone" = { wantedBy = pkgs.lib.mkForce [ ]; };
+        } // pkgs.lib.optionalAttrs (prefs.enableK3s) {
+          "k3s" = let
+            k3sPatchScript = pkgs.writeShellScript "add-k3s-config" ''
+              if k3s kubectl patch -n kube-system services traefik; then
+                  ${pkgs.k3s}/bin/k3s kubectl patch -n kube-system services traefik -p '{"spec":{"ports":[{"name":"http","nodePort":30080,"port":80,"protocol":"TCP","targetPort":"http"},{"name":"https","nodePort":30443,"port":443,"protocol":"TCP","targetPort":"https"}]}}'
+              fi
+              if [[ -f /etc/rancher/k3s/k3s.yaml ]]; then
+                  ${pkgs.coreutils}/bin/chown ${prefs.owner} /etc/rancher/k3s/k3s.yaml
+              fi
+            '';
+          in {
+            path = if prefs.enableZfs then [ pkgs.zfs ] else [ ];
+            serviceConfig = { ExecStartPost = [ "${k3sPatchScript}" ]; };
+          };
+        } // pkgs.lib.optionalAttrs (prefs.enableCodeServer) {
+          "code-server" = {
+            enable = true;
+            description = "Remote VSCode Server";
+            after = [ "network.target" ];
+            wantedBy = [ "multi-user.target" ];
+            path = [ pkgs.go pkgs.git pkgs.direnv ];
+
+            serviceConfig = {
+              Type = "simple";
+              ExecStart =
+                "${pkgs.code-server}/bin/code-server --user-data-dir ${prefs.home}/.vscode --disable-telemetry";
+              WorkingDirectory = prefs.home;
+              NoNewPrivileges = true;
+              User = prefs.owner;
+              Group = prefs.ownerGroup;
+            };
+          };
+        };
+    };
+
+    all = [
+      myMounts
+      # The following is not pure, disable it for now.
+      # myPackages
+      myServices
+    ];
+  in (builtins.foldl' (a: e: pkgs.lib.recursiveUpdate a e) { } all) // {
     user = let
       ddns = let
         name = "ddns";

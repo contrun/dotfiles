@@ -87,6 +87,7 @@ let
       speed-check-mode = "ping,tcp:80";
       log-level = "info";
     };
+    enableCfssl = false;
     enableSslh = true;
     sslhPort = 44443;
     enableTailScale = !self.isMinimalSystem;
@@ -320,6 +321,7 @@ let
       enableX2goServer = true;
       enableHidpi = false;
       maxJobs = 6;
+      enableCfssl = true;
       enableK3s = true;
       enableWireless = true;
       extraModulePackages = [ rtl8188gu ];
