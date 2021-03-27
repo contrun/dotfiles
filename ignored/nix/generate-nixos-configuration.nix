@@ -1,10 +1,8 @@
 let
-  myNixConfigPath = path: ./. + "/${path}";
-  myDotfilePath = path: ./../.. + "/${path}";
   pathOr = path: default: if (builtins.pathExists path) then path else default;
 in { prefs, inputs }:
 let
-  inherit (prefs) hostname isMinimalSystem system;
+  inherit (prefs) hostname isMinimalSystem system myDotfilePath myNixConfigPath;
 
   moduleArgs = { inherit inputs hostname prefs isMinimalSystem system; };
 

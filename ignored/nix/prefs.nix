@@ -54,6 +54,8 @@ let
     ownerGroupGid = 100;
     home = "/home/${self.owner}";
     nixosSystem = "x86_64-linux";
+    myNixConfigPath = path: ./. + "/${path}";
+    myDotfilePath = path: ./../.. + "/${path}";
     myLibsPath = ./libs;
     myLibs = if (builtins.pathExists self.myLibsPath) then
       (import self.myLibsPath)

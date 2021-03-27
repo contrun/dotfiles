@@ -919,7 +919,6 @@ in {
   home = {
     extraOutputsToInstall = [ "dev" "lib" "doc" "info" "devdoc" "out" ];
     packages = allPackages;
-    # priority = builtins.trace 4 4;
     stateVersion = "21.05";
   };
   manual.manpages.enable = true;

@@ -3,6 +3,18 @@ let
   prefs = import ./prefs.nix args;
   stable = pkgs.stable;
   unstable = pkgs.unstable;
+  impure = {
+    mitmproxyCAFile = "${prefs.home}/.mitmproxy/mitmproxy-ca.pem";
+    wpaSupplicantConfigFile =
+      "${prefs.home}/.config/wpa_supplicant/wpa_supplicant.conf";
+    consoleKeyMapFile = "${prefs.home}/.local/share/kbd/keymaps/personal.map";
+    sslhConfigFile = "${prefs.home}/.config/sslh/sslh.conf";
+    sshAuthorizedKeys = "${prefs.home}/.ssh/authorized_keys";
+    sshHostKeys = [
+      "${prefs.home}/.local/secrets/initrd/ssh_host_rsa_key"
+      "${prefs.home}/.local/secrets/initrd/ssh_host_ed25519_key"
+    ];
+  };
 in {
   imports =
     (builtins.filter (x: builtins.pathExists x) [ ./machine.nix ./cachix.nix ]);
@@ -16,9 +28,11 @@ in {
         "Certification Authority of WoSign G2"
       ];
       certificateFiles = let
-        mitmCA = let p = "${prefs.home}/.mitmproxy/mitmproxy-ca.pem";
-        in pkgs.lib.optionals (builtins.pathExists p)
-        [ (builtins.toFile "mitmproxy-ca.pem" (builtins.readFile p)) ];
+        mitmCA = pkgs.lib.optionals (builtins.pathExists impure.mitmproxyCAFile)
+          [
+            (builtins.toFile "mitmproxy-ca.pem"
+              (builtins.readFile impure.mitmproxyCAFile))
+          ];
         CAs = [ ];
       in mitmCA ++ CAs;
     };
@@ -69,9 +83,11 @@ in {
     supplicant = pkgs.lib.optionalAttrs prefs.enableSupplicant {
       "WLAN" = {
         configFile = let
-          myPath = "${prefs.home}/.config/wpa_supplicant/wpa_supplicant.conf";
           defaultPath = "/etc/wpa_supplicant.conf";
-          path = if builtins.pathExists myPath then myPath else defaultPath;
+          path = if builtins.pathExists impure.wpaSupplicantConfigFile then
+            impure.wpaSupplicantConfigFile
+          else
+            defaultPath;
         in {
           # TODO: figure out why this does not work.
           inherit (path)
@@ -85,7 +101,7 @@ in {
   };
 
   console = {
-    keyMap = let p = "${prefs.home}/.local/share/kbd/keymaps/personal.map";
+    keyMap = let p = impure.consoleKeyMapFile;
     in if builtins.pathExists p then
       (builtins.toFile "personal-keymap" (builtins.readFile p))
     else
@@ -435,13 +451,7 @@ in {
         experimental-features = "nix-command flakes";
       };
     };
-    overlaysAttr =
-      let overlaysFile = "${prefs.home}/.config/nixpkgs/overlays.nix";
-      in if (builtins.pathExists overlaysFile) then {
-        overlays = import overlaysFile;
-      } else
-        { };
-  in overlaysAttr // configAttr // cross;
+  in configAttr // cross;
 
   hardware = {
     enableAllFirmware = true;
@@ -479,7 +489,7 @@ in {
       jdks = builtins.filter (x: pkgs ? x) prefs.linkedJdks;
       addjdk = jdk:
         if pkgs ? jdk then
-          let p = pkgs.${jdk}.prefs.home; in "ln -sfn ${p} /local/jdks/${jdk}"
+          let p = pkgs.${jdk}.home; in "ln -sfn ${p} /local/jdks/${jdk}"
         else
           "";
     in pkgs.lib.optionalAttrs (prefs.enableJava && jdks != [ ]) {
@@ -781,7 +791,7 @@ in {
       port = prefs.sslhPort;
       transparent = false;
       verbose = true;
-    } // (let p = "${prefs.home}/.config/sslh/sslh.conf";
+    } // (let p = impure.sslhConfigFile;
     in pkgs.lib.optionalAttrs (builtins.pathExists p) {
       appendConfig = (builtins.readFile p);
     });
@@ -950,7 +960,6 @@ in {
     };
     docker = {
       enable = prefs.enableDocker && !prefs.replaceDockerWithPodman;
-      package = unstable.docker or pkgs.docker;
       storageDriver = prefs.dockerStorageDriver;
       autoPrune.enable = true;
     };
@@ -1308,14 +1317,12 @@ in {
     initrd.network = {
       enable = true;
       ssh = let
-        f = "${prefs.home}/.ssh/authorized_keys";
+        f = impure.sshAuthorizedKeys;
         authorizedKeys = pkgs.lib.optionals (builtins.pathExists f)
           (builtins.filter (x: x != "")
             (pkgs.lib.splitString "\n" (builtins.readFile f)));
-        hostKeys = builtins.filter (x: builtins.pathExists x) [
-          "${prefs.home}/.local/secrets/initrd/ssh_host_rsa_key"
-          "${prefs.home}/.local/secrets/initrd/ssh_host_ed25519_key"
-        ];
+        hostKeys =
+          builtins.filter (x: builtins.pathExists x) impure.sshHostKeys;
       in {
         inherit (prefs) authorizedKeys hostKeys;
         enable = false && prefs.enableBootSSH && prefs.authorizedKeys != [ ]
