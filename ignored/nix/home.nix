@@ -34,7 +34,7 @@ let
     if pkg ? overrideAttrs then
       pkg.overrideAttrs (oldAttrs: func oldAttrs)
     else
-      pkgs.lib.warn "${pkg.name or pkg} does not have attribute overrideAttrs"
+      builtins.trace "${pkg.name or pkg} does not have attribute overrideAttrs"
       pkg;
   dontCheckPkg = pkg:
     overridePkg pkg (oldAttrs: {

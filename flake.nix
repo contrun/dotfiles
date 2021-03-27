@@ -44,13 +44,15 @@
         systemsList;
 
       getHostPreference = hostname:
-        let old = (import (myNixConfigPath "prefs.nix")) { inherit hostname; };
+        let
+          old =
+            (import (myNixConfigPath "prefs.nix")) { inherit hostname inputs; };
         in old // {
           system = systems.hostname or old.nixosSystem or "x86_64-linux";
         };
 
       generateHostConfigurations = hostname: inputs:
-        import (myNixConfigPath "generateNixOSConfiguration.nix") {
+        import (myNixConfigPath "generate-nixos-configuration.nix") {
           prefs = getHostPreference hostname;
           inputs = inputs;
         };

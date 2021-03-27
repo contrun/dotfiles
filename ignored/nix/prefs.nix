@@ -3,33 +3,41 @@ let
   fix = f: let x = f x; in x;
   extends = f: rattrs: self: let super = rattrs self; in super // f self super;
 
-  prefFiles = [ ./override.nix ];
+  prefFiles = [ ./prefs.local.nix ];
 
-  hasPkgs = args ? pkgs;
-  pkgs = builtins.trace
-    "Calling pref ${if hasPkgs then "with" else "without"} argument pkgs"
-    (args.pkgs or (import <nixpkgs> { }));
+  pkgs = let
+    hasPkgs = args ? pkgs;
+    hasInputs = args ? inputs;
+    hasHostname = args ? hostname;
+  in builtins.trace
+  "calling prefs ${if hasPkgs then "with" else "without"} argument pkgs, ${
+    if hasInputs then "with" else "without"
+  } argument inputs, ${
+    if hasHostname then
+      ("with argument hostname " + args.hostname)
+    else
+      "without argument hostname"
+  }" (args.pkgs or (import (args.inputs.nixpkgs-stable or <nixpkgs>) { }));
 
-  hasHostname = args ? hostname;
-  hostname = builtins.trace "Calling pref ${
-      if hasHostname then
-        ("with argument hostname " + args.hostname)
-      else
-        "without argument hostname"
-    }" (args.hostname or (let
-      # LC_CTYPE=C tr -dc 'a-z' < /dev/urandom | head -c3 | tee /tmp/hostname
-      hostNameFiles = if builtins.pathExists "/tmp/nixos_bootstrap" then [
-        /tmp/etc/hostname
-        /mnt/etc/hostname
-        /tmp/hostname
-        /etc/hostname
-      ] else
-        [ /etc/hostname ];
-      fs = builtins.filter (x: builtins.pathExists x) hostNameFiles;
-      f = builtins.elemAt fs 0;
-      c = builtins.readFile f;
-      l = builtins.match "([[:alnum:]]+)[[:space:]]*" c;
-    in builtins.elemAt l 0));
+  hostname = args.hostname or (let
+    # LC_CTYPE=C tr -dc 'a-z' < /dev/urandom | head -c3 | tee /tmp/hostname
+    hostNameFiles = if builtins.pathExists "/tmp/nixos_bootstrap" then [
+      /tmp/etc/hostname
+      /mnt/etc/hostname
+      /tmp/hostname
+      /etc/hostname
+    ] else
+      [ /etc/hostname ];
+    fs = builtins.filter (x:
+      let e = builtins.pathExists x;
+      in builtins.trace "hostname file ${x} exists? ${builtins.toString e}" e)
+      hostNameFiles;
+    f = builtins.elemAt fs 0;
+    c = builtins.readFile f;
+    l = builtins.match "([[:alnum:]]+)[[:space:]]*" c;
+    newHostname = builtins.elemAt l 0;
+  in builtins.trace "obtained new hostname ${newHostname} from disk"
+  newHostname);
   hostId = let
     hash = builtins.trace ''
       Hashing hostname to get hostId by printf "%s" "hostname: ${hostname}" |  sha512sum''
@@ -292,7 +300,9 @@ let
   };
 
   hostSpecific = self: super:
-    let rtl8188gu = (self.kernelPackages.callPackage ./rtl8188gu.nix { });
+    let
+      rtl8188gu =
+        (self.kernelPackages.callPackage ./hardware/rtl8188gu.nix { });
     in {
       inherit hostname hostId;
     } // (if hostname == "default" then {
@@ -373,4 +383,5 @@ let
 
   final = fix (builtins.foldl' (acc: override: extends override acc) default
     ([ hostSpecific ] ++ overrides));
-in builtins.trace final final
+in builtins.trace "final configuration for ${hostname}"
+(builtins.trace final final)
