@@ -162,6 +162,13 @@ let
       ];
     }
     {
+      name = "development tools (more preferred)";
+      priority = 38;
+      packages = getPackages [
+        "myPackages.python"
+      ];
+    }
+    {
       name = "development tools (preferred)";
       priority = 39;
       packages = getPackages [
@@ -177,6 +184,7 @@ let
         "gnumake"
         "gitAndTools.git-sync"
         "opencl-headers"
+        "myPackages.python"
       ];
     }
     {
@@ -436,7 +444,7 @@ let
         "libnfnetlink"
         "mkcert"
         "glib-networking"
-        "myPackages.python"
+        "myPackages.python2"
         "myPackages.haskell"
         "perlPackages.Appcpanminus"
         "perlPackages.locallib"

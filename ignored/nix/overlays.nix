@@ -393,8 +393,7 @@
 
         python2 = with super;
           python2Full.withPackages
-          (ps: with ps; [ pip setuptools sortedcontainers pycparser ]);
-        # (ps: with ps; [ pip setuptools pynvim jmespath pylint flake8 ]);
+          (ps: with ps; [ pip setuptools sortedcontainers pycparser pyyaml ]);
 
         texLive = self.texlive.combine { inherit (self.texlive) scheme-full; };
 
