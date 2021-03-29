@@ -29,7 +29,7 @@
 
   outputs = { ... }@inputs:
     let
-      myNixConfigPath = path: ./. + "/ignored/nix/${path}";
+      getNixConfig = path: ./. + "/ignored/nix/${path}";
 
       systemsList = [
         "x86_64-linux"
@@ -46,13 +46,13 @@
       getHostPreference = hostname:
         let
           old =
-            (import (myNixConfigPath "prefs.nix")) { inherit hostname inputs; };
+            (import (getNixConfig "prefs.nix")) { inherit hostname inputs; };
         in old // {
           system = systems.hostname or old.nixosSystem or "x86_64-linux";
         };
 
       generateHostConfigurations = hostname: inputs:
-        import (myNixConfigPath "generate-nixos-configuration.nix") {
+        import (getNixConfig "generate-nixos-configuration.nix") {
           prefs = getHostPreference hostname;
           inputs = inputs;
         };

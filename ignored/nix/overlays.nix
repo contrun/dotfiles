@@ -357,6 +357,9 @@
         lua = super.lua.withPackages
           (ps: with ps; [ busted luafilesystem luarocks lua-lsp nvim-client ]);
 
+        jupyterhub = (super.pkgs.python3.withPackages
+          (p: with p; [ jupyterhub jupyterhub-systemdspawner ]));
+
         ruby = super.ruby_2_7.withPackages (ps:
           with ps; [
             rake

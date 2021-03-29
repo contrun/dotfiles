@@ -184,7 +184,6 @@ let
         "gnumake"
         "gitAndTools.git-sync"
         "opencl-headers"
-        "myPackages.python"
       ];
     }
     {
@@ -537,6 +536,7 @@ let
         "aria2"
         "timewarrior"
         "tinc"
+        "nebula"
         "tcpdump"
         "geoipWithDatabase"
         # "syncthing"

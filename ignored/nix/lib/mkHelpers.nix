@@ -1,4 +1,4 @@
-{ pkgs, ... }@args: {
+{ pkgs, ... }@args: rec {
   atoi = string:
     with builtins;
     let
@@ -29,4 +29,12 @@
         in basePort + n * bias + port;
       go = n: getPort hostname serverName n;
     in map go [ 1 2 ];
+
+  getAttrOrNull = attrset: path:
+    builtins.foldl' (acc: x: if acc ? ${x} then acc.${x} else null) attrset
+    (pkgs.lib.splitString "." path);
+
+  mkIfAttrExists = attrset: path:
+    let r = getAttrOrNull attrset path;
+    in pkgs.lib.mkIf (r != null) r;
 }

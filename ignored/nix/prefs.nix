@@ -54,10 +54,10 @@ let
     ownerGroupGid = 100;
     home = "/home/${self.owner}";
     nixosSystem = "x86_64-linux";
-    myNixConfigPath = path: ./. + "/${path}";
-    myDotfilePath = path: ./../.. + "/${path}";
-    myLibPath = self.myNixConfigPath "lib/mkLib.nix";
-    myLib = import self.myLibPath { inherit pkgs; };
+    getNixConfig = path: ./. + "/${path}";
+    getDotfile = path: ./../.. + "/${path}";
+    helpersPath = self.getNixConfig "lib/mkHelpers.nix";
+    helpers = import self.helpersPath { inherit pkgs; };
     consoleFont = null;
     hostname = "hostname";
     hostId = "346b7a87";

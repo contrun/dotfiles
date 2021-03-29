@@ -2,7 +2,7 @@ let
   pathOr = path: default: if (builtins.pathExists path) then path else default;
 in { prefs, inputs }:
 let
-  inherit (prefs) hostname isMinimalSystem system myDotfilePath myNixConfigPath;
+  inherit (prefs) hostname isMinimalSystem system getDotfile getNixConfig;
 
   moduleArgs = { inherit inputs hostname prefs isMinimalSystem system; };
 
@@ -44,19 +44,19 @@ let
 
   hardwareConfiguration = if isMinimalSystem then
     import
-    (pathOr (myNixConfigPath "hardware/hardware-configuration.${hostname}.nix")
-      (myNixConfigPath "hardware/hardware-configuration.example.nix"))
+    (pathOr (getNixConfig "hardware/hardware-configuration.${hostname}.nix")
+      (getNixConfig "hardware/hardware-configuration.example.nix"))
   else
     import
-    (pathOr (myNixConfigPath "hardware/hardware-configuration.${hostname}.nix")
+    (pathOr (getNixConfig "hardware/hardware-configuration.${hostname}.nix")
       /etc/nixos/hardware-configuration.nix);
 
-  commonConfiguration = import (myNixConfigPath "common.nix");
+  commonConfiguration = import (getNixConfig "common.nix");
 
-  overlaysConfiguration = import (myNixConfigPath "overlays.nix");
+  overlaysConfiguration = import (getNixConfig "overlays.nix");
 
   sopsConfiguration = let
-    sopsSecretsFile = myNixConfigPath "/sops/secrets.yaml";
+    sopsSecretsFile = getNixConfig "/sops/secrets.yaml";
     enableSops = builtins.pathExists sopsSecretsFile;
   in if enableSops then {
     sops = {
@@ -84,7 +84,7 @@ let
       users = {
         ${prefs.owner} = {
           _module.args = moduleArgs;
-          imports = [ (myNixConfigPath "/home.nix") ];
+          imports = [ (getNixConfig "/home.nix") ];
         };
       };
     };

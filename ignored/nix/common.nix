@@ -303,6 +303,7 @@ in {
         steam-run-native
         # aqemu
         wine
+        bpftool
         prefs.kernelPackages.perf
         prefs.kernelPackages.bpftrace
         prefs.kernelPackages.bcc
@@ -709,7 +710,7 @@ in {
         go = server:
           let
             sshPort = if prefs.enableSslh then prefs.sslhPort else 22;
-            autosshPorts = prefs.myLib.autossh {
+            autosshPorts = prefs.helpers.autossh {
               hostname = prefs.hostname;
               serverName = server;
             };
@@ -1089,7 +1090,7 @@ in {
       updaterName = "${name}-config-updater";
       script = builtins.path {
         inherit name;
-        path = prefs.myDotfilePath "dot_bin/executable_clash-redir";
+        path = prefs.getDotfile "dot_bin/executable_clash-redir";
       };
     in {
       services."${name}" = {
