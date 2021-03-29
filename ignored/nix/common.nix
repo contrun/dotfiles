@@ -1306,7 +1306,7 @@ in {
         onFailure = [ "notify-systemd-unit-failures@${updaterName}.service" ];
         timerConfig = {
           OnCalendar = "hourly";
-          Unit = "${name}-config-updater.service";
+          Unit = "${updaterName}.service";
           Persistent = true;
         };
       };

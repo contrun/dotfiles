@@ -137,7 +137,7 @@ jobs:
         nix-env --set-flag priority 1 cachix
         # Build a minimal nixos system
         # github actions does not support virtualization yet https://github.com/actions/virtual-environments/issues/183
-        nix build '.#nixosConfigurations.cicd.config.system.build.toplevel'
+        nix build --show-trace --keep-going --keep-failed '.#nixosConfigurations.cicd.config.system.build.toplevel'
         nix path-info '.#nixosConfigurations.cicd.config.system.build.toplevel' -sShr | sort -h -k2
         df -h
 
