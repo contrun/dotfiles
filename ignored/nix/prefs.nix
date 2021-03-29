@@ -331,6 +331,7 @@ let
     } else if hostname == "ssg" then {
       hostId = "034d2ba3";
       dpi = 128;
+      enableJupyter = true;
       enableX2goServer = true;
       enableHidpi = false;
       maxJobs = 6;
