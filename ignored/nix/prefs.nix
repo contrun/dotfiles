@@ -160,7 +160,7 @@ let
     enableAccountsDaemon = true;
     enableFlatpak = false;
     enableXdgPortal = false;
-    enableJupyter = true;
+    enableJupyter = false;
     enableEmacs = true;
     enableLocate = true;
     enableFail2ban = true;
@@ -307,6 +307,9 @@ let
       inherit hostname hostId;
     } // (if hostname == "default" then {
       isMinimalSystem = true;
+    } else if hostname == "cicd" then {
+      isMinimalSystem = true;
+      enableJupyter = true;
     } else if hostname == "uzq" then {
       enableHidpi = true;
       # enableAnbox = true;

@@ -59,6 +59,6 @@
     in {
       nixosConfigurations = builtins.foldl'
         (acc: current: acc // generateHostConfigurations current inputs) { }
-        ([ "default" "ssg" "jxt" "shl" ] ++ systemsList);
+        (["default" "cicd"] ++[ "ssg" "jxt" "shl" ] ++ systemsList);
     };
 }

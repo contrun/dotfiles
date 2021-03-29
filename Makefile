@@ -39,7 +39,7 @@ home-install:
 	chezmoi -c $(IGNOREDDIR)/chezmoi.toml -D $(DESTDIR) apply -v
 
 home-manager: home-install
-	home-manager switch -v --keep-going
+	home-manager switch -v --keep-going --keep-failed
 
 root-install:
 	(mkdir -p $(DESTROOTDIR); sudo chezmoi -c $(IGNOREDDIR)/chezmoi.toml -D $(DESTROOTDIR) -S $(ROOTDIR) apply -v)
@@ -50,13 +50,13 @@ deps-install deps-uninstall deps-reinstall:
 	test -f "$(IGNOREDDIR)/$(call script,$@).sh" && DESTDIR=$(DESTDIR) "$(IGNOREDDIR)/$(call script,$@).sh" "$(call action,$@)" || true
 
 nixos-rebuild-build: install
-	nixos-rebuild build --flake .#$(HOST) --show-trace --keep-going
+	nixos-rebuild build --flake .#$(HOST) --show-trace --keep-going --keep-failed
 
 nixos-rebuild-switch: install
-	sudo nixos-rebuild switch --flake .#$(HOST) --show-trace --keep-going
+	sudo nixos-rebuild switch --flake .#$(HOST) --show-trace --keep-going --keep-failed
 
 nixos-rebuild: install
-	git diff --exit-code && sudo nixos-rebuild switch --flake .#$(HOST) --show-trace --keep-going || (git stash; sudo nixos-rebuild switch --flake .#$(HOST) --show-trace --keep-going; git stash pop;)
+	git diff --exit-code && sudo nixos-rebuild switch --flake .#$(HOST) --show-trace --keep-going --keep-failed || (git stash; sudo nixos-rebuild switch --flake .#$(HOST) --show-trace --keep-going --keep-failed; git stash pop;)
 
 # Filters do not work yet, as cachix will upload the closure.
 cachix-push: nixos-rebuild-build
