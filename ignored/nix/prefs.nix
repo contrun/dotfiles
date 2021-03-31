@@ -356,13 +356,13 @@ let
         {
           hostName = "node1";
           system = "x86_64-linux";
-          maxJobs = 16;
+          maxJobs = 32;
           supportedFeatures = [ "kvm" "big-parallel" ];
         }
         {
           hostName = "node2";
           system = "x86_64-linux";
-          maxJobs = 16;
+          maxJobs = 32;
           supportedFeatures = [ "kvm" "big-parallel" ];
         }
       ];

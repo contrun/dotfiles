@@ -1980,6 +1980,19 @@ With arg N, insert N newlines."
         "lualatex -interaction nonstopmode -output-directory %o %f"))
 
 (setq org-directory (expand-file-name "~/Sync/docs/org-mode"))
+
+(defvar my/org-gtd-directory
+  (expand-file-name "gtd" org-directory)
+  "Where all the org gtd files are saved.")
+
+(defvar my/org-capture-directory
+  (expand-file-name "~/Sync/docs/org-mode/capture")
+  "Where all the org mode capture files are saved.")
+
+(defvar my/org-capture-quick-notes-directory
+  (expand-file-name "quick" my/org-capture-directory)
+  "Where all the org mode capture files are saved.")
+
 (setq org-agenda-include-all-todo nil)
 (setq org-agenda-skip-scheduled-if-done t)
 (setq org-agenda-skip-deadline-if-done t)
@@ -1990,8 +2003,8 @@ With arg N, insert N newlines."
 (setq org-agenda-mouse-1-follows-link t)
 (setq org-agenda-skip-unavailable-files t)
 (setq org-agenda-use-time-grid nil)
-;; (setq org-agenda-files
-;;       '("~/Sync/docs/org-mode/gtd/superset.org"))
+(setq org-agenda-files
+      (expand-file-name "superset.org" my/org-gtd-directory))
 (setq org-icalendar-use-scheduled '(event-if-todo todo-start))
 (setq org-icalendar-use-scheduled '(even-if-not-todo event-if-todo todo-due))
 
@@ -2011,14 +2024,6 @@ With arg N, insert N newlines."
 
 (use-package org-sidebar)
 
-(defvar my/org-capture-directory
-  (expand-file-name "~/Sync/docs/org-mode/capture")
-  "Where all the org mode capture files are saved.")
-
-(defvar my-org-capture-quick-notes-directory
-  (expand-file-name "quick" my/org-capture-directory)
-  "Where all the org mode capture files are saved.")
-
 (defun my/generate-org-quick-note-name ()
   "Generate hakyll file name."
   (setq my-org-note--title (read-string "Title: "))
@@ -2028,7 +2033,7 @@ With arg N, insert N newlines."
   (setq my-org-note--time (let ((system-time-locale "en_US.UTF-8"))
                             (format-time-string "%a, %d %b %Y %H:%M:%S %z")
                             ))
-  (expand-file-name (format "%s-%s.org" my-org-note--date my-org-note--title-slugified) my-org-capture-quick-notes-directory))
+  (expand-file-name (format "%s-%s.org" my-org-note--date my-org-note--title-slugified) my/org-capture-quick-notes-directory))
 
 (defun org-capture-template-goto-link ()
   "Set point for capturing at what capture target file+headline with headline set to %l would do."
@@ -2535,8 +2540,7 @@ With arg N, insert N newlines."
 ;;; Archiving
 
 (setq org-archive-mark-done nil)
-(setq org-archive-location "%s_archive::* Archive")
-
+(setq org-archive-location (expand-file-name "archive/%s_archive::" org-directory))
 
 
 (use-package org
@@ -2566,7 +2570,7 @@ With arg N, insert N newlines."
   (setq-default org-download-image-dir (expand-file-name "assets/images" org-roam-directory))
   (setq-default org-download-heading-lvl nil)
   :custom
-  (org-roam-directory (expand-file-name "~/Sync/docs/org-mode/roam/org"))
+  (org-roam-directory (expand-file-name "roam/org" org-directory))
   :bind (:map org-roam-mode-map
               (("s-r r" . org-roam)
                ("s-r f" . org-roam-find-file)
@@ -2589,12 +2593,12 @@ With arg N, insert N newlines."
   :init
   (setq org-icalendar-timezone "Asia/Shanghai")
   (setq org-export-with-todo-keywords t)
-  (setq org-icalendar-combined-agenda-file "~/Sync/docs/org-mode/gtd/export.ics")
+  (setq org-icalendar-combined-agenda-file (expand-file-name "export.ics" my/org-gtd-directory))
   (setq org-caldav-url "https://framagenda.org/remote.php/dav/calendars/v/")
   (setq org-caldav-calendars
-        '((:calendar-id "org-mode" :files ("~/Sync/docs/org-mode/gtd/superset.org")
+        `((:calendar-id "org-mode" :files (,(expand-file-name "superset.org" my/org-gtd-directory))
                         :skip-conditions (regexp "TEMP")
-                        :inbox "~/Sync/docs/org-mode/gtd/davinbox.org")))
+                        :inbox ,(expand-file-name "davinbox.org" my/org-gtd-directory))))
   ;; (run-with-idle-timer 900 100 'org-caldav-sync-quiet)
   (defun org-caldav-sync-quiet ()
     "Sync Org with calendar."
@@ -2613,8 +2617,7 @@ With arg N, insert N newlines."
         (dolist (calendar org-caldav-calendars)
           (org-caldav-debug-print 1 "Syncing first calendar entry:" calendar)
           (org-caldav-sync-calendar calendar))))
-    (message "Finished org-caldav-sync."))
-  )
+    (message "Finished org-caldav-sync.")))
 
 (use-package org-ref
   :init
