@@ -3,7 +3,7 @@ let
   fix = f: let x = f x; in x;
   extends = f: rattrs: self: let super = rattrs self; in super // f self super;
 
-  prefFiles = [ ./prefs.local.nix ];
+  prefFiles = [ ./prefs.local.nix ./prefs.secret.nix ];
 
   pkgs = let
     hasPkgs = args ? pkgs;
@@ -150,6 +150,19 @@ let
       excludes = "";
       user = self.owner;
     };
+    acmeEmail = "to_be_overridden@example.com";
+    acmeMainDoamin = "";
+    enableAcme = self.acmeMainDoamin != "";
+    acmeCerts = if self.enableAcme then {
+      "${self.acmeMainDoamin}" = {
+        domain = "*.${self.acmeMainDoamin}";
+        extraDomainNames =
+          [ self.acmeMainDoamin "*.hub.${self.acmeMainDoamin}" ];
+        dnsProvider = "cloudflare";
+        credentialsFile = "/run/secrets/cloudflare-dns-api-token";
+      };
+    } else
+      { };
     enableYandexDisk = self.nixosSystem == "x86_64-linux";
     yandexExcludedFiles = "docs/org-mode/roam/.emacs";
     enablePostgres = false;
@@ -338,6 +351,8 @@ let
       enableCfssl = true;
       enableK3s = true;
       enableWireless = true;
+      acmeEmail = "webmaster@${self.acmeMainDoamin}";
+      acmeMainDoamin = "cont.run";
       extraModulePackages = [ rtl8188gu ];
       consoleFont = "${pkgs.terminus_font}/share/consolefonts/ter-g20n.psf.gz";
     } else if hostname == "jxt" then {

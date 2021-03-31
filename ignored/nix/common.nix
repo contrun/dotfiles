@@ -20,6 +20,11 @@ in {
     (builtins.filter (x: builtins.pathExists x) [ ./machine.nix ./cachix.nix ]);
   security = {
     sudo = { wheelNeedsPassword = false; };
+    acme = {
+      acceptTerms = true;
+      email = prefs.acmeEmail;
+      certs = prefs.acmeCerts;
+    };
     pki = {
       caCertificateBlacklist = [
         "WoSign"

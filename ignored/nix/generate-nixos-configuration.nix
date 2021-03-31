@@ -72,7 +72,14 @@ let
           owner = prefs.owner;
           group = prefs.ownerGroup;
         };
-      };
+      } // (if prefs.enableAcme then {
+        cloudflare-dns-api-token = {
+          mode = "0400";
+          owner = "acme";
+          group = "acme";
+        };
+      } else
+        { });
     };
   } else
     { };
