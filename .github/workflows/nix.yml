@@ -70,7 +70,7 @@ jobs:
 
     - name: Setup Cachix
       if: ${{ steps.check-nix-inputs-update-available.conclusion != 'failure' }}
-      uses: cachix/cachix-action@565940cd14fa3685adb83359327b06de3e999f30
+      uses: cachix/cachix-action@2689c27f57daedc905895d92ad18fe5ce470df9e
       with:
         name: ${{ github.repository_owner }}
         extraPullNames: iohk
