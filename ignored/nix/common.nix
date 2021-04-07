@@ -183,10 +183,10 @@ in {
         nix-index
         nix-top
         # gnome3.adwaita-icon-theme
-        gnome3.dconf
-        gnome3.gsettings-desktop-schemas
-        gnome3.zenity
-        font-manager
+        # gnome3.dconf
+        # gnome3.gsettings-desktop-schemas
+        # gnome3.zenity
+        # font-manager
         udiskie
         fzf
         jq
@@ -305,7 +305,7 @@ in {
       ++ (if (prefs.nixosSystem == "x86_64-linux") then [
         xmobar
         hardinfo
-        steam-run-native
+        # steam-run-native
         # aqemu
         wine
         bpftool
@@ -841,22 +841,22 @@ in {
           language = "Rust";
         };
 
-        rKernel = (let
-          env = pkgs.rWrapper.override {
-            packages = with pkgs.rPackages; [ IRkernel ggplot2 ];
-          };
-        in {
-          displayName = "R";
-          argv = [
-            "${env}/bin/R"
-            "--slave"
-            "-e"
-            "IRkernel::main()"
-            "--args"
-            "{connection_file}"
-          ];
-          language = "R";
-        });
+        # rKernel = (let
+        #   env = pkgs.rWrapper.override {
+        #     packages = with pkgs.rPackages; [ IRkernel ggplot2 ];
+        #   };
+        # in {
+        #   displayName = "R";
+        #   argv = [
+        #     "${env}/bin/R"
+        #     "--slave"
+        #     "-e"
+        #     "IRkernel::main()"
+        #     "--args"
+        #     "{connection_file}"
+        #   ];
+        #   language = "R";
+        # });
 
         ansibleKernel = (let
           env = (pkgs.python3.withPackages
