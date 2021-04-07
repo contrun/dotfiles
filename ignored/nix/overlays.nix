@@ -37,7 +37,7 @@
         python3Full = overridePythonPackages super.python3Full;
         python3 = overridePythonPackages super.python3;
       } // (super.lib.mapAttrs (name: p: dontCheckPkg p) {
-        inherit (super) mitmproxy notmuch;
+        inherit (super) mitmproxy notmuch tracker;
       });
 
     shellsOverlay = self: super: {
@@ -252,7 +252,7 @@
               vty
               pandoc-types
               proto-lens
-              proto-lens-optparse
+              # proto-lens-optparse
               pipes
               network
               http-client
