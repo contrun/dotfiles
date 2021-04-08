@@ -1,5 +1,8 @@
 [genericSecret]
 command = "secretTool.py"
 
+[secret]
+command = "secretTool.py"
+
 [gpg]
 recipient = "backup@localhost.lan"

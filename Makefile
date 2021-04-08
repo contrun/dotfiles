@@ -36,13 +36,13 @@ update-upstreams:
 home-install:
 	[[ -f $(DESTDIR)/.config/Code/User/settings.json ]] || install -DT $(DIR)/dot_config/Code/User/settings.json $(DESTDIR)/.config/Code/User/settings.json
 	diff $(DESTDIR)/.config/Code/User/settings.json $(DIR)/dot_config/Code/User/settings.json || nvim -d $(DESTDIR)/.config/Code/User/settings.json $(DIR)/dot_config/Code/User/settings.json
-	chezmoi -c $(IGNOREDDIR)/chezmoi.toml -D $(DESTDIR) apply -v
+	chezmoi -c $(IGNOREDDIR)/chezmoi.toml -D $(DESTDIR) apply -v --keep-going
 
 home-manager: home-install
 	home-manager switch -v --keep-going --keep-failed
 
 root-install:
-	(mkdir -p $(DESTROOTDIR); sudo chezmoi -c $(IGNOREDDIR)/chezmoi.toml -D $(DESTROOTDIR) -S $(ROOTDIR) apply -v)
+	(mkdir -p $(DESTROOTDIR); sudo chezmoi -c $(IGNOREDDIR)/chezmoi.toml -D $(DESTROOTDIR) -S $(ROOTDIR) apply -v --keep-going)
 
 install: home-install root-install
 
@@ -68,7 +68,7 @@ nixos-update-channels:
 all-install: nixos-update-channels nixos-rebuild home-manager
 
 home-uninstall:
-	chezmoi -c $(IGNOREDDIR)/chezmoi.toml purge -v
+	chezmoi -c $(IGNOREDDIR)/chezmoi.toml purge -v --keep-going
 
 root-uninstall:
 	(mkdir -p $(DESTROOTDIR); sudo chezmoi -c $(IGNOREDDIR)/chezmoi.toml -D $(DESTROOTDIR) -S $(ROOTDIR) purge -v)
