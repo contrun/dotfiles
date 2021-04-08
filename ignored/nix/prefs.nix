@@ -38,12 +38,9 @@ let
     newHostname = builtins.elemAt l 0;
   in builtins.trace "obtained new hostname ${newHostname} from disk"
   newHostname);
-  hostId = let
-    hash = builtins.trace ''
-      Hashing hostname to get hostId by printf "%s" "hostname: ${hostname}" |  sha512sum''
-      (builtins.hashString "sha512" "hostname: ${hostname}");
-  in builtins.trace "Obtaining hash result ${hash}"
-  (builtins.substring 0 8 hash);
+  # printf "%s" "hostname: $HOST" | sha512sum | head -c 10
+  hostId = builtins.substring 0 8
+    (builtins.hashString "sha512" "hostname: ${hostname}");
 
   default = self: {
     isMinimalSystem = false;

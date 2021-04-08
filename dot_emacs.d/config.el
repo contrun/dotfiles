@@ -488,8 +488,8 @@ pressing `<leader> m`. Set it to `nil` to disable it.")
     )
   )
 
-(straight-use-package
- '(dired+ :type git :host github :repo "emacsmirror/dired-plus"))
+(use-package dired+
+  :straight (dired+ :type git :host github :repo "emacsmirror/dired-plus"))
 
 (use-package diredfl
   :after dired
@@ -536,8 +536,8 @@ pressing `<leader> m`. Set it to `nil` to disable it.")
 
 (use-package fzf)
 
-(straight-use-package
- '(sunrise-commander :type git :host github :repo "escherdragon/sunrise-commander"))
+(use-package sunrise-commander
+  :straight (sunrise-commander :type git :host github :repo "escherdragon/sunrise-commander"))
 
 ;; Show number of matches while searching
 (use-package anzu)
@@ -584,8 +584,11 @@ This is useful when followed by an immediate kill."
 
 (use-package woman)
 
-(straight-use-package
- '(info+ :type git :host github :repo "emacsmirror/info-plus"))
+(use-package info+
+  :straight (info+ :type git :host github :repo "emacsmirror/info-plus")
+  :init (with-eval-after-load 'info
+          (require 'info+))
+  :defer t)
 
 (use-package helm-dash
   :hook
@@ -1940,8 +1943,17 @@ With arg N, insert N newlines."
 
 (use-package habitica)
 
-(straight-use-package
- '(taskwarrior :type git :host github :repo "winpat/taskwarrior.el"))
+(use-package taskwarrior
+  :straight (taskwarrior :type git :host github :repo "winpat/taskwarrior.el"))
+
+(use-package el-patch
+  :straight (papis :type git :host github :repo "papis/papis.el")
+  :init
+  (require 'papis))
+
+(use-package helm-bibtex)
+
+(use-package ivy-bibtex)
 
 
 
@@ -3731,8 +3743,8 @@ With arg N, insert N newlines."
   (after-init . (lambda () (pdf-tools-install t)))
   )
 
-(straight-use-package
- '(djvu :type git :host github :repo "dalanicolai/djvu2.el"))
+(use-package djvu
+  :straight (djvu :type git :host github :repo "dalanicolai/djvu2.el"))
 
 (use-package proof-general
   :init
@@ -3754,8 +3766,8 @@ With arg N, insert N newlines."
   ("s-x r" . 'synosaurus-choose-and-replace)
   ("s-x i" . 'synosaurus-choose-and-insert))
 
-(straight-use-package
- '(auto-capitalize :type git :host github :repo "emacsmirror/auto-capitalize"))
+(use-package auto-capitalize
+  :straight (auto-capitalize :type git :host github :repo "emacsmirror/auto-capitalize"))
 
 (use-package pangu-spacing)
 
@@ -4065,8 +4077,8 @@ With arg N, insert N newlines."
   (define-key origami-mode-map (kbd "C-c F") 'origami-toggle-all-nodes)
   )
 
-(straight-use-package
- '(matrix-client :type git :host github :repo "alphapapa/matrix-client.el"))
+(use-package matrix-client
+  :straight (matrix-client :type git :host github :repo "alphapapa/matrix-client.el"))
 
 (use-package nov
   :init
