@@ -7,6 +7,15 @@ HOST ?= $(shell hostname)
 DESTDIR ?= ${HOME}
 DESTROOTDIR ?= /
 
+# The chezmoi state directory is stored in the same directory as the config file,
+# which may not be writable.
+ifneq (,$(findstring /nix/store/,$(DIR)))
+    chezmoiflags =
+else
+    chezmoiflags = -c $(IGNOREDDIR)/chezmoi.toml
+endif
+CHEZMOIFLAGS := -v ${chezmoiflags}
+
 .PHONY: install uninstall update pull push autopush upload update home-install root-install home-uninstall root-uninstall
 
 script = $(firstword $(subst -, ,$1))
@@ -31,18 +40,18 @@ upload: pull push
 update: pull update-upstreams deps-install install
 
 update-upstreams:
-	if cd $(DESTDIR)/.local/share/chezmoi/dot_config/nixpkgs/; then niv update; fi
+	nix flake update
 
 home-install:
 	[[ -f $(DESTDIR)/.config/Code/User/settings.json ]] || install -DT $(DIR)/dot_config/Code/User/settings.json $(DESTDIR)/.config/Code/User/settings.json
 	diff $(DESTDIR)/.config/Code/User/settings.json $(DIR)/dot_config/Code/User/settings.json || nvim -d $(DESTDIR)/.config/Code/User/settings.json $(DIR)/dot_config/Code/User/settings.json
-	chezmoi -c $(IGNOREDDIR)/chezmoi.toml -D $(DESTDIR) apply -v --keep-going
+	chezmoi $(CHEZMOIFLAGS) -D $(DESTDIR) -S $(DIR) apply --keep-going || true
 
 home-manager: home-install
 	home-manager switch -v --keep-going --keep-failed
 
 root-install:
-	(mkdir -p $(DESTROOTDIR); sudo chezmoi -c $(IGNOREDDIR)/chezmoi.toml -D $(DESTROOTDIR) -S $(ROOTDIR) apply -v --keep-going)
+	(mkdir -p $(DESTROOTDIR); sudo chezmoi $(CHEZMOIFLAGS) -D $(DESTROOTDIR) -S $(ROOTDIR) apply --keep-going || true)
 
 install: home-install root-install
 
@@ -68,9 +77,9 @@ nixos-update-channels:
 all-install: nixos-update-channels nixos-rebuild home-manager
 
 home-uninstall:
-	chezmoi -c $(IGNOREDDIR)/chezmoi.toml purge -v --keep-going
+	chezmoi $(CHEZMOIFLAGS) -D $(DESTDIR) -S $(DIR) purge
 
 root-uninstall:
-	(mkdir -p $(DESTROOTDIR); sudo chezmoi -c $(IGNOREDDIR)/chezmoi.toml -D $(DESTROOTDIR) -S $(ROOTDIR) purge -v)
+	(mkdir -p $(DESTROOTDIR); sudo chezmoi $(CHEZMOIFLAGS) -D $(DESTROOTDIR) -S $(ROOTDIR) purge)
 
 uninstall: deps-uninstall home-uninstall root-uninstall

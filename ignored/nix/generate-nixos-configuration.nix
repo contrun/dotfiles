@@ -91,7 +91,25 @@ let
       users = {
         ${prefs.owner} = {
           _module.args = moduleArgs;
-          imports = [ (getNixConfig "/home.nix") ];
+          imports = [
+            (getNixConfig "/home.nix")
+            ({ config, pkgs, lib, inputs, ... }@args: {
+              home = {
+                activation = {
+                  chezmoi = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+                    oldstate=$(set +o)
+                    set -x +e
+                    if ! [[ -f ~/.dotfiles-initialized ]]; then
+                        PATH="${
+                          lib.makeBinPath [ pkgs.chezmoi pkgs.git pkgs.curl ]
+                        }:$PATH" $DRY_RUN_CMD make --keep-going -C ${inputs.self} home-install deps-install
+                    fi
+                    eval "$oldstate"
+                  '';
+                };
+              };
+            })
+          ];
         };
       };
     };
