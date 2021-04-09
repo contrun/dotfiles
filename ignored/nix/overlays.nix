@@ -36,10 +36,7 @@
       in {
         python3Full = overridePythonPackages super.python3Full;
         python3 = overridePythonPackages super.python3;
-      } // (super.lib.mapAttrs (name: p: dontCheckPkg p) {
-        inherit (super)
-          tracker; # https://github.com/NixOS/nixpkgs/issues/118155
-      });
+      } // (super.lib.mapAttrs (name: p: dontCheckPkg p) { });
 
     shellsOverlay = self: super: {
       # This env is used to setup LD_LIBRARY_PATH appropirately in nix-shell
