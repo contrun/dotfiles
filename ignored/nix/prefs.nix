@@ -261,6 +261,10 @@ let
     kernelPatches = [ ];
     kernelParams = [ "boot.shell_on_fail" ];
     kernelPackages = pkgs.linuxPackages_latest;
+    kernelModules = [
+      # For the sysctl net.bridge.bridge-nf-call-* options to work
+      "br_netfilter"
+    ];
     kernelSysctl = {
       "fs.file-max" = 51200;
       "net.core.rmem_max" = 67108864;
@@ -283,6 +287,8 @@ let
       "net.ipv4.tcp_congestion_control" = "bbr";
       # https://github.com/springzfx/cgproxy/blob/aaa628a76b2911018fc93b2e3276c177e85e0861/readme.md#known-issues
       # Transparent proxy does not work with these options on.
+      # See also https://linuxconfig.org/how-to-use-bridged-networking-with-libvirt-and-kvm
+      # See also https://wiki.libvirt.org/page/Net.bridge.bridge-nf-call_and_sysctl.conf
       "net.bridge.bridge-nf-call-arptables" = 0;
       "net.bridge.bridge-nf-call-ip6tables" = 0;
       "net.bridge.bridge-nf-call-iptables" = 0;

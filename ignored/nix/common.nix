@@ -1517,7 +1517,8 @@ in {
   boot = {
     binfmt = { inherit (prefs) emulatedSystems; };
     inherit (prefs)
-      kernelParams extraModulePackages kernelPatches kernelPackages;
+      kernelParams extraModulePackages kernelModules kernelPatches
+      kernelPackages;
     kernel.sysctl = prefs.kernelSysctl;
     loader = {
       efi.canTouchEfiVariables = false;
