@@ -1,4 +1,4 @@
-{ config, pkgs, inputs, ... }@args:
+{ config, pkgs, lib, inputs, ... }@args:
 let
   prefs = import ./prefs.nix args;
   stable = pkgs.stable;
@@ -1521,24 +1521,28 @@ in {
       kernelPackages;
     kernel.sysctl = prefs.kernelSysctl;
     loader = {
-      efi.canTouchEfiVariables = false;
-    } // (if prefs.enableGrub then {
+      generationsDir = {
+        enable = prefs.enableGenerationsDir;
+        copyKernels = true;
+      };
+      efi = { canTouchEfiVariables = prefs.efiCanTouchEfiVariables; };
+    } // (lib.optionalAttrs prefs.enableGrub {
       grub = {
         enable = true;
         copyKernels = true;
         efiSupport = true;
-        efiInstallAsRemovable = true;
+        efiInstallAsRemovable = !prefs.efiCanTouchEfiVariables;
         enableCryptodisk = true;
         useOSProber = true;
+      } // lib.optionalAttrs prefs.enableZfs { zfsSupport = true; };
+    }) // (lib.optionalAttrs prefs.enableSystemdBoot {
+      systemd-boot = { enable = true; };
+    }) // (lib.optionalAttrs prefs.enableRaspberryPiBoot {
+      raspberryPi = {
+        enable = true;
+        version = prefs.raspberryPiVersion;
       };
-    } else
-      { }) // (if prefs.isRaspberryPi then {
-        raspberryPi = {
-          enable = true;
-          version = prefs.raspberryPiVersion;
-        };
-      } else
-        { });
+    });
 
     supportedFilesystems = if (prefs.enableZfs) then [ "zfs" ] else [ ];
     zfs = { enableUnstable = prefs.enableZfsUnstable; };

@@ -62,7 +62,12 @@ let
     dpi = 144;
     enableHidpi = true;
     enableIPv6 = true;
-    enableGrub = true;
+    enableGenerationsDir = false;
+    bootloader = "systemd";
+    enableGrub = self.bootloader == "grub";
+    enableSystemdBoot = self.bootloader == "systemd";
+    enableRaspberryPiBoot = self.bootloader == "raspberrypi";
+    efiCanTouchEfiVariables = true;
     isRaspberryPi = false;
     # wirelessBackend = "wpa_supplicant";
     wirelessBackend = "iwd";
@@ -391,7 +396,7 @@ let
       kernelPackages = pkgs.linuxPackages_rpi4;
       enableCodeServer = false;
       enableVirtualboxHost = false;
-      enableGrub = false;
+      bootloader = "raspberrypi";
       isRaspberryPi = true;
       raspberryPiVersion = 4;
       enableVsftpd = false;
