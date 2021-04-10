@@ -3069,6 +3069,8 @@ With arg N, insert N newlines."
 
 (use-package docker-tramp)
 
+(use-package vagrant-tramp)
+
 (use-package terraform-mode
   :init
   (use-package company-terraform)

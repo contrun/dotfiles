@@ -1,5 +1,16 @@
-{ config, pkgs, isMinimalSystem, ... }@args:
+{ config, pkgs, isMinimalSystem, prefs, ... }@args:
 let
+  x86OnlyPackages = [
+    "wine"
+    "workrave"
+    "lens"
+    "android-file-transfer"
+    "androidenv.androidPkgs_9_0.platform-tools"
+    "appimage-run"
+    "adbfs-rootless"
+    "mitscheme"
+    "libpng"
+  ];
   largePackages = [
     "jetbrains.idea-ultimate"
     "jetbrains.clion"
@@ -75,6 +86,10 @@ let
   getPkg = attrset: path:
     if isMinimalSystem && (builtins.elem path largePackages) then
       builtins.trace "${path} will not be installed in a minimal system" null
+    else if !(builtins.elem prefs.nixosSystem [ "x86_64-linux" ])
+    && (builtins.elem path x86OnlyPackages) then
+      builtins.trace
+      "${path} will not be installed in system ${prefs.nixosSystem}" null
     else
       (dontCheckPkg (getMyPkgOrPkg attrset path));
   getPackages = list:
@@ -165,9 +180,7 @@ let
     {
       name = "development tools (more preferred)";
       priority = 38;
-      packages = getPackages [
-        "myPackages.python"
-      ];
+      packages = getPackages [ "myPackages.python" ];
     }
     {
       name = "development tools (preferred)";
@@ -363,7 +376,6 @@ let
         "axel"
         "baobab"
         "neovim-remote"
-        "android-file-transfer"
         "androidenv.androidPkgs_9_0.platform-tools"
         "colordiff"
         "androidStudioPackages.dev"
@@ -489,7 +501,7 @@ let
     {
       name = "network tools (preferred)";
       priority = 24;
-      packages = getPackages [ "firefox-nightly-bin" ];
+      packages = getPackages [ "myPackages.firefox" ];
     }
     {
       name = "network tools";
@@ -590,7 +602,6 @@ let
         "udisks"
         "smbclient"
         "cifs-utils"
-        "appimage-run"
         "nix-review"
         "nix-prefetch-scripts"
         "nix-prefetch-github"

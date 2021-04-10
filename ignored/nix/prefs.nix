@@ -378,13 +378,13 @@ let
       buildMachines = super.buildMachines ++ [
         {
           hostName = "node1";
-          systems = [ "x86_64-linux" "i686-linux" ];
+          systems = [ "x86_64-linux" "i686-linux" "aarch64-linux" ];
           maxJobs = 32;
           supportedFeatures = [ "kvm" "big-parallel" ];
         }
         {
           hostName = "node2";
-          systems = [ "x86_64-linux" "i686-linux" ];
+          systems = [ "x86_64-linux" "i686-linux" "aarch64-linux" ];
           maxJobs = 32;
           supportedFeatures = [ "kvm" "big-parallel" ];
         }

@@ -83,7 +83,7 @@
 - name: Import old zpool if overwrite_partition is not set
   shell: |
     zpool import -f {{ zfs_pool_name }}
-    zfs load-key -r {{ zfs_pool_name }} <<< "{{ zfs_passphrase }}"
+    zfs load-key -r {{ zfs_pool_name }} <<< '{{ zfs_passphrase }}'
   args:
     executable: "{{ remote_shell_executable }}"
   when: overwrite_partitions != "yes"

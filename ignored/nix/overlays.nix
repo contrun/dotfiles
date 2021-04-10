@@ -13,8 +13,8 @@
 
     mozillaOverlay = import inputs.nixpkgs-mozilla;
 
-    firefoxOverlay = self: super: {
-      firefox-nightly-bin =
+    firefoxOverlay = self: super: super.lib.optionalAttrs (inputs.flake-firefox-nightly.packages ? super.system) {
+      myPackages.firefox =
         inputs.flake-firefox-nightly.packages.${super.system}.firefox-nightly-bin;
     };
 

@@ -83,7 +83,7 @@ You may need to change the zpool name, boot partition uuid, user name, hostname,
 zfs_passphrase=zfs_passphrase
 root_password=root_password
 user_password=user_password
-tmp_mount_path=/tmpmnt
+tmp_mount_path=/tmpmount
 
 ANSIBLE_STDOUT_CALLBACK=debug ansible-playbook -i inventory --become --become-user=root --extra-vars host=localhost --extra-vars '{"zfs_pool_disks": ["/dev/sda"]}' --extra-vars "zfs_passphrase=$zfs_passphrase" --extra-vars "root_password=$root_password" --extra-vars "user_password=$user_password" --extra-vars "tmp_mount_path=$tmp_mount_path" site.yml
 
@@ -93,7 +93,7 @@ sudo nixos-install --root "$tmp_mount_path" --system "$(readlink result)"
 
 bash_path="$(head -n1 $tmp_mount_path/nix/var/nix/profiles/system/activate | sed -E 's/#!\s*//g')"
 
-sudo install -D /etc/binfmt.d/nixos.conf "$tmp_mount_path/etc/binfmt.d/nixos/conf"; sudo install -D /run/binfmt/aarch64-linux "$tmp_mount_path/run/binfmt/aarch64-linux"
+sudo install -D /etc/binfmt.d/nixos.conf "$tmp_mount_path/etc/binfmt.d/nixos/conf"; sudo install -D /run/binfmt/ "$tmp_mount_path/run/binfmt/"
 
 sudo chroot $tmp_mount_path $bash_path -c /nix/var/nix/profiles/system/activate
 
