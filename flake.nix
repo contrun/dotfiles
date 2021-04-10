@@ -31,25 +31,11 @@
     let
       getNixConfig = path: ./. + "/ignored/nix/${path}";
 
-      systemsList = [
-        "x86_64-linux"
-        "i686-linux"
-        "x86_64-darwin"
-        "aarch64-linux"
-        "armv6l-linux"
-        "armv7l-linux"
-      ];
-      systems =
-        builtins.foldl' (acc: current: acc // { "${current}" = current; }) { }
-        systemsList;
-
       getHostPreference = hostname:
         let
           old =
             (import (getNixConfig "prefs.nix")) { inherit hostname inputs; };
-        in old // {
-          system = systems.hostname or old.nixosSystem or "x86_64-linux";
-        };
+        in old // { system = old.nixosSystem; };
 
       generateHostConfigurations = hostname: inputs:
         import (getNixConfig "generate-nixos-configuration.nix") {
@@ -58,7 +44,8 @@
         };
     in {
       nixosConfigurations = builtins.foldl'
-        (acc: current: acc // generateHostConfigurations current inputs) { }
-        (["default" "cicd"] ++[ "ssg" "jxt" "shl" ] ++ systemsList);
+        (acc: hostname: acc // generateHostConfigurations hostname inputs) { }
+        ([ "default" ] ++ [ "ssg" "jxt" "shl" ]
+          ++ (builtins.attrNames (import (getNixConfig "fixed-systems.nix")).systems));
     };
 }

@@ -1,6 +1,8 @@
 { config, pkgs, lib, inputs, ... }@args:
 let
-  prefs = import ./prefs.nix args;
+  prefs = let p = import ./prefs.nix args;
+  in builtins.trace "final configuration for host ${p.hostname}"
+  (builtins.trace p p);
   stable = pkgs.stable;
   unstable = pkgs.unstable;
   impure = {

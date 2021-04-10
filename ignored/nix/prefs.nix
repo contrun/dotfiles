@@ -3,8 +3,14 @@ let
   fix = f: let x = f x; in x;
   extends = f: rattrs: self: let super = rattrs self; in super // f self super;
 
+  inherit (import ./fixed-systems.nix) systems;
+
   prefFiles = [ ./prefs.local.nix ./prefs.secret.nix ];
 
+  # NOTE: pkgs should not be forced unless we are sure pkgs == args.pkgs
+  # This file is shared between flake.nix which generates a minimal host-specific nixos configuration and
+  # common.nix which generates a more complete host-specific configuration.
+  # When called from flake.nix, there will be no pkgs argument given. We must make sure pkgs is not forces by then.
   pkgs = let
     hasPkgs = args ? pkgs;
     hasInputs = args ? inputs;
@@ -17,7 +23,8 @@ let
       ("with argument hostname " + args.hostname)
     else
       "without argument hostname"
-  }" (args.pkgs or (import (args.inputs.nixpkgs-stable or <nixpkgs>) { }));
+  }" (args.pkgs or (builtins.throw
+    "Forcing pkgs in prefs.nix without given in the input parameter"));
 
   hostname = args.hostname or (let
     # LC_CTYPE=C tr -dc 'a-z' < /dev/urandom | head -c3 | tee /tmp/hostname
@@ -328,10 +335,18 @@ let
       inherit hostname hostId;
     } // (if hostname == "default" then {
       isMinimalSystem = true;
-    } else if hostname == "cicd" then {
-      isMinimalSystem = true;
-      enableJupyter = true;
-    } else if hostname == "uzq" then {
+    } else if systems ? "${hostname}" then
+      let
+        nixosSystem = systems."${hostname}";
+        isForCiCd = builtins.match "cicd-(.*)" != null;
+      in ({
+        inherit nixosSystem;
+        isMinimalSystem = true;
+      } // (if isForCiCd then {
+        enableJupyter = builtins.elem nixosSystem [ "x86_64-linux" ];
+      } else
+        { }))
+    else if hostname == "uzq" then {
       enableHidpi = true;
       # enableAnbox = true;
       consoleFont = "${pkgs.terminus_font}/share/consolefonts/ter-g20n.psf.gz";
@@ -410,5 +425,4 @@ let
 
   final = fix (builtins.foldl' (acc: override: extends override acc) default
     ([ hostSpecific ] ++ overrides));
-in builtins.trace "final configuration for ${hostname}"
-(builtins.trace final final)
+in final

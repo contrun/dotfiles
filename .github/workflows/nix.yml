@@ -33,6 +33,12 @@ jobs:
   build-linux-env:
     name: Build/cache Linux Nix env
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        nix-system:
+          - "x86_64-linux"
+          - "aarch64-linux"
 
     steps:
 
@@ -76,6 +82,21 @@ jobs:
         extraPullNames: iohk
         authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
         pushFilter: "clion|webstorm|idea-ultimate|goland|pycharm-professional|datagrip|android-studio-dev|graalvm11-ce|lock$|-source$"
+
+    - name: Install qemu for cross compilation
+      run: |
+        sudo env DEBIAN_FRONTEND=noninteractive apt-get update -q -y
+        sudo env DEBIAN_FRONTEND=noninteractive apt-get install -q -y qemu-system-aarch64 qemu-efi binfmt-support qemu-user-static
+        mkdir -p ~/.config/nix
+        sudo mkdir -p /etc/nix
+        cat <<EOF >> ~/.config/nix/nix.conf
+        sandbox = false
+        system = ${{ matrix.nix-system }}
+        extra-platforms = ${{ matrix.nix-system }}
+        system-features = ${{ matrix.nix-system }} arm-linux
+        EOF
+        cat ~/.config/nix/nix.conf
+      if: ${{ matrix.nix-system == 'aarch64-linux' }}
 
     # https://github.com/actions/virtual-environments/issues/2840#issuecomment-790492173
     # https://github.com/actions/virtual-environments/issues/709
@@ -132,13 +153,14 @@ jobs:
 
     - name: Build nixos
       if: ${{ steps.check-nix-inputs-update-available.conclusion != 'failure' }}
+      timeout-minutes: 3000
       run: |
         # Prevent conflict between Cachix installed by workflow and the one installed in the config
         nix-env --set-flag priority 1 cachix
         # Build a minimal nixos system
         # github actions does not support virtualization yet https://github.com/actions/virtual-environments/issues/183
-        nix build --show-trace --keep-going --keep-failed --fallback '.#nixosConfigurations.cicd.config.system.build.toplevel'
-        nix path-info '.#nixosConfigurations.cicd.config.system.build.toplevel' -sShr | sort -h -k2
+        nix build --system ${{ matrix.nix-system }} --extra-system-features ${{ matrix.nix-system }} --extra-system-features x86_64-linux --extra-extra-platforms ${{ matrix.nix-system }} --extra-extra-platforms x86_64-linux --no-sandbox --show-trace --keep-going --keep-failed --fallback '.#nixosConfigurations.cicd-${{ matrix.nix-system }}.config.system.build.toplevel'
+        nix path-info -sShr '.#nixosConfigurations.cicd-${{ matrix.nix-system }}.config.system.build.toplevel' | sort -h -k2
         df -h
 
     - name: Push commit with updated inputs
@@ -146,4 +168,5 @@ jobs:
       run: |
         # tackle a race case
         git pull --rebase
-        git push
+        if [[ '${{ matrix.nix-system }}' == 'x86_64-linux' ]]; then git push; fi
+        git push origin HEAD:${{ matrix.nix-system }}
