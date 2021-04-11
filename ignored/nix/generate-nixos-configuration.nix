@@ -33,14 +33,17 @@ let
     {
       system.stateVersion = "20.09";
     } // (if hostname == "ssg" then {
-      boot.loader.grub.devices = [ "/dev/nvme0n1" ];
+      boot.loader.grub.devices =
+        [ "/dev/disk/by-id/nvme-eui.00000000000000018ce38e03000f2dbe" ];
       services.xserver.videoDrivers = [ "amdgpu" ];
       hardware.cpu.amd.updateMicrocode = true;
     } else if hostname == "jxt" then {
-      boot.loader.grub.devices = [ "/dev/nvme0n1" ];
-    } else {
-      boot.loader.grub.devices = [ "/dev/nvme0n1" ];
-    });
+      boot.loader.grub.devices =
+        [ "/dev/disk/by-id/nvme-eui.002538a401b81628" ];
+    } else if hostname == "shl" then {
+      boot.loader.grub.devices = [ "/dev/sda" ];
+    } else
+      { });
 
   hardwareConfiguration = if isMinimalSystem then
     import

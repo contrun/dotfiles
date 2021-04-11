@@ -1528,23 +1528,21 @@ in {
         copyKernels = true;
       };
       efi = { canTouchEfiVariables = prefs.efiCanTouchEfiVariables; };
-    } // (lib.optionalAttrs prefs.enableGrub {
       grub = {
-        enable = true;
+        enable = prefs.enableGrub;
         copyKernels = true;
         efiSupport = true;
         efiInstallAsRemovable = !prefs.efiCanTouchEfiVariables;
         enableCryptodisk = true;
         useOSProber = true;
-      } // lib.optionalAttrs prefs.enableZfs { zfsSupport = true; };
-    }) // (lib.optionalAttrs prefs.enableSystemdBoot {
-      systemd-boot = { enable = true; };
-    }) // (lib.optionalAttrs prefs.enableRaspberryPiBoot {
+        zfsSupport = prefs.enableZfs;
+      };
+      systemd-boot = { enable = prefs.enableSystemdBoot; };
       raspberryPi = {
-        enable = true;
+        enable = prefs.enableRaspberryPiBoot;
         version = prefs.raspberryPiVersion;
       };
-    });
+    };
 
     supportedFilesystems = if (prefs.enableZfs) then [ "zfs" ] else [ ];
     zfs = { enableUnstable = prefs.enableZfsUnstable; };

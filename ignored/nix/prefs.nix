@@ -147,6 +147,7 @@ let
     '';
     # xSessionCommands = "";
     xDisplayManager = "lightdm";
+    installHomePackages = true;
     buildCores = 0;
     maxJobs = "auto";
     proxy = null;
@@ -176,7 +177,7 @@ let
     yandexExcludedFiles = "docs/org-mode/roam/.emacs";
     enablePostgres = false;
     enableRedis = false;
-    enableVsftpd = true;
+    enableVsftpd = !self.isMinimalSystem;
     enableRsyncd = false;
     enableMpd = false;
     enableAccountsDaemon = true;

@@ -115,7 +115,8 @@ let
     (builtins.filter (x: x != null) (builtins.map (x: getPkg pkgs x) list));
   allPackages = builtins.foldl' (acc: collection:
     acc ++ (builtins.map (pkg: changePkgPriority pkg collection.priority)
-      collection.packages)) [ ] packageCollection;
+      collection.packages)) [ ]
+    (if prefs.installHomePackages then packageCollection else [ ]);
   packageCollection = [
     {
       name = "command line tools (preferred)";
