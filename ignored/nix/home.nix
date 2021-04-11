@@ -1,6 +1,14 @@
-{ config, pkgs, isMinimalSystem, prefs, ... }@args:
+{ config, pkgs, prefs, ... }@args:
 let
-  x86OnlyPackages = [
+  brokenPackages = let p = ./broken-packages.json;
+  in if builtins.pathExists p then
+    builtins.fromJSON (builtins.readFile p)
+  else
+    [ ];
+  x86OnlyPackages = let
+    brokenOnArmPackages =
+      [ "eclipses.eclipse-java" "hardinfo" "ltrace" "brave" "mplayer" ];
+  in brokenOnArmPackages ++ [
     "wine"
     "workrave"
     "lens"
@@ -82,9 +90,19 @@ let
       unstablePackage
     else
       builtins.throw "${path} not found");
+
   # Emits a warning when package does not exist, instead of quitting immediately
   getPkg = attrset: path:
-    if isMinimalSystem && (builtins.elem path largePackages) then
+    if prefs.hostname == "broken-packages" then
+      (if !builtins.elem path brokenPackages then
+        dontCheckPkg (getMyPkgOrPkg attrset path)
+      else
+        builtins.trace
+        "${path} is will not be installed on a broken packages systems" null)
+    else if builtins.elem path brokenPackages then
+      builtins.trace "${path} will not be installed as it seems to be broken"
+      null
+    else if prefs.isMinimalSystem && (builtins.elem path largePackages) then
       builtins.trace "${path} will not be installed in a minimal system" null
     else if !(builtins.elem prefs.nixosSystem [ "x86_64-linux" ])
     && (builtins.elem path x86OnlyPackages) then
@@ -92,6 +110,7 @@ let
       "${path} will not be installed in system ${prefs.nixosSystem}" null
     else
       (dontCheckPkg (getMyPkgOrPkg attrset path));
+
   getPackages = list:
     (builtins.filter (x: x != null) (builtins.map (x: getPkg pkgs x) list));
   allPackages = builtins.foldl' (acc: collection:
