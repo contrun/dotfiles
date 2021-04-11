@@ -18,6 +18,8 @@ let
     "adbfs-rootless"
     "mitscheme"
     "libpng"
+    "cachix"
+    "git-annex"
   ];
   largePackages = [
     "jetbrains.idea-ultimate"

@@ -19,7 +19,6 @@ stdenv.mkDerivation {
     # in order to compile any binary extensions they may require.
     #
     taglib
-    pillow
     sqlite
     openssl
     redis

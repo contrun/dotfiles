@@ -160,6 +160,11 @@ in {
         source = prefs.davfs2Secrets;
       };
       hosts.mode = "0644";
+    } // lib.optionalAttrs (prefs.enableCrio && prefs.enableZfs) {
+      "crio/crio.conf.d/01-zfs.conf".text = ''
+        [crio]
+        storage_driver = "zfs"
+      '';
     };
 
     extraOutputsToInstall = prefs.extraOutputsToInstall;
@@ -199,6 +204,7 @@ in {
         noti
         libnotify
         (pkgs.myPackages.lua or lua)
+        nodejs_latest
         gcc
         gnumake
         usbutils
@@ -207,6 +213,7 @@ in {
         qemu
         ldns
         bind
+        tree
         nix-prefetch-scripts
         pulsemixer
         acpilight
@@ -233,6 +240,7 @@ in {
         rofi
         ruby
         perl
+        emacs
         neovim
         vim
         libffi
@@ -276,11 +284,9 @@ in {
         dbus
         cryptsetup
         compton
-        btrbk
         blueman
         bluez
         bluez-tools
-        btrfs-progs
         exfat
         i3blocks
         i3lock
@@ -301,9 +307,13 @@ in {
         xvkbd
         fcron
         gmp
+        libcap
       ] ++ (if (prefs.enableTailScale) then [ tailscale ] else [ ])
       ++ (if (prefs.enableCodeServer) then [ code-server ] else [ ])
       ++ (if (prefs.enableZfs) then [ zfsbackup ] else [ ])
+      ++ (if (prefs.enableZfs) then [ btrbk btrfs-progs ] else [ ])
+      ++ (if (prefs.enableClashRedir) then [ clash ] else [ ])
+      ++ (if (prefs.enableK3s) then [ k3s ] else [ ])
       ++ (if (prefs.nixosSystem == "x86_64-linux") then [
         xmobar
         hardinfo
@@ -743,7 +753,7 @@ in {
     };
     tailscale = { enable = prefs.enableTailScale; };
     zerotierone = {
-      enable = prefs.buildZerotierone;
+      enable = prefs.buildZerotierone || prefs.enableZerotierone;
       joinNetworks = prefs.zerotieroneNetworks;
     };
     system-config-printer.enable = prefs.enablePrinting;
@@ -787,8 +797,13 @@ in {
     # k3s kubectl patch service traefik -n kube-system -p '{"spec": {"ports": [{"port": 443,"targetPort": 443, "nodePort": 30443, "protocol": "TCP", "name": "https"},{"port": 80,"targetPort": 80, "nodePort": 30080, "protocol": "TCP", "name": "http"}], "type": "LoadBalancer"}}'
     k3s = {
       enable = prefs.enableK3s;
+    } // (if prefs.enableContainerd then {
+      extraFlags =
+        "--container-runtime-endpoint /run/containerd/containerd.sock";
+    } else if prefs.enableDocker then {
       docker = true;
-    };
+    } else
+      { });
 
     jupyterhub = {
       enable = prefs.enableJupyter;
@@ -1036,14 +1051,14 @@ in {
         };
       in {
         sessionCommands = prefs.xSessionCommands;
-        startx = { enable = prefs.xDisplayManager == "startx"; };
+        startx = { enable = prefs.enableStartx; };
         sddm = {
-          enable = prefs.xDisplayManager == "sddm";
+          enable = prefs.enableSddm;
           enableHidpi = prefs.enableHidpi;
           autoNumlock = true;
         };
-        gdm = { enable = prefs.xDisplayManager == "gdm"; };
-        lightdm = { enable = prefs.xDisplayManager == "lightdm"; };
+        gdm = { enable = prefs.enableGdm; };
+        lightdm = { enable = prefs.enableLightdm; };
       };
     };
   };
@@ -1084,6 +1099,11 @@ in {
       initialHashedPassword =
         "$6$eE6pKPpxdZLueg$WHb./PjNICw7nYnPK8R4Vscu/Rw4l5Mk24/Gi4ijAsNP22LG9L471Ox..yUfFRy5feXtjvog9DM/jJl82VHuI1";
     };
+    clash = {
+      createHome = false;
+      isNormalUser = false;
+      isSystemUser = true;
+    };
   } // (if prefs.enableFallbackAccount then {
     # Fallback user when "${prefs.owner}" encounters problems
     fallback = {
@@ -1101,11 +1121,12 @@ in {
   virtualisation = {
     libvirtd = { enable = prefs.enableLibvirtd; };
     virtualbox.host = {
-      # package = stable.virtuablbox or pkgs.virtualbox;
       enable = prefs.enableVirtualboxHost;
       enableExtensionPack = prefs.enableVirtualboxHost;
       # enableHardening = false;
     };
+    containerd = { enable = prefs.enableContainerd; };
+    cri-o = { enable = prefs.enableCrio; };
     podman = {
       enable = prefs.enablePodman;
       dockerCompat = prefs.replaceDockerWithPodman;
@@ -1210,12 +1231,17 @@ in {
         } // pkgs.lib.optionalAttrs (prefs.enableK3s) {
           "k3s" = let
             k3sPatchScript = pkgs.writeShellScript "add-k3s-config" ''
-              ${pkgs.k3s}/bin/k3s kubectl patch -n kube-system services traefik -p '{"spec":{"ports":[{"name":"http","nodePort":30080,"port":30080,"protocol":"TCP","targetPort":"http"},{"name":"https","nodePort":30443,"port":30443,"protocol":"TCP","targetPort":"https"}]}}' || ${pkgs.coreutils}/bin/true
+              ${pkgs.k3s}/bin/k3s kubectl patch -n kube-system services traefik -p '{"spec":{"ports":[{"name":"http","nodePort":30080,"port":30080,"protocol":"TCP","targetPort":"http"},{"name":"https","nodePort":30443,"port":30443,"protocol":"TCP","targetPort":"https"},{"$patch":"replace"}]}}' || ${pkgs.coreutils}/bin/true
               ${pkgs.coreutils}/bin/chown ${prefs.owner} /etc/rancher/k3s/k3s.yaml || ${pkgs.coreutils}/bin/true
             '';
           in {
             path = if prefs.enableZfs then [ pkgs.zfs ] else [ ];
             serviceConfig = { ExecStartPost = [ "${k3sPatchScript}" ]; };
+          };
+        } // pkgs.lib.optionalAttrs (prefs.enableCrio) {
+          "crio" = {
+            path = with pkgs;
+              [ conntrack-tools ] ++ (lib.optionals prefs.enableZfs [ zfs ]);
           };
         } // pkgs.lib.optionalAttrs (prefs.enableJupyter) {
           "jupyterhub" = { path = with pkgs; [ nodejs_latest ]; };
@@ -1265,6 +1291,16 @@ in {
         ];
         serviceConfig = {
           Type = "forking";
+          ExecStartPre = "${pkgs.writeShellScript "clash-redir-prestart" ''
+            set -euxo pipefail
+            mkdir -p /etc/clash-redir
+            if ! [[ -e /etc/clash-redir/config.yaml ]]; then
+                if ! [[ -e /etc/clash-redir/default.yaml ]]; then
+                    systemctl restart clash-config-update-script
+                fi
+                ln -sfn /etc/clash-redir/default.yaml /etc/clash-redir/config.yaml
+            fi
+          ''}";
           ExecStart = "${script} start";
           ExecStop = "${script} stop";
         };

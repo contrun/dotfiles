@@ -109,6 +109,7 @@ let
     enableTailScale = !self.isMinimalSystem;
     enableX2goServer = false;
     enableDebugInfo = false;
+    enableBtrfs = false;
     enableZfs = true;
     enableZfsUnstable = false;
     enableCrashDump = false;
@@ -146,7 +147,11 @@ let
       sxhkd -c ~/.config/sxhkd/sxhkdrc &
     '';
     # xSessionCommands = "";
-    xDisplayManager = "lightdm";
+    xDisplayManager = if self.enableXserver then "lightdm" else null;
+    enableLightdm = self.xDisplayManager == "lightdm";
+    enableGdm = self.xDisplayManager == "Gdm";
+    enableSddm = self.xDisplayManager == "sddm";
+    enableStartx = self.xDisplayManager == "startx";
     installHomePackages = true;
     buildCores = 0;
     maxJobs = "auto";
@@ -160,7 +165,10 @@ let
       excludes = "";
       user = self.owner;
     };
-    acmeEmail = "to_be_overridden@example.com";
+    acmeEmail = if self.acmeMainDoamin == "" then
+      "tobeoverridden@example.com"
+    else
+      "webmaster@${self.acmeMainDoamin}";
     acmeMainDoamin = "";
     enableAcme = self.acmeMainDoamin != "";
     acmeCerts = if self.enableAcme then {
@@ -184,12 +192,14 @@ let
     enableFlatpak = false;
     enableXdgPortal = false;
     enableJupyter = false;
-    enableEmacs = true;
+    enableEmacs = !self.isMinimalSystem;
     enableLocate = true;
     enableFail2ban = true;
     davfs2Secrets = "${self.home}/.davfs2/secrets";
     enableDavfs2 = true;
     enableSamba = true;
+    enableContainerd = false;
+    enableCrio = false;
     enableK3s = false;
     buildMachines = [ ];
     distributedBuilds = true;
@@ -214,7 +224,7 @@ let
     enableCompton = false;
     enableFcron = false;
     enableRedshift = false;
-    enablePostfix = true;
+    enablePostfix = !self.isMinimalSystem;
     enableNfs = true;
     linkedJdks = if self.isMinimalSystem then
       [ "openjdk8" ]
@@ -230,11 +240,8 @@ let
     enableDdns = true;
     enableWireshark = true;
     enabledInputMethod = "fcitx";
-    # enableVirtualboxHost = true;
-    # Build of virtual box frequently fails. touching "$HOME/.cache/disable_virtual_box"
-    # is less irritating than editing this file.
-    enableVirtualboxHost = false;
-    enableDocker = !self.isMinimalSystem;
+    enableVirtualboxHost = !self.isMinimalSystem;
+    enableDocker = self.enableK3s;
     enablePodman = true;
     replaceDockerWithPodman = !self.enableDocker;
     dockerStorageDriver = if self.enableZfs then "zfs" else "overlay2";
@@ -345,6 +352,11 @@ let
         isMinimalSystem = true;
       } // (if isForCiCd then {
         enableJupyter = builtins.elem nixosSystem [ "x86_64-linux" ];
+        enableVirtualboxHost = builtins.elem nixosSystem [ "x86_64-linux" ];
+        enableZerotierone = true;
+        enableEmacs = true;
+        acmeMainDoamin = "cont.run";
+        enableK3s = true;
       } else
         { }))
     else if hostname == "uzq" then {
@@ -375,7 +387,6 @@ let
       enableCfssl = true;
       enableK3s = true;
       enableWireless = true;
-      acmeEmail = "webmaster@${self.acmeMainDoamin}";
       acmeMainDoamin = "cont.run";
       extraModulePackages = [ rtl8188gu ];
       consoleFont = "${pkgs.terminus_font}/share/consolefonts/ter-g20n.psf.gz";
@@ -406,19 +417,24 @@ let
         }
       ];
     } else if hostname == "shl" then {
+      kernelParams = super.kernelParams
+        ++ [ "cgroup_enable=cpuset" "cgroup_enable=memory" "cgroup_memory=1" ];
       nixosSystem = "aarch64-linux";
       isMinimalSystem = true;
       hostId = "6fce2459";
       kernelPackages = pkgs.linuxPackages_rpi4;
       enableCodeServer = false;
+      enableK3s = true;
+      acmeMainDoamin = "cont.run";
+      enableZerotierone = true;
+      enableTailScale = true;
       enableVirtualboxHost = false;
       bootloader = "raspberrypi";
       isRaspberryPi = true;
       raspberryPiVersion = 4;
       enableVsftpd = false;
-      # enableAarch64Cross = true;
     } else {
-      isMinimalSystem = true; # set unknown host to be minimal system
+      isMinimalSystem = true;
     });
 
   overrides = builtins.map (path: (import (builtins.toPath path)))
