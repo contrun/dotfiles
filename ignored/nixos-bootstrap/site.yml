@@ -3,19 +3,15 @@
 
 - name: Make partitions
   hosts: "{{ host }}"
-  remote_user: root
+  gather_facts: no
   roles:
     - partition
-    # - installation
-  become: yes
+    - installation
+  when: skip_partition is not defined
 
-- name: Debug partition paths
-  hosts: localhost
+- name: Install
+  hosts: "{{ host }}"
   gather_facts: no
-  tasks:
-    - debug:
-        var: "boot_partitions"
-    - debug:
-        var: "zpool_partitions"
-    - debug:
-        var: "tmp_mount_path"
+  roles:
+    - installation
+  when: skip_installation is not defined

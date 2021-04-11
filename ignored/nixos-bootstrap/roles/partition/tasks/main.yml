@@ -10,6 +10,23 @@
   args:
     executable: "{{ remote_shell_executable }}"
 
+- name: Check zpool name existence when overwrite_partitions is specified to avoid potential data loss
+  shell: |
+    if zpool list "{{ zfs_pool_name }}"; then
+        echo "Dpool {{ zfs_pool_name }} already exists. Double check if you want to overwrite this pool. Below are all the pools" 1>&2
+        echo 1>&2
+        if ! zpool list 1>&2; then :; fi
+        exit 1
+    fi
+  ignore_errors: yes
+  register: check_zpool_exists
+  when: overwrite_partitions == "yes"
+
+- name: "Zpool {{ zfs_pool_name }} seems to exist. Double check if you want to overwrite this pool."
+  pause:
+    prompt: Please confirm you want to exterminate zpool {{ zfs_pool_name }}! Press return to continue. Press Ctrl+c and then 'a' to abort
+  when: check_zpool_exists is defined and check_zpool_exists.rc != 0
+
 - name: Clean up disks
   shell: |
     [[ "{{ use_sgdisk_clear }}" != "true" ]] || sgdisk --zap-all "{{ item }}"
@@ -129,6 +146,7 @@
     executable: "{{ remote_shell_executable }}"
   with_items:
     - { device: "{{ zfs_pool_name }}/NIX/nix", mountpoint: "{{ tmp_mount_path }}/nix" }
+    - { device: "{{ zfs_pool_name }}/VAR/var", mountpoint: "{{ tmp_mount_path }}/var" }
     - { device: "{{ zfs_pool_name }}/HOME/home", mountpoint: "{{ tmp_mount_path }}/home" }
 
 - name: Create tmp datasets
@@ -152,6 +170,7 @@
     executable: "{{ remote_shell_executable }}"
   with_items:
     - { device: "{{ zfs_pool_name }}/NIX/nix", mountpoint: "{{ tmp_mount_path }}/nix" }
+    - { device: "{{ zfs_pool_name }}/VAR/var", mountpoint: "{{ tmp_mount_path }}/var" }
     - { device: "{{ zfs_pool_name }}/HOME/home", mountpoint: "{{ tmp_mount_path }}/home" }
     - { device: "{{ zfs_pool_name }}/TMP/tmp", mountpoint: "{{ tmp_mount_path }}/tmp" }
 
@@ -178,7 +197,7 @@
 
 - name: Umount {{ tmp_mount_path }} when umount_after_finishing is true
   shell: |
-    umount -f -R {{ tmp_mount_path }} || true
+    umount -v -l -f -R {{ tmp_mount_path }} || true
   args:
     executable: "{{ remote_shell_executable }}"
   when: umount_after_finishing
