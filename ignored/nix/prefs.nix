@@ -104,8 +104,10 @@ let
       log-level = "info";
     };
     enableCfssl = false;
-    enableSslh = true;
+    enableSslh = false;
     sslhPort = 44443;
+    enableAioproxy = true;
+    aioproxyPort = 443;
     enableTailScale = !self.isMinimalSystem;
     enableX2goServer = false;
     enableDebugInfo = false;
@@ -277,7 +279,6 @@ let
     enableGnomeKeyring = false;
     emulatedSystems =
       if (self.nixosSystem == "x86_64-linux") then [ "aarch64-linux" ] else [ ];
-    enableAioproxy = true;
     extraModulePackages = [ ];
     kernelPatches = [ ];
     kernelParams = [ "boot.shell_on_fail" ];

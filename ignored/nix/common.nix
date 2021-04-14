@@ -727,7 +727,7 @@ in {
       sessions = pkgs.lib.optionals (prefs.enableAutossh) (let
         go = server:
           let
-            sshPort = if prefs.enableSslh then prefs.sslhPort else 22;
+            sshPort = if prefs.enableAioproxy then prefs.aioproxyPort else 22;
             autosshPorts = prefs.helpers.autossh {
               hostname = prefs.hostname;
               serverName = server;
@@ -1281,7 +1281,9 @@ in {
             serviceConfig = {
               Type = "simple";
               ExecStart =
-                "${pkgs.myPackages.aioproxy}/bin/aioproxy -v 2 -l 0.0.0.0:5678 -u 127.0.0.1:8000 -p both -ssh 127.0.0.1:22 -eternal-terminal 127.0.0.1:2022 -http 127.0.0.1:8080 -tls 127.0.0.1:443";
+                "${pkgs.myPackages.aioproxy}/bin/aioproxy -v 2 -l 0.0.0.0:${
+                  builtins.toString prefs.aioproxyPort
+                } -u 127.0.0.1:8000 -p both -ssh 127.0.0.1:22 -eternal-terminal 127.0.0.1:2022 -http 127.0.0.1:8080 -tls 127.0.0.1:443";
               ExecStartPost = [
                 "${pkgs.procps}/bin/sysctl -w net.ipv4.conf.default.route_localnet=1"
                 "${pkgs.procps}/bin/sysctl -w net.ipv4.conf.all.route_localnet=1"
@@ -1470,8 +1472,9 @@ in {
         unitName = "${name}@";
         script = pkgs.writeShellScript "hole-puncher" ''
           set -eu
-          instance="${builtins.toString prefs.sslhPort}-${
-            builtins.toString prefs.sslhPort
+          instance="44443-${
+            builtins.toString
+            (if prefs.enableAioproxy then prefs.aioproxyPort else 44443)
           }"
           if [[ -n "$1" ]] && grep -Eq '[0-9]+-[0-9]+' <<< "$1"; then instance="$1"; fi
           externalPort="$(awk -F- '{print $2}' <<< "$instance")"
