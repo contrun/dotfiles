@@ -41,7 +41,6 @@ let
       boot.loader.grub.devices =
         [ "/dev/disk/by-id/nvme-eui.002538a401b81628" ];
     } else if hostname == "shl" then {
-      boot.loader.grub.devices = [ "/dev/sda" ];
     } else
       { });
 

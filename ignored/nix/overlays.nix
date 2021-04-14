@@ -352,6 +352,8 @@
           protobuf
         ]);
 
+        aioproxy = inputs.aioproxy.defaultPackage.${super.system};
+
         lua = super.lua.withPackages
           (ps: with ps; [ busted luafilesystem luarocks lua-lsp nvim-client ]);
 

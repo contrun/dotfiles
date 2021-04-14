@@ -277,6 +277,7 @@ let
     enableGnomeKeyring = false;
     emulatedSystems =
       if (self.nixosSystem == "x86_64-linux") then [ "aarch64-linux" ] else [ ];
+    enableAioproxy = true;
     extraModulePackages = [ ];
     kernelPatches = [ ];
     kernelParams = [ "boot.shell_on_fail" ];
@@ -318,6 +319,8 @@ let
       "fs.inotify.max_user_watches" = 524288;
       "kernel.kptr_restrict" = 0;
       "kernel.perf_event_paranoid" = 1;
+      "net.ipv4.conf.all.route_localnet" = 1;
+      "net.ipv4.conf.default.route_localnet" = 1;
     };
     networkingInterfaces = { };
     nixosStableVersion = "20.09";
