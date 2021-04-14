@@ -37,8 +37,6 @@ start() {
     parse_config
     run_clash
     if [[ -z "${DONT_TOUCH_IPTABLES:-}" ]]; then
-        # Make sure iptables cleared to avoid Chain already exists.
-        cleanup_iptables "$@"
         setup_iptables "$@"
     fi
 }
@@ -57,15 +55,29 @@ run_clash() {
 }
 
 setup_iptables() {
+    # Retry to shut up `Another app is currently holding the xtables lock. Perhaps you want to use the -w option.`
+    succeeded=
+    retries=0
+    while [[ -z $succeeded ]] && (( retries < 3 )); do
+        # Make sure iptables cleared to avoid Chain already exists.
+        if cleanup_iptables "$@" && do_setup_iptables "$@"; then
+            succeeded=y
+        else
+            retries=$(( retries + 1 ))
+        fi
+    done
+}
+
+do_setup_iptables() {
     method="${CLASH_PROXY_METHOD:-}"
     if [[ "$method" == tproxy ]]; then
-        setup_iptables_tproxy "$@"
+        do_setup_iptables_tproxy "$@"
     elif [[ "$method" == redirect || "$method" == redir ]]; then
-        setup_iptables_redirect "$@"
+        do_setup_iptables_redirect "$@"
     elif [[ -n "$CLASH_TPROXY_PORT" ]]; then
-        setup_iptables_tproxy "$@"
+        do_setup_iptables_tproxy "$@"
     else
-        setup_iptables_redirect "$@"
+        do_setup_iptables_redirect "$@"
     fi
 }
 
@@ -82,7 +94,7 @@ setup_dns_iptables() {
     iptables -t nat -I PREROUTING -p udp -j CLASH_DNS_EXTERNAL
 }
 
-setup_iptables_tproxy() {
+do_setup_iptables_tproxy() {
     setup_dns_iptables
     ip rule add fwmark "$CLASH_MARK" table "$CLASH_TABLE"
     ip route replace local 0.0.0.0/0 dev lo table "$CLASH_TABLE"
@@ -123,7 +135,7 @@ setup_iptables_tproxy() {
     # iptables -t mangle -I PREROUTING -p udp -j CLASH_EXTERNAL
 }
 
-setup_iptables_redirect() {
+do_setup_iptables_redirect() {
     setup_dns_iptables
 
     iptables -t nat -N CLASH_LOCAL

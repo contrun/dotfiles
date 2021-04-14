@@ -1283,12 +1283,12 @@ in {
               ExecStart =
                 "${pkgs.myPackages.aioproxy}/bin/aioproxy -v 2 -l 0.0.0.0:${
                   builtins.toString prefs.aioproxyPort
-                } -u 127.0.0.1:8000 -p both -ssh 127.0.0.1:22 -eternal-terminal 127.0.0.1:2022 -http 127.0.0.1:8080 -tls 127.0.0.1:443";
+                } -u 127.0.0.1:8000 -p both -ssh 127.0.0.1:22 -eternal-terminal 127.0.0.1:2022 -http 127.0.0.1:8080 -tls 127.0.0.1:30443";
               ExecStartPost = [
                 "${pkgs.procps}/bin/sysctl -w net.ipv4.conf.default.route_localnet=1"
                 "${pkgs.procps}/bin/sysctl -w net.ipv4.conf.all.route_localnet=1"
                 "${pkgs.iproute}/bin/ip rule add from 127.0.0.1/8 iif lo table 123"
-                "${pkgs.iproute}/bin/ip route add local 0.0.0.0/0 dev lo table 123"
+                "${pkgs.iproute}/bin/ip route replace local 0.0.0.0/0 dev lo table 123"
               ];
               ExecStopPost = [
                 "${pkgs.iproute}/bin/ip rule del from 127.0.0.1/8 iif lo table 123"

@@ -354,14 +354,20 @@ let
       in ({
         inherit nixosSystem;
         isMinimalSystem = true;
-      } // (if isForCiCd then {
-        enableJupyter = builtins.elem nixosSystem [ "x86_64-linux" ];
-        enableVirtualboxHost = builtins.elem nixosSystem [ "x86_64-linux" ];
-        enableZerotierone = true;
-        enableEmacs = true;
-        acmeMainDoamin = "cont.run";
-        enableK3s = true;
-      } else
+      } // (if isForCiCd then
+        {
+          enableZerotierone = true;
+          enableEmacs = true;
+          acmeMainDoamin = "cont.run";
+          enableK3s = true;
+        } // (if nixosSystem == "x86_64-linux" then {
+          enableJupyter = true;
+          enableVirtualboxHost = true;
+        } else if nixosSystem == "aarch64-linux" then {
+          installHomePackages = false;
+        } else
+          { })
+      else
         { }))
     else if hostname == "uzq" then {
       enableHidpi = true;
@@ -409,13 +415,13 @@ let
       buildMachines = super.buildMachines ++ [
         {
           hostName = "node1";
-          systems = [ "x86_64-linux" "i686-linux" "aarch64-linux" ];
+          systems = [ "x86_64-linux" "i686-linux" ];
           maxJobs = 32;
           supportedFeatures = [ "kvm" "big-parallel" ];
         }
         {
           hostName = "node2";
-          systems = [ "x86_64-linux" "i686-linux" "aarch64-linux" ];
+          systems = [ "x86_64-linux" "i686-linux" ];
           maxJobs = 32;
           supportedFeatures = [ "kvm" "big-parallel" ];
         }
