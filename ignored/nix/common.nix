@@ -593,6 +593,41 @@ in {
     arbtt = { enable = prefs.enableArbtt; };
     compton = { enable = prefs.enableCompton; };
     connman = { enable = prefs.enableConnman; };
+    openldap = {
+      enable = prefs.enableOpenldap;
+      settings = {
+        children = {
+          "cn=schema".includes = [
+            "${pkgs.openldap}/etc/schema/core.ldif"
+            "${pkgs.openldap}/etc/schema/cosine.ldif"
+            "${pkgs.openldap}/etc/schema/inetorgperson.ldif"
+            "${pkgs.openldap}/etc/schema/nis.ldif"
+          ];
+          "olcDatabase={1}mdb" = {
+            attrs = {
+              objectClass = [ "olcDatabaseConfig" "olcMdbConfig" ];
+              olcDatabase = "{1}mdb";
+              olcDbDirectory = "/var/db/openldap";
+              olcSuffix = "dc=cont,dc=run";
+              olcRootDN = {
+                # cn=root,dc=cont,dc=run
+                base64 = "Y249cm9vdCxkYz1jb250LGRjPXJ1bg==";
+              };
+              olcRootPW = { path = "/run/secrets/openldap-root-password"; };
+            };
+          };
+        };
+      };
+      declarativeContents."dc=cont,dc=run" = ''
+        dn: dc=cont,dc=run
+        objectClass: domain
+        dc: cont
+
+        dn: ou=users,dc=cont,dc=run
+        objectClass: organizationalUnit
+        ou: users
+      '';
+    };
     # calibre-server = {
     #   enable = prefs.enableCalibreServer;
     #   libraries = calibreServerLibraries;

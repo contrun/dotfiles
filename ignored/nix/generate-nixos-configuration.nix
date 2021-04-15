@@ -69,6 +69,7 @@ let
       }}";
       secrets = {
         clash-config-url = { };
+        openldap-root-password = {};
         yandex-passwd = {
           mode = "0400";
           owner = prefs.owner;

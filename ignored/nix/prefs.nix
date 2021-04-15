@@ -275,6 +275,7 @@ let
     enableLibInput = true;
     enableFprintAuth = false;
     enableBootSSH = true;
+    enableOpenldap = false;
     enableGnome = false;
     enableGnomeKeyring = false;
     emulatedSystems =
