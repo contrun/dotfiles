@@ -87,7 +87,7 @@ nixos-rebuild: install
 
 # Filters do not work yet, as cachix will upload the closure.
 cachix-push: nixos-rebuild-build
-	nix path-info .#nixosConfigurations.$(HOST).config.system.build.toplevel -r | grep -vE 'clion|webstorm|idea-ultimate|goland|pycharm-professional|datagrip|android-studio-dev|graalvm11-ce|lock$$|-source$$' | cachix push contrun
+	nix show-derivation -r .#nixosConfigurations.$(HOST).config.system.build.toplevel | jq -r '.[] | .outputs[].path' | xargs -i sh -c 'test -f "{}" && echo "{}"' | grep -vE 'clion|webstorm|idea-ultimate|goland|pycharm-professional|datagrip|android-studio-dev|graalvm11-ce|lock$$|-source$$' | cachix push contrun
 
 nixos-update-channels:
 	sudo nix-channel --update

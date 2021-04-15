@@ -365,7 +365,8 @@ let
           enableJupyter = true;
           enableVirtualboxHost = true;
         } else if nixosSystem == "aarch64-linux" then {
-          installHomePackages = false;
+          installHomePackages =
+            false; # Building aarch64 on qemu is too slow to be of any use.
         } else
           { })
       else
