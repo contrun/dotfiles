@@ -1,4 +1,5 @@
 .DEFAULT_GOAL:=home-install
+.PHONY: $(shell sed -n -e '/^$$/ { n ; /^[^ .\#][^ ]*:/ { s/:.*$$// ; p ; } ; }' $(MAKEFILE_LIST))
 
 DIR := $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 ROOTDIR = $(DIR)/root
@@ -22,15 +23,17 @@ DESTDIR.home = $(DESTDIR)
 DESTDIR.root = $(DESTROOTDIR)
 SRCDIR.home = $(DIR)
 SRCDIR.root = $(ROOTDIR)
+NIXOSREBUILD.build = nix build .\#nixosConfigurations.$(HOST).config.system.build.toplevel
+NIXOSREBUILD.switch = sudo nixos-rebuild switch --flake .\#$(HOST)
+NIXFLAGS = --show-trace --keep-going --keep-failed
 
 target = $(firstword $(subst -, ,$1))
 script = $(firstword $(subst -, ,$1))
 action = $(word 2,$(subst -, ,$1))
-chezmoi = ${CHEZMOI.$(call target,$@)}
-dest = $(DESTDIR.$(call target,$@))
-src = $(SRCDIR.$(call target,$@))
-
-.PHONY: install uninstall update pull push autopush upload update home-install root-install home-uninstall root-uninstall
+chezmoi = ${CHEZMOI.$(firstword $(subst -, ,$1))} ${CHEZMOIFLAGS}
+dest = $(DESTDIR.$(firstword $(subst -, ,$1)))
+src = $(SRCDIR.$(firstword $(subst -, ,$1)))
+nixos-rebuild = $(NIXOSREBUILD.$(word 2,$(subst -, ,$1)))
 
 pull:
 	git pull --rebase --autostash
@@ -53,13 +56,16 @@ update: pull update-upstreams deps-install install
 update-upstreams:
 	nix flake update
 
-home-install:
+remove-build-artifacts:
+	if [[ "$(realpath result)" == /nix/store/* ]]; then rm -f result; fi
+
+home-install: remove-build-artifacts
 	[[ -f $(DESTDIR)/.config/Code/User/settings.json ]] || install -DT $(DIR)/dot_config/Code/User/settings.json $(DESTDIR)/.config/Code/User/settings.json
 	diff $(DESTDIR)/.config/Code/User/settings.json $(DIR)/dot_config/Code/User/settings.json || nvim -d $(DESTDIR)/.config/Code/User/settings.json $(DIR)/dot_config/Code/User/settings.json
-	$(call chezmoi,$@) $(CHEZMOIFLAGS) -D $(call dest,$@) -S $(call src,$@) apply --keep-going || true
+	$(call chezmoi,$@) -D $(call dest,$@) -S $(call src,$@) apply --keep-going || true
 
-root-install:
-	$(call chezmoi,$@) $(CHEZMOIFLAGS) -D $(call dest,$@) -S $(call src,$@) apply --keep-going || true
+root-install: remove-build-artifacts
+	$(call chezmoi,$@) -D $(call dest,$@) -S $(call src,$@) apply --keep-going || true
 
 install: home-install root-install
 
@@ -68,26 +74,27 @@ deps-install deps-uninstall deps-reinstall:
 
 all-install: home-install deps-install root-install
 
-home-uninstall root-uninstall:
-	$(call chezmoi,$@) $(CHEZMOIFLAGS) -D $(call dest,$@) -S $(call src,$@) purge
+home-uninstall root-uninstall: remove-build-artifacts
+	$(call chezmoi,$@) -D $(call dest,$@) -S $(call src,$@) purge
 
 uninstall: deps-uninstall home-uninstall root-uninstall
 
 home-manager: home-install
 	home-manager switch -v --keep-going --keep-failed
 
-nixos-rebuild-build: install
-	nixos-rebuild build --flake .#$(HOST) --show-trace --keep-going --keep-failed
+nixos-build-dirty nixos-switch-dirty:
+	$(call nixos-rebuild,$@) ${NIXFLAGS}
 
-nixos-rebuild-switch: install
-	sudo nixos-rebuild switch --flake .#$(HOST) --show-trace --keep-going --keep-failed
-
-nixos-rebuild: install
-	git diff --exit-code && sudo nixos-rebuild switch --flake .#$(HOST) --show-trace --keep-going --keep-failed || (git stash; sudo nixos-rebuild switch --flake .#$(HOST) --show-trace --keep-going --keep-failed; git stash pop;)
+nixos-build nixos-switch:
+	if git diff --exit-code; then $(call nixos-rebuild,$@) ${NIXFLAGS}; else (git stash; $(call nixos-rebuild,$@) ${NIXFLAGS}; git stash pop;); fi
 
 # Filters do not work yet, as cachix will upload the closure.
-cachix-push: nixos-rebuild-build
+cachix-push: nixos-build-dirty
 	nix show-derivation -r .#nixosConfigurations.$(HOST).config.system.build.toplevel | jq -r '.[] | .outputs[].path' | xargs -i sh -c 'test -f "{}" && echo "{}"' | grep -vE 'clion|webstorm|idea-ultimate|goland|pycharm-professional|datagrip|android-studio-dev|graalvm11-ce|lock$$|-source$$' | cachix push contrun
+
+cachix-push-all:
+	make HOST=cicd-x86_64-linux -C ${DIR} cachix-push
+	make HOST=cicd-aarch64-linux -C ${DIR} cachix-push
 
 nixos-update-channels:
 	sudo nix-channel --update
