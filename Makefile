@@ -1,4 +1,4 @@
-.DEFAULT_GOAL:=home-install
+.DEFAULT_GOAL := home-install
 .PHONY: $(shell sed -n -e '/^$$/ { n ; /^[^ .\#][^ ]*:/ { s/:.*$$// ; p ; } ; }' $(MAKEFILE_LIST))
 
 DIR := $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
@@ -7,15 +7,9 @@ IGNOREDDIR = $(DIR)/ignored
 HOST ?= $(shell hostname)
 DESTDIR ?= ${HOME}
 DESTROOTDIR ?= /
-
 # The chezmoi state directory is stored in the same directory as the config file,
 # which may not be writable.
-ifneq (,$(findstring /nix/store/,$(DIR)))
-    chezmoiflags =
-else
-    chezmoiflags = -c $(IGNOREDDIR)/chezmoi.toml
-endif
-CHEZMOIFLAGS := -v ${chezmoiflags}
+CHEZMOIFLAGS := -v $(if $(findstring /nix/store/,$(DIR)),,-c $(IGNOREDDIR)/chezmoi.toml)
 
 CHEZMOI.home = chezmoi
 CHEZMOI.root = sudo chezmoi
@@ -25,6 +19,7 @@ SRCDIR.home = $(DIR)
 SRCDIR.root = $(ROOTDIR)
 NIXOSREBUILD.build = nix build .\#nixosConfigurations.$(HOST).config.system.build.toplevel
 NIXOSREBUILD.switch = sudo nixos-rebuild switch --flake .\#$(HOST)
+NIXOSREBUILD.bootloader = $(NIXOS.switch) --install-bootloader
 NIXFLAGS = --show-trace --keep-going --keep-failed
 
 target = $(firstword $(subst -, ,$1))
@@ -33,7 +28,7 @@ action = $(word 2,$(subst -, ,$1))
 chezmoi = ${CHEZMOI.$(firstword $(subst -, ,$1))} ${CHEZMOIFLAGS}
 dest = $(DESTDIR.$(firstword $(subst -, ,$1)))
 src = $(SRCDIR.$(firstword $(subst -, ,$1)))
-nixos-rebuild = $(NIXOSREBUILD.$(word 2,$(subst -, ,$1)))
+nixos-rebuild = $(NIXOSREBUILD.$(word 2,$(subst -, ,$1))) $(if $(findstring -dirty,$1),,--profile-name flake.$(shell date +%Y%m%d).$(shell git rev-parse --short HEAD))
 
 pull:
 	git pull --rebase --autostash
@@ -82,15 +77,16 @@ uninstall: deps-uninstall home-uninstall root-uninstall
 home-manager: home-install
 	home-manager switch -v --keep-going --keep-failed
 
-nixos-build-dirty nixos-switch-dirty:
+nixos-build-dirty nixos-switch-dirty nixos-bootloader-dirty:
 	$(call nixos-rebuild,$@) ${NIXFLAGS}
 
-nixos-build nixos-switch:
+nixos-build nixos-switch nixos-bootloader:
 	if git diff --exit-code; then $(call nixos-rebuild,$@) ${NIXFLAGS}; else (git stash; $(call nixos-rebuild,$@) ${NIXFLAGS}; git stash pop;); fi
 
 # Filters do not work yet, as cachix will upload the closure.
-cachix-push: nixos-build-dirty
-	nix show-derivation -r .#nixosConfigurations.$(HOST).config.system.build.toplevel | jq -r '.[] | .outputs[].path' | xargs -i sh -c 'test -f "{}" && echo "{}"' | grep -vE 'clion|webstorm|idea-ultimate|goland|pycharm-professional|datagrip|android-studio-dev|graalvm11-ce|lock$$|-source$$' | cachix push contrun
+cachix-push:
+	if ! make HOST=$(HOST) -C ${DIR} nixos-build-dirty; then :; fi
+	nix show-derivation -r .#nixosConfigurations.$(HOST).config.system.build.toplevel | jq -r '.[].outputs[].path' | xargs -i sh -c 'test -f "{}" && echo "{}"' | grep -vE 'clion|webstorm|idea-ultimate|goland|pycharm-professional|datagrip|android-studio-dev|graalvm11-ce|lock$$|-source$$' | cachix push contrun
 
 cachix-push-all:
 	make HOST=cicd-x86_64-linux -C ${DIR} cachix-push

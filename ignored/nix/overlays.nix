@@ -13,11 +13,6 @@
 
     mozillaOverlay = import inputs.nixpkgs-mozilla;
 
-    firefoxOverlay = self: super: super.lib.optionalAttrs (inputs.flake-firefox-nightly.packages ? super.system) {
-      myPackages.firefox =
-        inputs.flake-firefox-nightly.packages.${super.system}.firefox-nightly-bin;
-    };
-
     dontCheckOverlay = self: super:
       let
         overridePythonPackages = let
@@ -505,13 +500,15 @@
               platforms = platforms.unix;
             };
           };
-
+      } // super.lib.optionalAttrs
+      (inputs.flake-firefox-nightly.packages ? "${super.system}") {
+        firefox =
+          inputs.flake-firefox-nightly.packages."${super.system}".firefox-nightly-bin;
       };
     };
 
   in [
     mozillaOverlay
-    firefoxOverlay
     haskellOverlay
     dontCheckOverlay
     inputs.emacs-overlay.overlay

@@ -593,6 +593,10 @@ in {
     arbtt = { enable = prefs.enableArbtt; };
     compton = { enable = prefs.enableCompton; };
     connman = { enable = prefs.enableConnman; };
+    aria2 = {
+      enable = prefs.enableAria2;
+      extraArguments = "--rpc-listen-all --rpc-secret $ARIA2_RPC_SECRET";
+    };
     openldap = {
       enable = prefs.enableOpenldap;
       settings = {
@@ -1281,6 +1285,13 @@ in {
           };
         } // pkgs.lib.optionalAttrs (prefs.enableJupyter) {
           "jupyterhub" = { path = with pkgs; [ nodejs_latest ]; };
+        } // pkgs.lib.optionalAttrs (prefs.enableAria2) {
+          "aria2" = {
+            serviceConfig = {
+              Environment = "ARIA2_RPC_SECRET=token_nekot";
+              EnvironmentFile = "/run/secrets/aria2-env";
+            };
+          };
         } // pkgs.lib.optionalAttrs (prefs.enableCodeServer) {
           "code-server" = {
             enable = true;

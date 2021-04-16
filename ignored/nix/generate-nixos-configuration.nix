@@ -40,8 +40,9 @@ let
     } else if hostname == "jxt" then {
       boot.loader.grub.devices =
         [ "/dev/disk/by-id/nvme-eui.002538a401b81628" ];
-    } else if hostname == "shl" then {
-    } else
+    } else if hostname == "shl" then
+      { }
+    else
       { });
 
   hardwareConfiguration = if isMinimalSystem then
@@ -69,7 +70,7 @@ let
       }}";
       secrets = {
         clash-config-url = { };
-        openldap-root-password = {};
+        openldap-root-password = { };
         yandex-passwd = {
           mode = "0400";
           owner = prefs.owner;
@@ -77,12 +78,19 @@ let
         };
       } // (if prefs.enableAcme then {
         cloudflare-dns-api-token = {
-          mode = "0400";
+          mode = "0440";
           owner = "acme";
           group = "acme";
         };
       } else
-        { });
+        { }) // (if prefs.enableAria2 then {
+          aria2-env = {
+            mode = "0440";
+            owner = "aria2";
+            group = "aria2";
+          };
+        } else
+          { });
     };
   } else
     { };

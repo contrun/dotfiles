@@ -125,6 +125,7 @@ let
     '';
     dnsmasqServers = [ "223.6.6.6" "180.76.76.76" "8.8.8.8" "9.9.9.9" ];
     enableArbtt = false;
+    enableAria2 = !self.isMinimalSystem;
     xWindowManager =
       if (self.nixosSystem == "x86_64-linux") then "xmonad" else "i3";
     xDefaultSession = "none+" + self.xWindowManager;
@@ -429,6 +430,7 @@ let
         }
       ];
     } else if hostname == "shl" then {
+      enableAria2 = true;
       kernelParams = super.kernelParams
         ++ [ "cgroup_enable=cpuset" "cgroup_enable=memory" "cgroup_memory=1" ];
       nixosSystem = "aarch64-linux";
