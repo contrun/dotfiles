@@ -1653,7 +1653,10 @@ in {
         useOSProber = true;
         zfsSupport = prefs.enableZfs;
       };
-      systemd-boot = { enable = prefs.enableSystemdBoot; };
+      systemd-boot = {
+        enable = prefs.enableSystemdBoot;
+        configurationLimit = 25;
+      };
       raspberryPi = {
         enable = prefs.enableRaspberryPiBoot;
         version = prefs.raspberryPiVersion;
