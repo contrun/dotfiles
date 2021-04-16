@@ -18,17 +18,17 @@ DESTDIR.root = $(DESTROOTDIR)
 SRCDIR.home = $(DIR)
 SRCDIR.root = $(ROOTDIR)
 NIXOSREBUILD.build = nix build .\#nixosConfigurations.$(HOST).config.system.build.toplevel
-NIXOSREBUILD.switch = sudo nixos-rebuild switch --flake .\#$(HOST)
+NIXOSREBUILD.switch = sudo nixos-rebuild switch --flake .\#$(HOST) $(if $(findstring -dirty,$1),,--profile-name flake.$(shell date +%Y%m%d).$(shell git rev-parse --short HEAD))
 NIXOSREBUILD.bootloader = $(NIXOS.switch) --install-bootloader
-NIXFLAGS = --show-trace --keep-going --keep-failed
-
+EXTRANIXFLAGS = $(if $(SYSTEM),--system $(SYSTEM) --extra-extra-platforms $(SYSTEM),)
+NIXFLAGS = $(EXTRANIXFLAGS) --show-trace --keep-going --keep-failed
 target = $(firstword $(subst -, ,$1))
 script = $(firstword $(subst -, ,$1))
 action = $(word 2,$(subst -, ,$1))
 chezmoi = ${CHEZMOI.$(firstword $(subst -, ,$1))} ${CHEZMOIFLAGS}
 dest = $(DESTDIR.$(firstword $(subst -, ,$1)))
 src = $(SRCDIR.$(firstword $(subst -, ,$1)))
-nixos-rebuild = $(NIXOSREBUILD.$(word 2,$(subst -, ,$1))) $(if $(findstring -dirty,$1),,--profile-name flake.$(shell date +%Y%m%d).$(shell git rev-parse --short HEAD))
+nixos-rebuild = $(NIXOSREBUILD.$(word 2,$(subst -, ,$1)))
 
 pull:
 	git pull --rebase --autostash
