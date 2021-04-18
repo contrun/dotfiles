@@ -71,6 +71,7 @@ let
       secrets = {
         clash-config-url = { };
         openldap-root-password = { };
+        postgresql-env = { };
         yandex-passwd = {
           mode = "0400";
           owner = prefs.owner;
@@ -83,14 +84,21 @@ let
           group = "acme";
         };
       } else
-        { }) // (if prefs.enableAria2 then {
-          aria2-env = {
+        { }) // (if prefs.enablePostgres then {
+          postgresql-init-script = {
             mode = "0440";
-            owner = "aria2";
-            group = "aria2";
+            owner = "postgres";
+            group = "postgres";
           };
         } else
-          { });
+          { }) // (if prefs.enableAria2 then {
+            aria2-env = {
+              mode = "0440";
+              owner = "aria2";
+              group = "aria2";
+            };
+          } else
+            { });
     };
   } else
     { };

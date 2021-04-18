@@ -866,7 +866,39 @@ in {
         mynetworks_style = host
       '';
     };
-    postgresql.enable = prefs.enablePostgres;
+    postgresql = {
+      enable = prefs.enablePostgres;
+      package = pkgs.postgresql_13;
+      enableTCPIP = true;
+      settings = {
+        # password_encryption = "scram-sha-256";
+      };
+      authentication = ''
+        host  all all 0.0.0.0/0 md5
+        host  all all ::0/0 md5
+      '';
+      ensureDatabases = [ "nextcloud" "wallabag" ];
+      ensureUsers = [
+        {
+          name = "nextcloud";
+          ensurePermissions = { "DATABASE nextcloud" = "ALL PRIVILEGES"; };
+        }
+        {
+          name = "wallabag";
+          ensurePermissions = { "DATABASE wallabag" = "ALL PRIVILEGES"; };
+        }
+        {
+          name = "superuser";
+          ensurePermissions = {
+            "ALL TABLES IN SCHEMA public" = "ALL PRIVILEGES";
+          };
+        }
+      ];
+    };
+    postgresqlBackup = {
+      enable = prefs.enablePostgres;
+      backupAll = true;
+    };
     udisks2.enable = prefs.enableUdisks2;
     redis.enable = prefs.enableRedis;
     fail2ban.enable = prefs.enableFail2ban && config.networking.firewall.enable;
@@ -1346,6 +1378,8 @@ in {
               EnvironmentFile = "/run/secrets/aria2-env";
             };
           };
+        } // pkgs.lib.optionalAttrs (prefs.enablePostgres) {
+          "postgresql" = { serviceConfig = { SupplementaryGroups = "keys"; }; };
         } // pkgs.lib.optionalAttrs (prefs.enableCodeServer) {
           "code-server" = {
             enable = true;
