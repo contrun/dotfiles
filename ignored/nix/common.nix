@@ -312,7 +312,7 @@ in {
       ] ++ (if (prefs.enableTailScale) then [ tailscale ] else [ ])
       ++ (if (prefs.enableCodeServer) then [ code-server ] else [ ])
       ++ (if (prefs.enableZfs) then [ zfsbackup ] else [ ])
-      ++ (if (prefs.enableZfs) then [ btrbk btrfs-progs ] else [ ])
+      ++ (if (prefs.enableBtrfs) then [ btrbk btrfs-progs ] else [ ])
       ++ (if (prefs.enableClashRedir) then [ clash ] else [ ])
       ++ (if (prefs.enableK3s) then [ k3s ] else [ ])
       ++ (if (prefs.nixosSystem == "x86_64-linux") then [
@@ -597,7 +597,47 @@ in {
       enable = prefs.enableAria2;
       extraArguments = "--rpc-listen-all --rpc-secret $ARIA2_RPC_SECRET";
     };
-    openldap = {
+    openldap = let
+      mkCommon = baseDN: ''
+        dn: ou=People,${baseDN}
+        ou: People
+        objectClass: top
+        objectClass: organizationalUnit
+
+        dn: ou=Group,${baseDN}
+        ou: Group
+        objectClass: top
+        objectClass: organizationalUnit
+
+        dn: cn=Manager,${baseDN}
+        cn: Manager
+        objectClass: top
+        objectclass: organizationalRole
+        roleOccupant: ${baseDN}
+
+        dn: uid=testuser,${baseDN}
+        objectClass: account
+        uid: testuser
+
+        dn: uid=johndoe,ou=People,${baseDN}
+        objectClass: top
+        objectClass: person
+        objectClass: organizationalPerson
+        objectClass: inetOrgPerson
+        cn: John Doe
+        sn: Doe
+        userPassword: xxxxxxxxxx
+      '';
+      mkDomain = domain: tld: ''
+        dn: dc=${domain},dc=${tld}
+        objectClass: domain
+        dc: ${domain}
+      '';
+      mkOrg = org: ''
+        dn: o=${org}
+        objectClass: organization
+      '';
+    in {
       enable = prefs.enableOpenldap;
       settings = {
         children = {
@@ -611,26 +651,40 @@ in {
             attrs = {
               objectClass = [ "olcDatabaseConfig" "olcMdbConfig" ];
               olcDatabase = "{1}mdb";
-              olcDbDirectory = "/var/db/openldap";
+              olcDbDirectory = "/var/db/openldap/localhost";
+              olcSuffix = "o=localhost";
+              olcRootDN = "cn=root,o=localhost";
+              olcRootPW = { path = "/run/secrets/openldap-root-password"; };
+              olcAccess = [
+                ''
+                  to attrs=userPassword,givenName,sn,photo by self write by anonymous auth by dn.base="cn=Manager,o=localhost" write by * none''
+              ] ++ [
+                ''
+                  to * by self read by dn.base="cn=Manager,o=localhost" write by * none''
+              ];
+            };
+          };
+          "olcDatabase={2}mdb" = {
+            attrs = {
+              objectClass = [ "olcDatabaseConfig" "olcMdbConfig" ];
+              olcDatabase = "{2}mdb";
+              olcDbDirectory = "/var/db/openldap/cont.run";
               olcSuffix = "dc=cont,dc=run";
-              olcRootDN = {
-                # cn=root,dc=cont,dc=run
-                base64 = "Y249cm9vdCxkYz1jb250LGRjPXJ1bg==";
-              };
+              olcRootDN = "cn=root,dc=cont,dc=run";
               olcRootPW = { path = "/run/secrets/openldap-root-password"; };
             };
           };
         };
       };
-      declarativeContents."dc=cont,dc=run" = ''
-        dn: dc=cont,dc=run
-        objectClass: domain
-        dc: cont
+      declarativeContents."dc=cont,dc=run" = builtins.concatStringsSep "\n" [
+        (mkDomain "cont" "run")
+        (mkCommon "dc=cont,dc=run")
+      ];
 
-        dn: ou=users,dc=cont,dc=run
-        objectClass: organizationalUnit
-        ou: users
-      '';
+      declarativeContents."o=localhost" = builtins.concatStringsSep "\n" [
+        (mkOrg "localhost")
+        (mkCommon "o=localhost")
+      ];
     };
     # calibre-server = {
     #   enable = prefs.enableCalibreServer;
