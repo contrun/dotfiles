@@ -186,7 +186,7 @@ let
       { };
     enableYandexDisk = self.nixosSystem == "x86_64-linux";
     yandexExcludedFiles = "docs/org-mode/roam/.emacs";
-    enablePostgres = false;
+    enablePostgresql = false;
     enableRedis = false;
     enableVsftpd = !self.isMinimalSystem;
     enableRsyncd = false;
@@ -279,6 +279,10 @@ let
     enableOpenldap = false;
     enableGnome = false;
     enableGnomeKeyring = false;
+    enableOciContainers = true;
+    # https://discourse.nixos.org/t/podman-containers-always-fail-to-start/11908
+    ociContainersBackend = "docker";
+    ociContainers = { enablePostgresql = true; };
     emulatedSystems =
       if (self.nixosSystem == "x86_64-linux") then [ "aarch64-linux" ] else [ ];
     extraModulePackages = [ ];

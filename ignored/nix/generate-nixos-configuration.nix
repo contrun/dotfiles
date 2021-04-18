@@ -72,6 +72,7 @@ let
         clash-config-url = { };
         openldap-root-password = { };
         postgresql-env = { };
+        postgresql-initdb-script = { mode = "0500"; };
         yandex-passwd = {
           mode = "0400";
           owner = prefs.owner;
@@ -84,7 +85,7 @@ let
           group = "acme";
         };
       } else
-        { }) // (if prefs.enablePostgres then {
+        { }) // (if prefs.enablePostgresql then {
           postgresql-init-script = {
             mode = "0440";
             owner = "postgres";

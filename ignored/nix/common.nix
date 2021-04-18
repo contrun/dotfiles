@@ -867,7 +867,7 @@ in {
       '';
     };
     postgresql = {
-      enable = prefs.enablePostgres;
+      enable = prefs.enablePostgresql;
       package = pkgs.postgresql_13;
       enableTCPIP = true;
       settings = {
@@ -896,7 +896,7 @@ in {
       ];
     };
     postgresqlBackup = {
-      enable = prefs.enablePostgres;
+      enable = prefs.enablePostgresql;
       backupAll = true;
     };
     udisks2.enable = prefs.enableUdisks2;
@@ -1254,8 +1254,10 @@ in {
     containerd = { enable = prefs.enableContainerd; };
     cri-o = { enable = prefs.enableCrio; };
     podman = {
-      enable = prefs.enablePodman;
+      enable = prefs.enablePodman || (prefs.enableOciContainers
+        && prefs.ociContainersBackend == "podman");
       dockerCompat = prefs.replaceDockerWithPodman;
+      extraPackages = if (prefs.enableZfs) then [ pkgs.zfs ] else [ ];
     };
     docker = {
       enable = prefs.enableDocker && !prefs.replaceDockerWithPodman;
@@ -1263,6 +1265,39 @@ in {
       autoPrune.enable = true;
     };
     anbox = { enable = prefs.enableAnbox; };
+    oci-containers = let
+      images = {
+        "postgresql" = {
+          "x86_64-linux" = "postgres:13";
+          "aarch64-linux" = "arm64v8/postgres:13";
+        };
+      };
+      mkContainer = name: enable: config: override:
+        pkgs.lib.optionalAttrs enable (let
+          f = { environmentFiles ? [ ], ... }@args: {
+            result = (builtins.removeAttrs args [ "environmentFiles" ]) // {
+              image =
+                args.image or (images."${name}"."${prefs.nixosSystem}" or (builtins.throw
+                  "Image for ${name} on ${prefs.nixosSystem} not found"));
+              extraOptions = (args.extraOptions or [ ])
+                ++ (builtins.map (x: "--env-file=" + x) environmentFiles);
+            };
+          };
+          overrideWith = config: override:
+            ((lib.makeOverridable f config).override override).result;
+        in { "${name}" = overrideWith config override; });
+    in pkgs.lib.optionalAttrs prefs.enableOciContainers {
+      backend = prefs.ociContainersBackend;
+      containers =
+        mkContainer "postgresql" prefs.ociContainers.enablePostgresql {
+          environment = { };
+          volumes = [
+            "/run/secrets/postgresql-initdb-script:/my/init-user-db.sh"
+            "/var/data/postgresql:/var/lib/postgresql/data"
+          ];
+          extraOptions = [ "--network=bus" ];
+        } { environmentFiles = [ "/run/secrets/postgresql-env" ]; };
+    };
   };
   # powerManagement = {
   #   enable = true;
@@ -1350,7 +1385,29 @@ in {
     };
 
     myServices = {
-      services = notify-systemd-unit-failures // pkgs.lib.optionalAttrs
+      services = notify-systemd-unit-failures // {
+        init-oci-container-network = {
+          description = "Create oci container networks";
+          after = [ "network.target" ];
+          wantedBy = [ "multi-user.target" ];
+          serviceConfig.Type = "oneshot";
+          script = let
+            dockercli = "${config.virtualisation.docker.package}/bin/docker";
+            podmancli = "${config.virtualisation.podman.package}/bin/docker";
+            cli = if prefs.ociContainersBackend == "docker" then
+              dockercli
+            else
+              podmancli;
+          in ''
+            set -e
+            if ! ${cli} network inspect bus; then
+                if ! ${cli} network create bus; then
+                    echo "creating network failed"
+                fi
+            fi
+          '';
+        };
+      } // pkgs.lib.optionalAttrs
         (prefs.buildZerotierone && !prefs.enableZerotierone) {
           # build zero tier one anyway, but enable it on prefs.enableZerotierone is true;
           "zerotierone" = { wantedBy = pkgs.lib.mkForce [ ]; };
@@ -1378,7 +1435,25 @@ in {
               EnvironmentFile = "/run/secrets/aria2-env";
             };
           };
-        } // pkgs.lib.optionalAttrs (prefs.enablePostgres) {
+        } // pkgs.lib.optionalAttrs (prefs.ociContainers.enablePostgresql) {
+          "${prefs.ociContainersBackend}-postgresql" = {
+            postStart = ''
+              set -xe
+              # https://github.com/moby/moby/issues/41890
+              export HOME=/root
+              retries=0
+              while ! ${prefs.ociContainersBackend} exec postgresql /my/init-user-db.sh; do
+                  if (( retries > 10 )); then
+                      echo "Giving up on initializing postgresql database."
+                      exit 0
+                  else
+                      retries=$(( retries + 1 ))
+                      sleep 2
+                  fi
+              done
+            '';
+          };
+        } // pkgs.lib.optionalAttrs (prefs.enablePostgresql) {
           "postgresql" = { serviceConfig = { SupplementaryGroups = "keys"; }; };
         } // pkgs.lib.optionalAttrs (prefs.enableCodeServer) {
           "code-server" = {
