@@ -169,4 +169,6 @@ jobs:
         # tackle a race case
         git pull --rebase
         if [[ '${{ matrix.nix-system }}' == 'x86_64-linux' ]]; then git push; fi
-        git push origin HEAD:${{ matrix.nix-system }}
+        git switch ${{ matrix.nix-system }}
+        git rebase --onto @{-1}
+        git push origin ${{ matrix.nix-system }}:${{ matrix.nix-system }}
