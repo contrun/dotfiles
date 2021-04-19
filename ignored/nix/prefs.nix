@@ -108,7 +108,7 @@ let
     enableSslh = false;
     sslhPort = 44443;
     enableAioproxy = true;
-    aioproxyPort = 443;
+    aioproxyPort = 4443;
     enableTailScale = !self.isMinimalSystem;
     enableX2goServer = false;
     enableDebugInfo = false;
@@ -169,17 +169,17 @@ let
       excludes = "";
       user = self.owner;
     };
-    acmeEmail = if self.acmeMainDoamin == "" then
+    acmeEmail = if self.acmeMainDomain == "" then
       "tobeoverridden@example.com"
     else
-      "webmaster@${self.acmeMainDoamin}";
-    acmeMainDoamin = "";
-    enableAcme = self.acmeMainDoamin != "";
+      "webmaster@${self.acmeMainDomain}";
+    acmeMainDomain = "";
+    enableAcme = self.acmeMainDomain != "";
     acmeCerts = if self.enableAcme then {
-      "${self.acmeMainDoamin}" = {
-        domain = "*.${self.acmeMainDoamin}";
+      "${self.acmeMainDomain}" = {
+        domain = "*.${self.acmeMainDomain}";
         extraDomainNames =
-          [ self.acmeMainDoamin "*.hub.${self.acmeMainDoamin}" ];
+          [ self.acmeMainDomain "*.hub.${self.acmeMainDomain}" ];
         dnsProvider = "cloudflare";
         credentialsFile = "/run/secrets/cloudflare-dns-api-token";
       };
@@ -187,6 +187,7 @@ let
       { };
     enableYandexDisk = self.nixosSystem == "x86_64-linux";
     yandexExcludedFiles = "docs/org-mode/roam/.emacs";
+    enableTraefik = false;
     enablePostgresql = false;
     enableRedis = false;
     enableVsftpd = !self.isMinimalSystem;
@@ -245,7 +246,7 @@ let
     enableWireshark = true;
     enabledInputMethod = "fcitx";
     enableVirtualboxHost = !self.isMinimalSystem;
-    enableDocker = self.enableK3s;
+    enableDocker = true;
     enablePodman = true;
     replaceDockerWithPodman = !self.enableDocker;
     dockerStorageDriver = if self.enableZfs then "zfs" else "overlay2";
@@ -368,7 +369,7 @@ let
         {
           enableZerotierone = true;
           enableEmacs = true;
-          acmeMainDoamin = "cont.run";
+          acmeMainDomain = "cont.run";
           enableK3s = true;
         } // (if nixosSystem == "x86_64-linux" then {
           enableJupyter = true;
@@ -408,9 +409,10 @@ let
       enableCfssl = true;
       enableK3s = true;
       enableWireless = true;
-      acmeMainDoamin = "cont.run";
+      acmeMainDomain = "cont.run";
       extraModulePackages = [ rtl8188gu ];
       consoleFont = "${pkgs.terminus_font}/share/consolefonts/ter-g20n.psf.gz";
+      enableTraefik = true;
       ociContainers = super.ociContainers // {
         enablePostgresql = true;
         enableWallabag = true;
@@ -451,7 +453,7 @@ let
       kernelPackages = pkgs.linuxPackages_rpi4;
       enableCodeServer = false;
       enableK3s = true;
-      acmeMainDoamin = "cont.run";
+      acmeMainDomain = "cont.run";
       enableZerotierone = true;
       enableTailScale = true;
       enableVirtualboxHost = false;

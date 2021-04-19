@@ -868,6 +868,104 @@ in {
         mynetworks_style = host
       '';
     };
+    traefik = {
+      enable = prefs.enableTraefik;
+      dynamicConfigOptions = {
+        # http = {
+        #   routers = {
+        #     api = {
+        #       rule = "Host(`traefik-api.hub.${prefs.acmeMainDomain}`)";
+        #       service = "api@internal";
+        #     };
+        #     api-https = {
+        #       rule = "Host(`traefik-api.hub.${prefs.acmeMainDomain}`)";
+        #       service = "api@internal";
+        #       tls = { };
+        #     };
+        #     dashboard = {
+        #       rule = "Host(`traefik.hub.${prefs.acmeMainDomain}`)";
+        #       service = "dashboar@internal";
+        #     };
+        #     dashboard-https = {
+        #       rule = "Host(`traefik.hub.${prefs.acmeMainDomain}`)";
+        #       service = "dashboard@internal";
+        #       tls = { };
+        #     };
+        #   };
+        # };
+        tcp = {
+          routers = {
+            to-aioproxy = {
+              rule = "HostSNI(`*`)";
+              service = "aioproxy";
+              tls = { };
+            };
+          };
+          services = {
+            aioproxy = {
+              loadBalancer = {
+                servers = [{
+                  address = "127.0.0.1:${builtins.toString prefs.aioproxyPort}";
+                }];
+              };
+            };
+          };
+        };
+        tls = {
+          certificates = [{
+            certFile = "/var/lib/acme/${prefs.acmeMainDomain}/cert.pem";
+            keyFile = "/var/lib/acme/${prefs.acmeMainDomain}/key.pem";
+          }];
+          stores = {
+            default = {
+              defaultCertificate = {
+                certFile = "/var/lib/acme/${prefs.acmeMainDomain}/cert.pem";
+                keyFile = "/var/lib/acme/${prefs.acmeMainDomain}/key.pem";
+              };
+            };
+          };
+        };
+      };
+      staticConfigOptions = {
+        # api = {
+        #   dashboard = true;
+        #   insecure = true;
+        # };
+        entryPoints = {
+          web = {
+            address = ":80";
+            proxyProtocol = {
+              trustedIPs = [
+                "127.0.0.0/8"
+                "10.0.0.0/8"
+                "100.64.0.0/10"
+                "172.16.0.0/12"
+                "192.168.0.0/16"
+              ];
+            };
+          };
+          websecure = {
+            address = ":443";
+            proxyProtocol = {
+              trustedIPs = [
+                "127.0.0.0/8"
+                "10.0.0.0/8"
+                "100.64.0.0/10"
+                "172.16.0.0/12"
+                "192.168.0.0/16"
+              ];
+            };
+          };
+        };
+        log = { level = "DEBUG"; };
+        providers = {
+          docker = {
+            defaultRule = "Host(`{{ .Name }}.hub.${prefs.acmeMainDomain}`)";
+            network = "hub";
+          };
+        };
+      };
+    };
     postgresql = {
       enable = prefs.enablePostgresql;
       package = pkgs.postgresql_13;
@@ -1296,17 +1394,26 @@ in {
       backend = prefs.ociContainersBackend;
       containers =
         mkContainer "postgresql" prefs.ociContainers.enablePostgresql {
-          environment = { };
           volumes = [
             "/run/secrets/postgresql-initdb-script:/my/init-user-db.sh"
             "/var/data/postgresql:/var/lib/postgresql/data"
           ];
-          extraOptions = [ "--network=bus" ];
+          extraOptions = [ "--network=hub" "--label=traefik.enable=false" ];
           ports = [ "5432:5432" ];
         } { environmentFiles = [ "/run/secrets/postgresql-env" ]; }
         // mkContainer "wallabag" prefs.ociContainers.enableWallabag {
-          extraOptions = [ "--network=bus" ];
-          ports = [ "8800:80" ];
+          environment = {
+            # https://github.com/wallabag/docker/issues/77
+            "TRUSTED_PROXIES" =
+              "127.0.0.0/8,10.0.0.0/8,100.64.0.0/10,172.16.0.0/12,192.168.0.0/16";
+            "SYMFONY__ENV__DOMAIN_NAME" =
+              "https://wallabag.hub.${prefs.acmeMainDomain}";
+          };
+          extraOptions = [
+            "--network=hub"
+            "--label=traefik.http.services.wallabag.loadbalancer.server.port=80"
+            "--label=traefik.http.routers.wallabag.tls=true"
+          ];
         } { environmentFiles = [ "/run/secrets/wallabag-env" ]; };
     };
   };
@@ -1411,8 +1518,8 @@ in {
               podmancli;
           in ''
             set -e
-            if ! ${cli} network inspect bus; then
-                if ! ${cli} network create bus; then
+            if ! ${cli} network inspect hub; then
+                if ! ${cli} network create hub; then
                     echo "creating network failed"
                 fi
             fi
@@ -1484,6 +1591,10 @@ in {
           };
         } // pkgs.lib.optionalAttrs (prefs.enablePostgresql) {
           "postgresql" = { serviceConfig = { SupplementaryGroups = "keys"; }; };
+        } // pkgs.lib.optionalAttrs (prefs.enableTraefik) {
+          "traefik" = {
+            serviceConfig = { SupplementaryGroups = "keys docker acme"; };
+          };
         } // pkgs.lib.optionalAttrs (prefs.enableCodeServer) {
           "code-server" = {
             enable = true;
