@@ -716,8 +716,10 @@ in {
       enable = prefs.enableSmartdns;
       settings = prefs.smartdnsSettings;
     };
+    resolved = { enable = prefs.enableResolved; };
     openssh = {
       enable = true;
+      useDns = true;
       allowSFTP = true;
       forwardX11 = true;
       gatewayPorts = "yes";
@@ -1271,6 +1273,10 @@ in {
           "x86_64-linux" = "postgres:13";
           "aarch64-linux" = "arm64v8/postgres:13";
         };
+        "wallabag" = {
+          "x86_64-linux" = "wallabag/wallabag:2.4.2";
+          "aarch64-linux" = "ugeek/wallabag:arm-2.4";
+        };
       };
       mkContainer = name: enable: config: override:
         pkgs.lib.optionalAttrs enable (let
@@ -1296,7 +1302,12 @@ in {
             "/var/data/postgresql:/var/lib/postgresql/data"
           ];
           extraOptions = [ "--network=bus" ];
-        } { environmentFiles = [ "/run/secrets/postgresql-env" ]; };
+          ports = [ "5432:5432" ];
+        } { environmentFiles = [ "/run/secrets/postgresql-env" ]; }
+        // mkContainer "wallabag" prefs.ociContainers.enableWallabag {
+          extraOptions = [ "--network=bus" ];
+          ports = [ "8800:80" ];
+        } { environmentFiles = [ "/run/secrets/wallabag-env" ]; };
     };
   };
   # powerManagement = {
@@ -1443,6 +1454,24 @@ in {
               export HOME=/root
               retries=0
               while ! ${prefs.ociContainersBackend} exec postgresql /my/init-user-db.sh; do
+                  if (( retries > 10 )); then
+                      echo "Giving up on initializing postgresql database."
+                      exit 0
+                  else
+                      retries=$(( retries + 1 ))
+                      sleep 2
+                  fi
+              done
+            '';
+          };
+        } // pkgs.lib.optionalAttrs (prefs.ociContainers.enableWallabag) {
+          "${prefs.ociContainersBackend}-wallabag" = {
+            postStart = ''
+              set -xe
+              # https://github.com/moby/moby/issues/41890
+              export HOME=/root
+              retries=0
+              while ! ${prefs.ociContainersBackend} exec postgresql /entrypoint.sh migrate; do
                   if (( retries > 10 )); then
                       echo "Giving up on initializing postgresql database."
                       exit 0

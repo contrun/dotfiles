@@ -73,6 +73,7 @@ let
         openldap-root-password = { };
         postgresql-env = { };
         postgresql-initdb-script = { mode = "0500"; };
+        wallabag-env = { };
         yandex-passwd = {
           mode = "0400";
           owner = prefs.owner;

@@ -85,6 +85,7 @@ let
     enableBumblebee = false;
     enableMediaKeys = true;
     enableEternalTerminal = true;
+    enableResolved = true;
     enableSmartdns = false;
     enablePrivoxy = false;
     enableFallbackAccount = false;
@@ -282,7 +283,10 @@ let
     enableOciContainers = true;
     # https://discourse.nixos.org/t/podman-containers-always-fail-to-start/11908
     ociContainersBackend = "docker";
-    ociContainers = { enablePostgresql = true; };
+    ociContainers = {
+      enablePostgresql = false;
+      enableWallabag = false;
+    };
     emulatedSystems =
       if (self.nixosSystem == "x86_64-linux") then [ "aarch64-linux" ] else [ ];
     extraModulePackages = [ ];
@@ -407,6 +411,10 @@ let
       acmeMainDoamin = "cont.run";
       extraModulePackages = [ rtl8188gu ];
       consoleFont = "${pkgs.terminus_font}/share/consolefonts/ter-g20n.psf.gz";
+      ociContainers = super.ociContainers // {
+        enablePostgresql = true;
+        enableWallabag = true;
+      };
     } else if hostname == "jxt" then {
       hostId = "5ee92b8d";
       extraModulePackages = [ rtl8188gu ];
