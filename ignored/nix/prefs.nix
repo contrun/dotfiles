@@ -299,6 +299,7 @@ let
     ociContainers = {
       enablePostgresql = self.enableAllOciContainers;
       enableWallabag = self.enableAllOciContainers;
+      enableN8n = self.enableAllOciContainers;
     };
     emulatedSystems =
       if (self.nixosSystem == "x86_64-linux") then [ "aarch64-linux" ] else [ ];
@@ -382,6 +383,7 @@ let
           enableZerotierone = true;
           enableEmacs = true;
           mainDomain = "cont.run";
+          enableAllOciContainers = true;
         } // (if nixosSystem == "x86_64-linux" then {
           enableJupyter = true;
           enableVirtualboxHost = true;

@@ -1418,18 +1418,41 @@ in {
           "x86_64-linux" = "wallabag/wallabag:2.4.2";
           "aarch64-linux" = "ugeek/wallabag:arm-2.4";
         };
+        "n8n" = {
+          "x86_64-linux" = "n8nio/n8n:latest";
+          "aarch64-linux" = "n8nio/n8n:latest-rpi";
+        };
       };
       mkContainer = name: enable: config: override:
         pkgs.lib.optionalAttrs enable (let
-          f = { environmentFiles ? [ ], ... }@args: {
-            result = (builtins.removeAttrs args [ "environmentFiles" ]) // {
-              image =
-                args.image or (images."${name}"."${prefs.nixosSystem}" or (builtins.throw
-                  "Image for ${name} on ${prefs.nixosSystem} not found"));
-              extraOptions = (args.extraOptions or [ ])
-                ++ (builtins.map (x: "--env-file=" + x) environmentFiles);
+          f = { environmentFiles ? [ ], enableTraefik ? true
+            , enableTraefikTls ? true, traefikForwardingPort ? 80
+            , networkName ? prefs.ociContainerNetwork, ... }@args: {
+              result = (builtins.removeAttrs args [
+                "environmentFiles"
+                "enableTraefik"
+                "enableTraefikTls"
+                "traefikForwardingPort"
+                "networkName"
+              ]) // {
+                image =
+                  args.image or (images."${name}"."${prefs.nixosSystem}" or (builtins.throw
+                    "Image for ${name} on ${prefs.nixosSystem} not found"));
+                extraOptions = (args.extraOptions or [ ])
+                  ++ (builtins.map (x: "--env-file=" + x) environmentFiles)
+                  ++ (if enableTraefik then
+                    (lib.optionals (traefikForwardingPort != null) [
+                      "--label=traefik.http.services.${name}.loadbalancer.server.port=${
+                        builtins.toString traefikForwardingPort
+                      }"
+                    ]) ++ (lib.optionals (enableTraefikTls)
+                      [ "--label=traefik.http.routers.${name}.tls=true" ])
+                  else
+                    [ "--label=traefik.enable=false" ])
+                  ++ (lib.optionals (networkName != null)
+                    [ "--network=${networkName}" ]);
+              };
             };
-          };
           overrideWith = config: override:
             ((lib.makeOverridable f config).override override).result;
         in { "${name}" = overrideWith config override; });
@@ -1441,13 +1464,12 @@ in {
             "/run/secrets/postgresql-initdb-script:/my/init-user-db.sh"
             "/var/data/postgresql:/var/lib/postgresql/data"
           ];
-          extraOptions = [
-            "--network=${prefs.ociContainerNetwork}"
-            "--label=traefik.enable=false"
-          ];
           ports = [ "5432:5432" ];
-        } { environmentFiles = [ "/run/secrets/postgresql-env" ]; }
-        // mkContainer "wallabag" prefs.ociContainers.enableWallabag {
+        } {
+          environmentFiles = [ "/run/secrets/postgresql-env" ];
+          enableTraefik = false;
+        } // mkContainer "wallabag" prefs.ociContainers.enableWallabag {
+          dependsOn = [ "postgresql" ];
           environment = {
             # https://github.com/wallabag/docker/issues/77
             "TRUSTED_PROXIES" =
@@ -1455,12 +1477,14 @@ in {
             "SYMFONY__ENV__DOMAIN_NAME" =
               "https://${prefs.getFullDomainName "wallabag"}";
           };
-          extraOptions = [
-            "--network=${prefs.ociContainerNetwork}"
-            "--label=traefik.http.services.wallabag.loadbalancer.server.port=80"
-            "--label=traefik.http.routers.wallabag.tls=true"
-          ];
-        } { environmentFiles = [ "/run/secrets/wallabag-env" ]; };
+        } { environmentFiles = [ "/run/secrets/wallabag-env" ]; }
+        // mkContainer "n8n" prefs.ociContainers.enableN8n {
+          volumes = [ "/var/data/n8n:/home/node/.n8n" ];
+          dependsOn = [ "postgresql" ];
+        } {
+          environmentFiles = [ "/run/secrets/n8n-env" ];
+          traefikForwardingPort = 5678;
+        };
     };
   };
   # powerManagement = {
