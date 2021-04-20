@@ -452,6 +452,7 @@ let
         }
       ];
     } else if hostname == "shl" then {
+      enableAria2 = true;
       enableTraefik = true;
       enableAllOciContainers = true;
       installHomePackages = false; # Too slow.

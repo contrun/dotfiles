@@ -875,28 +875,66 @@ in {
     in {
       enable = prefs.enableTraefik;
       dynamicConfigOptions = {
-        # http = {
-        #   routers = {
-        #     api = {
-        #       rule = "Host(`traefik-api.${prefs.subDomain}.${prefs.mainDomain}`)";
-        #       service = "api@internal";
-        #     };
-        #     api-https = {
-        #       rule = "Host(`traefik-api.${prefs.subDomain}.${prefs.mainDomain}`)";
-        #       service = "api@internal";
-        #       tls = { };
-        #     };
-        #     dashboard = {
-        #       rule = "Host(`traefik.${prefs.subDomain}.${prefs.mainDomain}`)";
-        #       service = "dashboar@internal";
-        #     };
-        #     dashboard-https = {
-        #       rule = "Host(`traefik.${prefs.subDomain}.${prefs.mainDomain}`)";
-        #       service = "dashboard@internal";
-        #       tls = { };
-        #     };
-        #   };
-        # };
+        http = {
+          routers = {
+            keeweb = {
+              rule = getRule "keeweb";
+              service = "keeweb";
+              tls = { };
+            };
+            aria2rpc = {
+              rule = "(${getRule "aria2"}) && PathPrefix(`/jsonrpc`)";
+              service = "aria2rpc";
+              tls = { };
+            };
+            aria2 = {
+              rule = getRule "aria2";
+              middlewares = "aria2";
+              service = "aria2";
+              tls = { };
+            };
+            organice = {
+              rule = getRule "organice";
+              service = "organice";
+              tls = { };
+            };
+          };
+          middlewares = {
+            aria2 = {
+              replacePathRegex = {
+                regex = "^/(.*)";
+                replacement = "/webui-aria2/$1";
+              };
+            };
+          };
+          services = {
+            keeweb = {
+              loadBalancer = {
+                passHostHeader = false;
+                servers = [{ url = "https://app.keeweb.info/"; }];
+              };
+            };
+            aria2rpc = {
+              loadBalancer = {
+                passHostHeader = false;
+                servers = [{ url = "http://localhost:6800/"; }];
+              };
+            };
+            aria2 = {
+              loadBalancer = {
+                passHostHeader = false;
+                servers =
+                  [{ url = "https://ziahamza.github.io/webui-aria2/"; }];
+              };
+            };
+            organice = {
+              loadBalancer = {
+                passHostHeader = false;
+                servers = [{ url = "https://organice.200ok.ch/"; }];
+              };
+            };
+          };
+        };
         tcp = {
           routers = {
             to-aioproxy = {
