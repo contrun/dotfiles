@@ -169,17 +169,18 @@ let
       excludes = "";
       user = self.owner;
     };
-    acmeEmail = if self.acmeMainDomain == "" then
+    acmeEmail = if self.mainDomain == "" then
       "tobeoverridden@example.com"
     else
-      "webmaster@${self.acmeMainDomain}";
-    acmeMainDomain = "";
-    enableAcme = self.acmeMainDomain != "";
+      "webmaster@${self.mainDomain}";
+    subDomain = "hub";
+    mainDomain = "";
+    enableAcme = self.mainDomain != "";
     acmeCerts = if self.enableAcme then {
-      "${self.acmeMainDomain}" = {
-        domain = "*.${self.acmeMainDomain}";
+      "${self.mainDomain}" = {
+        domain = "*.${self.mainDomain}";
         extraDomainNames =
-          [ self.acmeMainDomain "*.hub.${self.acmeMainDomain}" ];
+          [ self.mainDomain "*.${self.subDomain}.${self.mainDomain}" ];
         dnsProvider = "cloudflare";
         credentialsFile = "/run/secrets/cloudflare-dns-api-token";
       };
@@ -369,7 +370,7 @@ let
         {
           enableZerotierone = true;
           enableEmacs = true;
-          acmeMainDomain = "cont.run";
+          mainDomain = "cont.run";
           enableK3s = true;
         } // (if nixosSystem == "x86_64-linux" then {
           enableJupyter = true;
@@ -409,7 +410,7 @@ let
       enableCfssl = true;
       enableK3s = true;
       enableWireless = true;
-      acmeMainDomain = "cont.run";
+      mainDomain = "cont.run";
       extraModulePackages = [ rtl8188gu ];
       consoleFont = "${pkgs.terminus_font}/share/consolefonts/ter-g20n.psf.gz";
       enableTraefik = true;
@@ -444,7 +445,13 @@ let
         }
       ];
     } else if hostname == "shl" then {
-      enableAria2 = true;
+      subDomain = hostname;
+      enableTraefik = true;
+      ociContainers = super.ociContainers // {
+        enablePostgresql = true;
+        enableWallabag = true;
+      };
+      installHomePackages = false; # Too slow.
       kernelParams = super.kernelParams
         ++ [ "cgroup_enable=cpuset" "cgroup_enable=memory" "cgroup_memory=1" ];
       nixosSystem = "aarch64-linux";
@@ -453,7 +460,7 @@ let
       kernelPackages = pkgs.linuxPackages_rpi4;
       enableCodeServer = false;
       enableK3s = true;
-      acmeMainDomain = "cont.run";
+      mainDomain = "cont.run";
       enableZerotierone = true;
       enableTailScale = true;
       enableVirtualboxHost = false;

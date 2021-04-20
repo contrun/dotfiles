@@ -874,20 +874,20 @@ in {
         # http = {
         #   routers = {
         #     api = {
-        #       rule = "Host(`traefik-api.hub.${prefs.acmeMainDomain}`)";
+        #       rule = "Host(`traefik-api.${prefs.subDomain}.${prefs.mainDomain}`)";
         #       service = "api@internal";
         #     };
         #     api-https = {
-        #       rule = "Host(`traefik-api.hub.${prefs.acmeMainDomain}`)";
+        #       rule = "Host(`traefik-api.${prefs.subDomain}.${prefs.mainDomain}`)";
         #       service = "api@internal";
         #       tls = { };
         #     };
         #     dashboard = {
-        #       rule = "Host(`traefik.hub.${prefs.acmeMainDomain}`)";
+        #       rule = "Host(`traefik.${prefs.subDomain}.${prefs.mainDomain}`)";
         #       service = "dashboar@internal";
         #     };
         #     dashboard-https = {
-        #       rule = "Host(`traefik.hub.${prefs.acmeMainDomain}`)";
+        #       rule = "Host(`traefik.${prefs.subDomain}.${prefs.mainDomain}`)";
         #       service = "dashboard@internal";
         #       tls = { };
         #     };
@@ -913,14 +913,14 @@ in {
         };
         tls = {
           certificates = [{
-            certFile = "/var/lib/acme/${prefs.acmeMainDomain}/cert.pem";
-            keyFile = "/var/lib/acme/${prefs.acmeMainDomain}/key.pem";
+            certFile = "/var/lib/acme/${prefs.mainDomain}/cert.pem";
+            keyFile = "/var/lib/acme/${prefs.mainDomain}/key.pem";
           }];
           stores = {
             default = {
               defaultCertificate = {
-                certFile = "/var/lib/acme/${prefs.acmeMainDomain}/cert.pem";
-                keyFile = "/var/lib/acme/${prefs.acmeMainDomain}/key.pem";
+                certFile = "/var/lib/acme/${prefs.mainDomain}/cert.pem";
+                keyFile = "/var/lib/acme/${prefs.mainDomain}/key.pem";
               };
             };
           };
@@ -960,8 +960,9 @@ in {
         log = { level = "DEBUG"; };
         providers = {
           docker = {
-            defaultRule = "Host(`{{ .Name }}.hub.${prefs.acmeMainDomain}`)";
-            network = "hub";
+            defaultRule =
+              "Host(`{{ .Name }}.${prefs.subDomain}.${prefs.mainDomain}`)";
+            network = "${prefs.subDomain}";
           };
         };
       };
@@ -1398,7 +1399,8 @@ in {
             "/run/secrets/postgresql-initdb-script:/my/init-user-db.sh"
             "/var/data/postgresql:/var/lib/postgresql/data"
           ];
-          extraOptions = [ "--network=hub" "--label=traefik.enable=false" ];
+          extraOptions =
+            [ "--network=${prefs.subDomain}" "--label=traefik.enable=false" ];
           ports = [ "5432:5432" ];
         } { environmentFiles = [ "/run/secrets/postgresql-env" ]; }
         // mkContainer "wallabag" prefs.ociContainers.enableWallabag {
@@ -1407,10 +1409,10 @@ in {
             "TRUSTED_PROXIES" =
               "127.0.0.0/8,10.0.0.0/8,100.64.0.0/10,172.16.0.0/12,192.168.0.0/16";
             "SYMFONY__ENV__DOMAIN_NAME" =
-              "https://wallabag.hub.${prefs.acmeMainDomain}";
+              "https://wallabag.${prefs.subDomain}.${prefs.mainDomain}";
           };
           extraOptions = [
-            "--network=hub"
+            "--network=${prefs.subDomain}"
             "--label=traefik.http.services.wallabag.loadbalancer.server.port=80"
             "--label=traefik.http.routers.wallabag.tls=true"
           ];
@@ -1518,8 +1520,8 @@ in {
               podmancli;
           in ''
             set -e
-            if ! ${cli} network inspect hub; then
-                if ! ${cli} network create hub; then
+            if ! ${cli} network inspect ${prefs.subDomain}; then
+                if ! ${cli} network create ${prefs.subDomain}; then
                     echo "creating network failed"
                 fi
             fi
