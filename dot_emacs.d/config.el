@@ -900,6 +900,9 @@ instead."
     (add-hook 'company-completion-cancelled-hook 'my/page-break-lines-maybe-reenable))
   )
 
+(use-package company-posframe
+  :hook (company-mode . company-posframe-mode))
+
 (use-package company-box
   :diminish
   :hook (company-mode . company-box-mode))

@@ -1,4 +1,7 @@
-{ ... }@args:
+let
+  internalGetSubDomain = prefix: domain:
+    if prefix == "" then domain else "${prefix}.${domain}";
+in { ... }@args:
 let
   fix = f: let x = f x; in x;
   extends = f: rattrs: self: let super = rattrs self; in super // f self super;
@@ -173,14 +176,20 @@ let
       "tobeoverridden@example.com"
     else
       "webmaster@${self.mainDomain}";
-    subDomain = "hub";
+    domainPrefixes = [ (builtins.replaceStrings [ "_" ] [ "" ] self.hostname) ];
+    domainPrefix = builtins.elemAt self.domainPrefixes 0;
+    domains = builtins.map (prefix: internalGetSubDomain prefix self.mainDomain)
+      self.domainPrefixes;
+    domain = internalGetSubDomain self.domainPrefix self.mainDomain;
+    getFullDomainName = x: internalGetSubDomain x self.mainDomain;
+    getFullDomainNames = prefix:
+      builtins.map (domain: internalGetSubDomain prefix domain) self.domains;
     mainDomain = "";
     enableAcme = self.mainDomain != "";
     acmeCerts = if self.enableAcme then {
       "${self.mainDomain}" = {
         domain = "*.${self.mainDomain}";
-        extraDomainNames =
-          [ self.mainDomain "*.${self.subDomain}.${self.mainDomain}" ];
+        extraDomainNames = [ self.mainDomain ] ++ (self.getFullDomainNames "*");
         dnsProvider = "cloudflare";
         credentialsFile = "/run/secrets/acme-env";
       };
@@ -285,9 +294,11 @@ let
     enableOciContainers = true;
     # https://discourse.nixos.org/t/podman-containers-always-fail-to-start/11908
     ociContainersBackend = "docker";
+    ociContainerNetwork = "bus";
+    enableAllOciContainers = false;
     ociContainers = {
-      enablePostgresql = false;
-      enableWallabag = false;
+      enablePostgresql = self.enableAllOciContainers;
+      enableWallabag = self.enableAllOciContainers;
     };
     emulatedSystems =
       if (self.nixosSystem == "x86_64-linux") then [ "aarch64-linux" ] else [ ];
@@ -413,10 +424,7 @@ let
       extraModulePackages = [ rtl8188gu ];
       consoleFont = "${pkgs.terminus_font}/share/consolefonts/ter-g20n.psf.gz";
       enableTraefik = true;
-      ociContainers = super.ociContainers // {
-        enablePostgresql = true;
-        enableWallabag = true;
-      };
+      enableAllOciContainers = true;
     } else if hostname == "jxt" then {
       hostId = "5ee92b8d";
       extraModulePackages = [ rtl8188gu ];
@@ -444,12 +452,8 @@ let
         }
       ];
     } else if hostname == "shl" then {
-      subDomain = hostname;
       enableTraefik = true;
-      ociContainers = super.ociContainers // {
-        enablePostgresql = true;
-        enableWallabag = true;
-      };
+      enableAllOciContainers = true;
       installHomePackages = false; # Too slow.
       kernelParams = super.kernelParams
         ++ [ "cgroup_enable=cpuset" "cgroup_enable=memory" "cgroup_memory=1" ];
@@ -458,7 +462,7 @@ let
       hostId = "6fce2459";
       kernelPackages = pkgs.linuxPackages_rpi4;
       enableCodeServer = false;
-      enableK3s = true;
+      domainPrefixes = [ "hub" ] ++ super.domainPrefixes;
       mainDomain = "cont.run";
       enableZerotierone = true;
       enableTailScale = true;

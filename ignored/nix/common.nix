@@ -868,7 +868,11 @@ in {
         mynetworks_style = host
       '';
     };
-    traefik = {
+    traefik = let
+      getRule = domainPrefix:
+        lib.concatMapStringsSep " || " (domain: "Host(`${domain}`)")
+        (prefs.getFullDomainNames domainPrefix);
+    in {
       enable = prefs.enableTraefik;
       dynamicConfigOptions = {
         # http = {
@@ -960,9 +964,9 @@ in {
         log = { level = "DEBUG"; };
         providers = {
           docker = {
-            defaultRule =
-              "Host(`{{ .Name }}.${prefs.subDomain}.${prefs.mainDomain}`)";
-            network = "${prefs.subDomain}";
+            defaultRule = getRule
+              ''{{ (or (index .Labels "domainprefix") .Name) | normalize }}'';
+            network = "${prefs.ociContainerNetwork}";
           };
         };
       };
@@ -1399,8 +1403,10 @@ in {
             "/run/secrets/postgresql-initdb-script:/my/init-user-db.sh"
             "/var/data/postgresql:/var/lib/postgresql/data"
           ];
-          extraOptions =
-            [ "--network=${prefs.subDomain}" "--label=traefik.enable=false" ];
+          extraOptions = [
+            "--network=${prefs.ociContainerNetwork}"
+            "--label=traefik.enable=false"
+          ];
           ports = [ "5432:5432" ];
         } { environmentFiles = [ "/run/secrets/postgresql-env" ]; }
         // mkContainer "wallabag" prefs.ociContainers.enableWallabag {
@@ -1409,10 +1415,10 @@ in {
             "TRUSTED_PROXIES" =
               "127.0.0.0/8,10.0.0.0/8,100.64.0.0/10,172.16.0.0/12,192.168.0.0/16";
             "SYMFONY__ENV__DOMAIN_NAME" =
-              "https://wallabag.${prefs.subDomain}.${prefs.mainDomain}";
+              "https://${prefs.getFullDomainName "wallabag"}";
           };
           extraOptions = [
-            "--network=${prefs.subDomain}"
+            "--network=${prefs.ociContainerNetwork}"
             "--label=traefik.http.services.wallabag.loadbalancer.server.port=80"
             "--label=traefik.http.routers.wallabag.tls=true"
           ];
@@ -1520,8 +1526,8 @@ in {
               podmancli;
           in ''
             set -e
-            if ! ${cli} network inspect ${prefs.subDomain}; then
-                if ! ${cli} network create ${prefs.subDomain}; then
+            if ! ${cli} network inspect ${prefs.ociContainerNetwork}; then
+                if ! ${cli} network create ${prefs.ociContainerNetwork}; then
                     echo "creating network failed"
                 fi
             fi
