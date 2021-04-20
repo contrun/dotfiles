@@ -69,7 +69,7 @@ let
         path = sopsSecretsFile;
       }}";
       secrets = {
-        clash-config-url = { };
+        clash-env = { };
         openldap-root-password = { };
         postgresql-env = { };
         postgresql-initdb-script = { mode = "0500"; };
@@ -80,8 +80,8 @@ let
           group = prefs.ownerGroup;
         };
       } // (if prefs.enableAcme then {
-        cloudflare-dns-api-token = {
-          mode = "0440";
+        acme-env = {
+          mode = "0400";
           owner = "acme";
           group = "acme";
         };

@@ -1693,9 +1693,6 @@ in {
         clash-config-update-script =
           pkgs.writeShellScript "clash-config-update-script" ''
             set -xeu
-            if ! CLASH_URL="$(cat /run/secrets/clash-config-url)"; then
-                exit 0
-            fi
             CLASH_USER=clash
             CLASH_UID="$(id -u "$CLASH_USER")"
             CLASH_TEMP_CONFIG="''${TMPDIR:-/tmp}/clash-config-$(date -u +"%Y-%m-%dT%H:%M:%SZ").yaml"
@@ -1720,11 +1717,19 @@ in {
         wantedBy = [ "default.target" ];
         wants = [ "network-online.target" ];
         after = [ "network-online.target" ];
-        path =
-          [ pkgs.coreutils pkgs.systemd pkgs.curl pkgs.diffutils pkgs.libcap ];
+        path = [
+          pkgs.coreutils
+          pkgs.systemd
+          pkgs.curl
+          pkgs.diffutils
+          pkgs.libcap
+          pkgs.utillinux
+        ];
         serviceConfig = {
           Type = "oneshot";
           ExecStart = "${clash-config-update-script}";
+          EnvironmentFile = "/run/secrets/clash-env";
+          Restart = "on-failure";
         };
       };
       timers."${updaterName}" = {

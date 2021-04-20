@@ -182,7 +182,7 @@ let
         extraDomainNames =
           [ self.mainDomain "*.${self.subDomain}.${self.mainDomain}" ];
         dnsProvider = "cloudflare";
-        credentialsFile = "/run/secrets/cloudflare-dns-api-token";
+        credentialsFile = "/run/secrets/acme-env";
       };
     } else
       { };
@@ -371,7 +371,6 @@ let
           enableZerotierone = true;
           enableEmacs = true;
           mainDomain = "cont.run";
-          enableK3s = true;
         } // (if nixosSystem == "x86_64-linux" then {
           enableJupyter = true;
           enableVirtualboxHost = true;
