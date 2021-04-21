@@ -181,7 +181,7 @@ let
     domains = builtins.map (prefix: internalGetSubDomain prefix self.mainDomain)
       self.domainPrefixes;
     domain = internalGetSubDomain self.domainPrefix self.mainDomain;
-    getFullDomainName = x: internalGetSubDomain x self.mainDomain;
+    getFullDomainName = x: internalGetSubDomain x self.domain;
     getFullDomainNames = prefix:
       builtins.map (domain: internalGetSubDomain prefix domain) self.domains;
     mainDomain = "";

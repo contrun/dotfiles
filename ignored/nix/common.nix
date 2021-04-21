@@ -1479,12 +1479,13 @@ in {
         } // mkContainer "wallabag" prefs.ociContainers.enableWallabag {
           dependsOn = [ "postgresql" ];
           environment = {
-            # https://github.com/wallabag/docker/issues/77
-            "TRUSTED_PROXIES" =
-              "127.0.0.0/8,10.0.0.0/8,100.64.0.0/10,172.16.0.0/12,192.168.0.0/16";
             "SYMFONY__ENV__DOMAIN_NAME" =
               "https://${prefs.getFullDomainName "wallabag"}";
           };
+          volumes = [
+            "/var/data/wallabag/data:/var/www/wallabag/data"
+            "/var/data/wallabag/images:/var/www/wallabag/web/assets/images"
+          ];
         } { environmentFiles = [ "/run/secrets/wallabag-env" ]; }
         // mkContainer "n8n" prefs.ociContainers.enableN8n {
           volumes = [ "/var/data/n8n:/home/node/.n8n" ];
@@ -1656,7 +1657,7 @@ in {
               # https://github.com/moby/moby/issues/41890
               export HOME=/root
               retries=0
-              while ! ${prefs.ociContainersBackend} exec postgresql /entrypoint.sh migrate; do
+              while ! ${prefs.ociContainersBackend} exec wallabag /entrypoint.sh migrate; do
                   if (( retries > 10 )); then
                       echo "Giving up on initializing postgresql database."
                       exit 0
