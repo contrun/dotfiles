@@ -262,6 +262,7 @@ in {
         git
         chezmoi
         coreutils
+        file
         sudo
         gettext
         sxhkd
@@ -761,6 +762,7 @@ in {
     };
     redshift = { enable = prefs.enableRedshift; };
     avahi = {
+      browseDomains = [ prefs.mainDomain ];
       enable = prefs.enableAvahi;
       nssmdns = true;
       publish = {
@@ -1012,6 +1014,10 @@ in {
           docker = {
             defaultRule = getRule
               ''{{ (or (index .Labels "domainprefix") .Name) | normalize }}'';
+            endpoint = if (prefs.ociContainerBackend == "docker") then
+              "unix:///var/run/docker.sock"
+            else
+              "unix:///var/run/podman/podman.sock";
             network = "${prefs.ociContainerNetwork}";
           };
         };
@@ -1419,16 +1425,16 @@ in {
     oci-containers = let
       images = {
         "postgresql" = {
-          "x86_64-linux" = "postgres:13";
-          "aarch64-linux" = "arm64v8/postgres:13";
+          "x86_64-linux" = "docker.io/postgres:13";
+          "aarch64-linux" = "docker.io/arm64v8/postgres:13";
         };
         "wallabag" = {
-          "x86_64-linux" = "wallabag/wallabag:2.4.2";
-          "aarch64-linux" = "ugeek/wallabag:arm-2.4";
+          "x86_64-linux" = "docker.io/wallabag/wallabag:2.4.2";
+          "aarch64-linux" = "docker.io/ugeek/wallabag:arm-2.4";
         };
         "n8n" = {
-          "x86_64-linux" = "n8nio/n8n:latest";
-          "aarch64-linux" = "n8nio/n8n:latest-rpi";
+          "x86_64-linux" = "docker.io/n8nio/n8n:latest";
+          "aarch64-linux" = "docker.io/n8nio/n8n:latest-rpi";
         };
       };
       mkContainer = name: enable: config: override:
@@ -1607,7 +1613,7 @@ in {
       } // pkgs.lib.optionalAttrs
         (prefs.buildZerotierone && !prefs.enableZerotierone) {
           # build zero tier one anyway, but enable it on prefs.enableZerotierone is true;
-          "zerotierone" = { wantedBy = pkgs.lib.mkForce [ ]; };
+          "zerotierone" = { wantedBy = lib.mkForce [ ]; };
         } // pkgs.lib.optionalAttrs (prefs.enableK3s) {
           "k3s" = let
             k3sPatchScript = pkgs.writeShellScript "add-k3s-config" ''
@@ -1654,7 +1660,12 @@ in {
           "postgresql" = { serviceConfig = { SupplementaryGroups = "keys"; }; };
         } // pkgs.lib.optionalAttrs (prefs.enableTraefik) {
           "traefik" = {
-            serviceConfig = { SupplementaryGroups = "keys docker acme"; };
+            serviceConfig =
+              (lib.optionalAttrs (prefs.ociContainerBackend == "docker") {
+                SupplementaryGroups = "keys docker acme";
+              }) // (lib.optionalAttrs (prefs.ociContainerBackend == "podman") {
+                User = lib.mkForce "root";
+              });
           };
         } // pkgs.lib.optionalAttrs (prefs.enableCodeServer) {
           "code-server" = {
