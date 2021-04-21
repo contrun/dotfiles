@@ -910,7 +910,8 @@ instead."
 (use-package company-tabnine
   :after company
   :init
-  (add-to-list 'company-backends #'company-tabnine))
+  (when (member (system-name) '("ssg"))
+    (add-to-list 'company-backends #'company-tabnine)))
 
 (use-package company-quickhelp
   :hook
