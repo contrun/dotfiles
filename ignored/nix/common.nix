@@ -889,7 +889,7 @@ in {
             };
             aria2 = {
               rule = getRule "aria2";
-              middlewares = "aria2";
+              middlewares = [ "aria2" ];
               service = "aria2";
               tls = { };
             };
@@ -976,6 +976,14 @@ in {
         entryPoints = {
           web = {
             address = ":80";
+            http = {
+              redirections = {
+                entryPoint = {
+                  to = "websecure";
+                  scheme = "https";
+                };
+              };
+            };
             proxyProtocol = {
               trustedIPs = [
                 "127.0.0.0/8"
