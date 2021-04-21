@@ -72,6 +72,7 @@ let
         clash-env = { };
         openldap-root-password = { };
         postgresql-env = { };
+        postgresql-backup-env = { };
         postgresql-initdb-script = { mode = "0500"; };
         n8n-env = { };
         wallabag-env = { };

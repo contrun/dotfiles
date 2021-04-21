@@ -1405,8 +1405,8 @@ in {
     containerd = { enable = prefs.enableContainerd; };
     cri-o = { enable = prefs.enableCrio; };
     podman = {
-      enable = prefs.enablePodman || (prefs.enableOciContainers
-        && prefs.ociContainersBackend == "podman");
+      enable = prefs.enablePodman
+        || (prefs.enableOciContainers && prefs.ociContainerBackend == "podman");
       dockerCompat = prefs.replaceDockerWithPodman;
       extraPackages = if (prefs.enableZfs) then [ pkgs.zfs ] else [ ];
     };
@@ -1465,7 +1465,7 @@ in {
             ((lib.makeOverridable f config).override override).result;
         in { "${name}" = overrideWith config override; });
     in pkgs.lib.optionalAttrs prefs.enableOciContainers {
-      backend = prefs.ociContainersBackend;
+      backend = prefs.ociContainerBackend;
       containers =
         mkContainer "postgresql" prefs.ociContainers.enablePostgresql {
           volumes = [
@@ -1591,7 +1591,7 @@ in {
           script = let
             dockercli = "${config.virtualisation.docker.package}/bin/docker";
             podmancli = "${config.virtualisation.podman.package}/bin/docker";
-            cli = if prefs.ociContainersBackend == "docker" then
+            cli = if prefs.ociContainerBackend == "docker" then
               dockercli
             else
               podmancli;
@@ -1632,32 +1632,14 @@ in {
               EnvironmentFile = "/run/secrets/aria2-env";
             };
           };
-        } // pkgs.lib.optionalAttrs (prefs.ociContainers.enablePostgresql) {
-          "${prefs.ociContainersBackend}-postgresql" = {
-            postStart = ''
-              set -xe
-              # https://github.com/moby/moby/issues/41890
-              export HOME=/root
-              retries=0
-              while ! ${prefs.ociContainersBackend} exec postgresql /my/init-user-db.sh; do
-                  if (( retries > 10 )); then
-                      echo "Giving up on initializing postgresql database."
-                      exit 0
-                  else
-                      retries=$(( retries + 1 ))
-                      sleep 2
-                  fi
-              done
-            '';
-          };
         } // pkgs.lib.optionalAttrs (prefs.ociContainers.enableWallabag) {
-          "${prefs.ociContainersBackend}-wallabag" = {
+          "${prefs.ociContainerBackend}-wallabag" = {
             postStart = ''
               set -xe
               # https://github.com/moby/moby/issues/41890
               export HOME=/root
               retries=0
-              while ! ${prefs.ociContainersBackend} exec wallabag /entrypoint.sh migrate; do
+              while ! ${prefs.ociContainerBackend} exec wallabag /entrypoint.sh migrate; do
                   if (( retries > 10 )); then
                       echo "Giving up on initializing postgresql database."
                       exit 0
@@ -1725,6 +1707,77 @@ in {
             };
           };
         };
+    };
+
+    oci-container-postgresql = let
+      postgresqlUnitName = "${prefs.ociContainerBackend}-postgresql";
+      postgresqlBackupUnitName = "backup-${postgresqlUnitName}";
+    in pkgs.lib.optionalAttrs (prefs.ociContainers.enablePostgresql) {
+      services = {
+        "${postgresqlUnitName}" = {
+          postStart = ''
+            set -xe
+            # https://github.com/moby/moby/issues/41890
+            export HOME=/root
+            retries=0
+            while ! ${prefs.ociContainerBackend} exec postgresql /my/init-user-db.sh; do
+                if (( retries > 10 )); then
+                    echo "Giving up on initializing postgresql database."
+                    exit 0
+                else
+                    retries=$(( retries + 1 ))
+                    sleep 2
+                fi
+            done
+          '';
+        };
+        "${postgresqlBackupUnitName}" = let
+          backup-script = pkgs.writeShellScript "postgresql-backup-script" ''
+            set -xeu -o pipefail
+            umask 0077
+            mkdir -p "$BACKUP_DIR"
+            export HOME=/root
+            ${prefs.ociContainerBackend} exec -e PGUSER -e PGPASSWORD postgresql pg_dumpall | gzip -c > "$BACKUP_DIR/all.tmp.sql.gz"
+            if [ -e "$BACKUP_DIR/all.sql.gz" ]; then
+                mv "$BACKUP_DIR/all.sql.gz" "$BACKUP_DIR/all.prev.sql.gz"
+            fi
+            mv $BACKUP_DIR/all.tmp.sql.gz $BACKUP_DIR/all.sql.gz
+          '';
+        in {
+          description =
+            "Backup ${prefs.ociContainerBackend} postgresql database";
+          enable = true;
+          wants = [ "network-online.target" "${postgresqlUnitName}.service" ];
+          after = [ "network-online.target" "${postgresqlUnitName}.service" ];
+          path =
+            [ pkgs.coreutils pkgs.gzip pkgs.systemd pkgs.curl pkgs.utillinux ]
+            ++ (lib.optionals (prefs.ociContainerBackend == "docker")
+              [ config.virtualisation.docker.package ])
+            ++ (lib.optionals (prefs.ociContainerBackend == "podman")
+              [ config.virtualisation.podman.package ]);
+          serviceConfig = {
+            Type = "oneshot";
+            ExecStart = "${backup-script}";
+            EnvironmentFile = "/run/secrets/postgresql-backup-env";
+            Restart = "on-failure";
+          };
+        };
+      };
+      timers = {
+        "${postgresqlBackupUnitName}" = {
+          enable = true;
+          wantedBy = [ "default.target" ];
+          onFailure = [
+            "notify-systemd-unit-failures@${postgresqlBackupUnitName}.service"
+          ];
+          timerConfig = {
+            OnCalendar = "daily";
+            Unit = "${postgresqlBackupUnitName}.service";
+            Persistent = true;
+          };
+        };
+      };
+
     };
 
     clash-redir = let
@@ -1827,6 +1880,7 @@ in {
       # myPackages
       myServices
       clash-redir
+      oci-container-postgresql
     ];
   in (builtins.foldl' (a: e: pkgs.lib.recursiveUpdate a e) { } all) // {
     user = let

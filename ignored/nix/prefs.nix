@@ -293,7 +293,7 @@ let
     enableGnomeKeyring = false;
     enableOciContainers = true;
     # https://discourse.nixos.org/t/podman-containers-always-fail-to-start/11908
-    ociContainersBackend = "docker";
+    ociContainerBackend = "docker";
     ociContainerNetwork = "bus";
     enableAllOciContainers = false;
     ociContainers = {
