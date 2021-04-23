@@ -901,9 +901,24 @@ in {
       dynamicConfigOptions = {
         http = {
           routers = {
+            traefik-dashboard = {
+              rule = "${
+                  getRule "traefik"
+                } && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))";
+              middlewares = [ "authelia@docker" ];
+              entryPoints = [ "websecure" ];
+              service = "api@internal";
+              tls = { };
+            };
             keeweb = {
               rule = getRule "keeweb";
               service = "keeweb";
+              tls = { };
+            };
+            clash = {
+              rule = getRule "clash";
+              middlewares = [ "authelia@docker" ];
+              service = "clash";
               tls = { };
             };
             aria2rpc = {
@@ -936,6 +951,12 @@ in {
               loadBalancer = {
                 passHostHeader = false;
                 servers = [{ url = "https://app.keeweb.info/"; }];
+              };
+            };
+            clash = {
+              loadBalancer = {
+                passHostHeader = false;
+                servers = [{ url = "https://clash.razord.top"; }];
               };
             };
             aria2rpc = {
@@ -993,10 +1014,7 @@ in {
         };
       };
       staticConfigOptions = {
-        # api = {
-        #   dashboard = true;
-        #   insecure = true;
-        # };
+        api = { dashboard = true; };
         entryPoints = {
           web = {
             address = ":80";
@@ -1454,6 +1472,10 @@ in {
           "x86_64-linux" = "docker.io/redis:6";
           "aarch64-linux" = "docker.io/arm64v8/redis:6";
         };
+        "authelia" = {
+          "x86_64-linux" = "docker.io/authelia/authelia:4";
+          "aarch64-linux" = "docker.io/authelia/authelia:4";
+        };
         "wallabag" = {
           "x86_64-linux" = "docker.io/wallabag/wallabag:2.4.2";
           "aarch64-linux" = "docker.io/ugeek/wallabag:arm-2.4";
@@ -1517,6 +1539,23 @@ in {
           ports = [ "6379:6379" ];
           cmd = [ "redis-server" "/etc/redis.conf" ];
         } { enableTraefik = false; }
+        // mkContainer "authelia" prefs.ociContainers.enableAuthelia {
+          extraOptions = [
+            "--mount"
+            "type=bind,source=/run/secrets/authelia-conf,target=/config/configuration.yml"
+            "--mount"
+            "type=bind,source=/run/secrets/authelia-users,target=/config/users.yml"
+            "--label"
+            "traefik.http.middlewares.authelia.forwardauth.address=http://localhost:9091/api/verify?rd=https://${
+              prefs.getFullDomainName "authelia"
+            }"
+            "--label"
+            "traefik.http.middlewares.authelia.forwardauth.trustForwardHeader=true"
+            "--label"
+            "traefik.http.middlewares.authelia.forwardauth.authResponseHeaders=Remote-User,Remote-Groups,Remote-Name,Remote-Email"
+          ];
+          ports = [ "9091:9091" ];
+        } { traefikForwardingPort = 9091; }
         // mkContainer "wallabag" prefs.ociContainers.enableWallabag {
           dependsOn = [ "postgresql" ];
           environment = {

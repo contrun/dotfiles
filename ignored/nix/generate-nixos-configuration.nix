@@ -72,9 +72,11 @@ let
         clash-env = { };
         openldap-root-password = { };
         postgresql-env = { };
-        redis-conf = { mode = "0444"; };
         postgresql-backup-env = { };
         postgresql-initdb-script = { mode = "0500"; };
+        redis-conf = { mode = "0444"; };
+        authelia-conf = { };
+        authelia-users = { };
         n8n-env = { };
         wallabag-env = { };
         yandex-passwd = {

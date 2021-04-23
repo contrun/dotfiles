@@ -194,8 +194,12 @@ let
     enableAcme = false;
     acmeCerts = if self.enableAcme then {
       "${self.mainDomain}" = {
-        domain = "*.${self.mainDomain}";
-        extraDomainNames = [ self.mainDomain ] ++ (self.getFullDomainNames "*");
+        domain = self.mainDomain;
+        extraDomainNames =
+          [ "*.${self.mainDomain}" "*.local.${self.mainDomain}" ]
+          ++ (self.getFullDomainNames "*");
+        # May spurious dns propagation failures.
+        # dnsPropagationCheck = false;
         dnsProvider = "cloudflare";
         credentialsFile = "/run/secrets/acme-env";
       };
@@ -305,6 +309,7 @@ let
     ociContainers = {
       enablePostgresql = self.enableAllOciContainers;
       enableRedis = self.enableAllOciContainers;
+      enableAuthelia = self.enableAllOciContainers;
       enableWallabag = self.enableAllOciContainers;
       enableN8n = self.enableAllOciContainers;
     };
