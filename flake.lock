@@ -2,8 +2,12 @@
   "nodes": {
     "aioproxy": {
       "inputs": {
-        "flake-utils": "flake-utils",
-        "gomod2nix": "gomod2nix",
+        "flake-utils": [
+          "flake-utils"
+        ],
+        "gomod2nix": [
+          "gomod2nix"
+        ],
         "nixpkgs": [
           "nixpkgs"
         ]
@@ -107,21 +111,6 @@
         "type": "github"
       }
     },
-    "flake-utils_2": {
-      "locked": {
-        "lastModified": 1618217525,
-        "narHash": "sha256-WGrhVczjXTiswQaoxQ+0PTfbLNeOQM6M36zvLn78AYg=",
-        "owner": "numtide",
-        "repo": "flake-utils",
-        "rev": "c6169a2772643c4a93a0b5ac1c61e296cba68544",
-        "type": "github"
-      },
-      "original": {
-        "owner": "numtide",
-        "repo": "flake-utils",
-        "type": "github"
-      }
-    },
     "gomod2nix": {
       "inputs": {
         "nixpkgs": [
@@ -163,6 +152,33 @@
         "owner": "nix-community",
         "ref": "master",
         "repo": "home-manager",
+        "type": "github"
+      }
+    },
+    "infra": {
+      "inputs": {
+        "flake-utils": [
+          "flake-utils"
+        ],
+        "gomod2nix": [
+          "gomod2nix"
+        ],
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1619140444,
+        "narHash": "sha256-0lZ3v7NxVh3Id/4HM8Uk4IewPZcTUQmksjOryAlRjqQ=",
+        "owner": "contrun",
+        "repo": "infra",
+        "rev": "1849b9f36967c8c3925ffc7f3040e9152796bd97",
+        "type": "github"
+      },
+      "original": {
+        "owner": "contrun",
+        "ref": "master",
+        "repo": "infra",
         "type": "github"
       }
     },
@@ -284,8 +300,10 @@
         "authinfo": "authinfo",
         "emacs-overlay": "emacs-overlay",
         "flake-firefox-nightly": "flake-firefox-nightly",
-        "flake-utils": "flake-utils_2",
+        "flake-utils": "flake-utils",
+        "gomod2nix": "gomod2nix",
         "home-manager": "home-manager",
+        "infra": "infra",
         "nixpkgs": "nixpkgs",
         "nixpkgs-mozilla": "nixpkgs-mozilla",
         "nixpkgs-stable": "nixpkgs-stable",

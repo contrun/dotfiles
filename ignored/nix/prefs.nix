@@ -89,6 +89,7 @@ let
     enableMediaKeys = true;
     enableEternalTerminal = true;
     enableResolved = true;
+    enableCoredns = true;
     enableSmartdns = false;
     enablePrivoxy = false;
     enableFallbackAccount = false;

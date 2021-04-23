@@ -707,6 +707,21 @@ in {
       path = [ pkgs.libsecret pkgs.dbus ];
     };
     davfs2 = { enable = prefs.enableDavfs2; };
+    coredns = {
+      enable = prefs.enableCoredns;
+      package = args.inputs.infra.coredns.${config.nixpkgs.system};
+      config = ''
+        ${prefs.mainDomain} {
+            bind 127.0.0.52
+            template IN ANY ${prefs.mainDomain} {
+              match ^(^|[.])(.*)\.(?P<s>(.*?).${prefs.mainDomain}[.])$
+              answer "{{ .Name }} 60 IN CNAME {{ .Group.s }}"
+              fallthrough
+            }
+            mdns ${prefs.mainDomain}
+        }
+      '';
+    };
     dnsmasq = {
       enable = prefs.enableDnsmasq;
       resolveLocalQueries = prefs.dnsmasqResolveLocalQueries;
