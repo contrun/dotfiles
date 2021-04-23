@@ -90,6 +90,7 @@ let
     enableEternalTerminal = true;
     enableResolved = true;
     enableCoredns = true;
+    corednsPort = 5355;
     enableSmartdns = false;
     enablePrivoxy = false;
     enableFallbackAccount = false;
@@ -177,7 +178,11 @@ let
       "tobeoverridden@example.com"
     else
       "webmaster@${self.mainDomain}";
-    domainPrefixes = [ (builtins.replaceStrings [ "_" ] [ "" ] self.hostname) ];
+    hubDomainPrefix = "shl";
+    domainPrefixes = let
+      originalPrefix = (builtins.replaceStrings [ "_" ] [ "" ] self.hostname);
+    in (if originalPrefix == self.hubDomainPrefix then [ "hub" ] else [ ])
+    ++ [ originalPrefix ];
     domainPrefix = builtins.elemAt self.domainPrefixes 0;
     domains = builtins.map (prefix: internalGetSubDomain prefix self.mainDomain)
       self.domainPrefixes;
@@ -185,8 +190,8 @@ let
     getFullDomainName = x: internalGetSubDomain x self.domain;
     getFullDomainNames = prefix:
       builtins.map (domain: internalGetSubDomain prefix domain) self.domains;
-    mainDomain = "";
-    enableAcme = self.mainDomain != "";
+    mainDomain = "cont.run";
+    enableAcme = false;
     acmeCerts = if self.enableAcme then {
       "${self.mainDomain}" = {
         domain = "*.${self.mainDomain}";
@@ -383,7 +388,7 @@ let
         {
           enableZerotierone = true;
           enableEmacs = true;
-          mainDomain = "cont.run";
+          enableAcme = true;
           enableAllOciContainers = true;
         } // (if nixosSystem == "x86_64-linux" then {
           enableJupyter = true;
@@ -423,7 +428,7 @@ let
       enableCfssl = true;
       enableK3s = true;
       enableWireless = true;
-      mainDomain = "cont.run";
+      enableAcme = true;
       extraModulePackages = [ rtl8188gu ];
       consoleFont = "${pkgs.terminus_font}/share/consolefonts/ter-g20n.psf.gz";
       enableTraefik = true;
@@ -466,8 +471,7 @@ let
       hostId = "6fce2459";
       kernelPackages = pkgs.linuxPackages_rpi4;
       enableCodeServer = false;
-      domainPrefixes = [ "hub" ] ++ super.domainPrefixes;
-      mainDomain = "cont.run";
+      enableAcme = true;
       enableZerotierone = true;
       enableTailScale = true;
       enableVirtualboxHost = false;

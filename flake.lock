@@ -168,11 +168,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1619145604,
-        "narHash": "sha256-GPp2ZR+JN4i/QsOjibFMOK+SD+utBFV+wDB8A5FiWU0=",
+        "lastModified": 1619163546,
+        "narHash": "sha256-7J9qbNmmpEIpBMw7O/shyCm2mDFvNIYOSor0Zz/8MWQ=",
         "owner": "contrun",
         "repo": "infra",
-        "rev": "39ef9d76d516b40bd2abc4bb37d8528d0c353bb5",
+        "rev": "ac7d148e95d455b2fc64ddfbc8c2c343a19a06f7",
         "type": "github"
       },
       "original": {

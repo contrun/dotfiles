@@ -84,12 +84,14 @@ do_setup_iptables() {
 setup_dns_iptables() {
     iptables -t nat -N CLASH_DNS_LOCAL
     iptables -t nat -A CLASH_DNS_LOCAL -p udp ! --dport 53 -j RETURN
+    iptables -t nat -A CLASH_DNS_LOCAL -p udp -d 127.0.0.0/8 -j RETURN
     iptables -t nat -A CLASH_DNS_LOCAL -m owner --uid-owner "$CLASH_UID" -j RETURN
     iptables -t nat -A CLASH_DNS_LOCAL -p udp --dport 53 -j REDIRECT --to-ports "$CLASH_DNS_LISTENING_PORT"
     iptables -t nat -I OUTPUT -p udp -j CLASH_DNS_LOCAL
 
     iptables -t nat -N CLASH_DNS_EXTERNAL
     iptables -t nat -A CLASH_DNS_EXTERNAL -p udp ! --dport 53 -j RETURN
+    iptables -t nat -A CLASH_DNS_EXTERNAL -p udp -d 127.0.0.0/8 -j RETURN
     iptables -t nat -A CLASH_DNS_EXTERNAL -p udp --dport 53 -j REDIRECT --to-ports "$CLASH_DNS_LISTENING_PORT"
     iptables -t nat -I PREROUTING -p udp -j CLASH_DNS_EXTERNAL
 }

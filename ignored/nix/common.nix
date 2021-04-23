@@ -711,16 +711,16 @@ in {
       enable = prefs.enableCoredns;
       package = args.inputs.infra.coredns.${config.nixpkgs.system};
       config = ''
-        ${prefs.mainDomain} {
-            bind 127.0.0.52
+        .:${builtins.toString prefs.corednsPort} {
             template IN ANY ${prefs.mainDomain} {
-              match ^(^|[.])(.*)\.(?P<s>(.*?).${prefs.mainDomain}[.])$
-              answer "{{ .Name }} 60 IN CNAME {{ .Group.s }}"
-              fallthrough
+                match ^(|[.])(?P<p>.*)\.(?P<s>(?P<h>.*?)\.(?P<d>${prefs.mainDomain})[.])$
+                answer "{{ .Name }} 60 IN CNAME {{ if eq .Group.h `hub` }}${prefs.hubDomainPrefix}{{ else }}{{ .Group.h }}{{ end }}.{{ .Group.d }}."
+                fallthrough
             }
             mdns ${prefs.mainDomain}
+            alternate original NXDOMAIN,SERVFAIL,REFUSED . 223.6.6.6
         }
-      '';
+              '';
     };
     dnsmasq = {
       enable = prefs.enableDnsmasq;
@@ -732,7 +732,12 @@ in {
       enable = prefs.enableSmartdns;
       settings = prefs.smartdnsSettings;
     };
-    resolved = { enable = prefs.enableResolved; };
+    resolved = {
+      enable = prefs.enableResolved;
+      extraConfig = ''
+        DNS=127.0.0.1:${builtins.toString prefs.corednsPort}#${prefs.mainDomain}
+      '';
+    };
     openssh = {
       enable = true;
       useDns = true;
