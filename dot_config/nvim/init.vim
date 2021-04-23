@@ -224,7 +224,7 @@ Plug 'ternjs/tern_for_vim', { 'for': ['javascript', 'javascript.jsx'] }
 " Plug 'carlitux/deoplete-ternjs', { 'for': ['javascript', 'javascript.jsx'] }
 Plug 'othree/jspc.vim', { 'for': ['javascript', 'javascript.jsx'] }
 " Plug 'thalesmello/webcomplete.vim'
-Plug 'wellle/tmux-complete.vim'
+" Plug 'wellle/tmux-complete.vim'
 " Plug 'carlitux/deoplete-ternjs'
 " Plug 'zchee/deoplete-jedi'
 " Plug 'racer-rust/vim-racer'
