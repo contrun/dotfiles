@@ -207,6 +207,8 @@ in {
         nodejs_latest
         gcc
         gnumake
+        podman
+        podman-compose
         usbutils
         powertop
         fail2ban
@@ -1448,6 +1450,10 @@ in {
           "x86_64-linux" = "docker.io/postgres:13";
           "aarch64-linux" = "docker.io/arm64v8/postgres:13";
         };
+        "redis" = {
+          "x86_64-linux" = "docker.io/redis:6";
+          "aarch64-linux" = "docker.io/arm64v8/redis:6";
+        };
         "wallabag" = {
           "x86_64-linux" = "docker.io/wallabag/wallabag:2.4.2";
           "aarch64-linux" = "docker.io/ugeek/wallabag:arm-2.4";
@@ -1502,7 +1508,16 @@ in {
         } {
           environmentFiles = [ "/run/secrets/postgresql-env" ];
           enableTraefik = false;
-        } // mkContainer "wallabag" prefs.ociContainers.enableWallabag {
+        } // mkContainer "redis" prefs.ociContainers.enableRedis {
+          # https://stackoverflow.com/questions/42248198/how-to-mount-a-single-file-in-a-volume
+          extraOptions = [
+            "--mount"
+            "type=bind,source=/run/secrets/redis-conf,target=/etc/redis.conf,readonly"
+          ];
+          ports = [ "6379:6379" ];
+          cmd = [ "redis-server" "/etc/redis.conf" ];
+        } { enableTraefik = false; }
+        // mkContainer "wallabag" prefs.ociContainers.enableWallabag {
           dependsOn = [ "postgresql" ];
           environment = {
             "SYMFONY__ENV__DOMAIN_NAME" =

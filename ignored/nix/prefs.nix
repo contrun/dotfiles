@@ -304,6 +304,7 @@ let
     enableAllOciContainers = false;
     ociContainers = {
       enablePostgresql = self.enableAllOciContainers;
+      enableRedis = self.enableAllOciContainers;
       enableWallabag = self.enableAllOciContainers;
       enableN8n = self.enableAllOciContainers;
     };
