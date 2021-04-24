@@ -1887,6 +1887,8 @@ in {
         path = [
           pkgs.coreutils
           pkgs.clash
+          pkgs.curl
+          pkgs.procps
           pkgs.libcap
           pkgs.iptables
           pkgs.iproute
