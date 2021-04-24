@@ -942,13 +942,6 @@ in {
               service = "organice";
               tls = { };
             };
-          } // lib.optionalAttrs prefs.enableCodeServer {
-            codeserver = {
-              rule = getRule "codeserver";
-              middlewares = [ "authelia@docker" ];
-              service = "codeserver";
-              tls = { };
-            };
           };
           middlewares = {
             aria2 = {
@@ -990,17 +983,11 @@ in {
                 servers = [{ url = "https://organice.200ok.ch/"; }];
               };
             };
-          } // lib.optionalAttrs prefs.enableCodeServer {
-            codeserver = {
-              loadBalancer = {
-                servers = [{ url = "http://127.0.0.1:4050"; }];
-              };
-            };
           };
         };
         tcp = {
           routers = {
-            to-aioproxy = {
+            aioproxy = {
               rule = "HostSNI(`*`)";
               service = "aioproxy";
               tls = { };
@@ -1498,6 +1485,10 @@ in {
           "x86_64-linux" = "docker.io/n8nio/n8n:latest";
           "aarch64-linux" = "docker.io/n8nio/n8n:latest-rpi";
         };
+        "codeserver" = {
+          "x86_64-linux" = "docker.io/codercom/code-server:latest";
+          "aarch64-linux" = "docker.io/codercom/code-server:latest-rpi";
+        };
       };
       mkContainer = name: enable: config:
         pkgs.lib.optionalAttrs enable (let
@@ -1602,6 +1593,25 @@ in {
           middlewares = [ "authelia" ];
           environmentFiles = [ "/run/secrets/n8n-env" ];
           traefikForwardingPort = 5678;
+        } // mkContainer "codeserver" prefs.ociContainers.enableCodeServer {
+          volumes = [
+            "${prefs.home}:/home/coder"
+            # "${prefs.home}/Workspace:/home/coder/Workspace"
+            # "${prefs.home}/.vscode:/home/coder/.vscode"
+          ];
+          middlewares = [ "authelia" ];
+          extraOptions = [
+            "--user=${builtins.toString prefs.ownerUid}:${
+              builtins.toString prefs.ownerGroupGid
+            }"
+          ];
+          environment = { "DOCKER_USER" = "${prefs.owner}"; };
+          cmd = [
+            "--disable-telemetry"
+            "--user-data-dir=/home/coder/.vscode"
+            "--auth=none"
+          ];
+          traefikForwardingPort = 8080;
         };
     };
   };
@@ -1769,24 +1779,6 @@ in {
               }) // (lib.optionalAttrs (prefs.ociContainerBackend == "podman") {
                 User = lib.mkForce "root";
               });
-          };
-        } // pkgs.lib.optionalAttrs (prefs.enableCodeServer) {
-          "code-server" = {
-            enable = true;
-            description = "Remote VSCode Server";
-            after = [ "network.target" ];
-            wantedBy = [ "multi-user.target" ];
-            path = [ pkgs.go pkgs.git pkgs.direnv ];
-            serviceConfig = {
-              Type = "simple";
-              ExecStart =
-                "${pkgs.code-server}/bin/code-server --user-data-dir ${prefs.home}/.vscode --disable-telemetry";
-              WorkingDirectory = prefs.home;
-              NoNewPrivileges = true;
-              RuntimeDirectory = "code-server";
-              User = prefs.owner;
-              Group = prefs.ownerGroup;
-            };
           };
         } // pkgs.lib.optionalAttrs
         (prefs.enableAioproxy && ((pkgs.myPackages.aioproxy or null) != null)) {
