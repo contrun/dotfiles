@@ -1499,51 +1499,50 @@ in {
           "aarch64-linux" = "docker.io/n8nio/n8n:latest-rpi";
         };
       };
-      mkContainer = name: enable: config: override:
+      mkContainer = name: enable: config:
         pkgs.lib.optionalAttrs enable (let
           f = { environmentFiles ? [ ], enableTraefik ? true
             , enableTraefikTls ? true, traefikForwardingPort ? 80
             , entrypoints ? [ "web" "websecure" ], middlewares ? [ ]
-            , networkName ? prefs.ociContainerNetwork, ... }@args: {
-              result = (builtins.removeAttrs args [
-                "environmentFiles"
-                "enableTraefik"
-                "enableTraefikTls"
-                "traefikForwardingPort"
-                "entrypoints"
-                "middlewares"
-                "networkName"
-              ]) // {
-                image =
-                  args.image or (images."${name}"."${prefs.nixosSystem}" or (builtins.throw
-                    "Image for ${name} on ${prefs.nixosSystem} not found"));
-                extraOptions = (args.extraOptions or [ ])
-                  ++ (builtins.map (x: "--env-file=" + x) environmentFiles)
-                  ++ (if enableTraefik then
-                    [
-                      "--label=traefik.http.routers.${name}.service=${name}"
-                      "--label=traefik.http.services.${name}.loadbalancer.server.port=${
-                        builtins.toString traefikForwardingPort
-                      }"
-                    ] ++ (lib.optionals (entrypoints != [ ]) [
-                      "--label=traefik.http.routers.${name}.entrypoints=${
-                        builtins.concatStringsSep "," entrypoints
-                      }"
-                    ]) ++ (lib.optionals (middlewares != [ ]) [
-                      "--label=traefik.http.routers.${name}.middlewares=${
-                        builtins.concatStringsSep "," middlewares
-                      }"
-                    ]) ++ (lib.optionals (enableTraefikTls)
-                      [ "--label=traefik.http.routers.${name}.tls=true" ])
-                  else
-                    [ "--label=traefik.enable=false" ])
-                  ++ (lib.optionals (networkName != null)
-                    [ "--network=${networkName}" ]);
-              };
+            , networkName ? prefs.ociContainerNetwork, ... }@args:
+            args // {
+              image =
+                args.image or (images."${name}"."${prefs.nixosSystem}" or (builtins.throw
+                  "Image for ${name} on ${prefs.nixosSystem} not found"));
+              extraOptions = (args.extraOptions or [ ])
+                ++ (builtins.map (x: "--env-file=" + x) environmentFiles)
+                ++ (if enableTraefik then
+                  [
+                    "--label=traefik.http.routers.${name}.service=${name}"
+                    "--label=traefik.http.services.${name}.loadbalancer.server.port=${
+                      builtins.toString traefikForwardingPort
+                    }"
+                  ] ++ (lib.optionals (entrypoints != [ ]) [
+                    "--label=traefik.http.routers.${name}.entrypoints=${
+                      builtins.concatStringsSep "," entrypoints
+                    }"
+                  ]) ++ (lib.optionals (middlewares != [ ]) [
+                    "--label=traefik.http.routers.${name}.middlewares=${
+                      builtins.concatStringsSep "," middlewares
+                    }"
+                  ]) ++ (lib.optionals (enableTraefikTls)
+                    [ "--label=traefik.http.routers.${name}.tls=true" ])
+                else
+                  [ "--label=traefik.enable=false" ])
+                ++ (lib.optionals (networkName != null)
+                  [ "--network=${networkName}" ]);
             };
-          overrideWith = config: override:
-            ((lib.makeOverridable f config).override override).result;
-        in { "${name}" = overrideWith config override; });
+          getConfig = config:
+            builtins.removeAttrs (f config) [
+              "environmentFiles"
+              "enableTraefik"
+              "enableTraefikTls"
+              "traefikForwardingPort"
+              "entrypoints"
+              "middlewares"
+              "networkName"
+            ];
+        in { "${name}" = getConfig config; });
     in pkgs.lib.optionalAttrs prefs.enableOciContainers {
       backend = prefs.ociContainerBackend;
       containers =
@@ -1553,7 +1552,6 @@ in {
             "/var/data/postgresql:/var/lib/postgresql/data"
           ];
           ports = [ "5432:5432" ];
-        } {
           environmentFiles = [ "/run/secrets/postgresql-env" ];
           enableTraefik = false;
         } // mkContainer "redis" prefs.ociContainers.enableRedis {
@@ -1564,8 +1562,8 @@ in {
           ];
           ports = [ "6379:6379" ];
           cmd = [ "redis-server" "/etc/redis.conf" ];
-        } { enableTraefik = false; }
-        // mkContainer "authelia" prefs.ociContainers.enableAuthelia {
+          enableTraefik = false;
+        } // mkContainer "authelia" prefs.ociContainers.enableAuthelia {
           extraOptions = [
             "--mount"
             "type=bind,source=/run/secrets/authelia-conf,target=/config/configuration.yml"
@@ -1581,11 +1579,10 @@ in {
             "traefik.http.middlewares.authelia.forwardauth.authResponseHeaders=Remote-User,Remote-Groups,Remote-Name,Remote-Email"
           ];
           ports = [ "9091:9091" ];
-        } { traefikForwardingPort = 9091; }
-        // mkContainer "cloudbeaver" prefs.ociContainers.enableCloudBeaver {
+          traefikForwardingPort = 9091;
+        } // mkContainer "cloudbeaver" prefs.ociContainers.enableCloudBeaver {
           volumes =
             [ "/var/data/cloudbeaver/workspace:/opt/cloudbeaver/workspace" ];
-        } {
           traefikForwardingPort = 8978;
           middlewares = [ "authelia" ];
         } // mkContainer "wallabag" prefs.ociContainers.enableWallabag {
@@ -1598,11 +1595,10 @@ in {
             "/var/data/wallabag/data:/var/www/wallabag/data"
             "/var/data/wallabag/images:/var/www/wallabag/web/assets/images"
           ];
-        } { environmentFiles = [ "/run/secrets/wallabag-env" ]; }
-        // mkContainer "n8n" prefs.ociContainers.enableN8n {
+          environmentFiles = [ "/run/secrets/wallabag-env" ];
+        } // mkContainer "n8n" prefs.ociContainers.enableN8n {
           volumes = [ "/var/data/n8n:/home/node/.n8n" ];
           dependsOn = [ "postgresql" ];
-        } {
           middlewares = [ "authelia" ];
           environmentFiles = [ "/run/secrets/n8n-env" ];
           traefikForwardingPort = 5678;
