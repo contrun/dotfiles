@@ -712,13 +712,18 @@ in {
     coredns = {
       enable = prefs.enableCoredns;
       package = args.inputs.infra.coredns.${config.nixpkgs.system};
-      config = ''
+      config = let
+        getTemplate = t: ''
+          template IN ${t} ${prefs.mainDomain} {
+              match ^(|[.])(?P<p>.*)\.(?P<s>(?P<h>.*?)\.(?P<d>${prefs.mainDomain})[.])$
+              answer "{{ .Name }} 60 IN CNAME {{ if eq .Group.h `hub` }}${prefs.hubDomainPrefix}{{ else }}{{ .Group.h }}{{ end }}.{{ .Group.d }}."
+              fallthrough
+          }
+        '';
+      in ''
         .:${builtins.toString prefs.corednsPort} {
-            template IN ANY ${prefs.mainDomain} {
-                match ^(|[.])(?P<p>.*)\.(?P<s>(?P<h>.*?)\.(?P<d>${prefs.mainDomain})[.])$
-                answer "{{ .Name }} 60 IN CNAME {{ if eq .Group.h `hub` }}${prefs.hubDomainPrefix}{{ else }}{{ .Group.h }}{{ end }}.{{ .Group.d }}."
-                fallthrough
-            }
+            ${getTemplate "A"}
+            ${getTemplate "AAAA"}
             mdns ${prefs.mainDomain}
             alternate original NXDOMAIN,SERVFAIL,REFUSED . 223.6.6.6
         }

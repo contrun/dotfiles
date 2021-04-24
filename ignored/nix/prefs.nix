@@ -201,6 +201,7 @@ let
         # May spurious dns propagation failures.
         # dnsPropagationCheck = false;
         dnsProvider = "cloudflare";
+        dnsResolver = "223.6.6.6:53";
         credentialsFile = "/run/secrets/acme-env";
       };
     } else
