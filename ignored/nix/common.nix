@@ -942,6 +942,13 @@ in {
               service = "organice";
               tls = { };
             };
+          } // lib.optionalAttrs prefs.enableCodeServer {
+            codeserver = {
+              rule = getRule "codeserver";
+              middlewares = [ "authelia@docker" ];
+              service = "codeserver";
+              tls = { };
+            };
           };
           middlewares = {
             aria2 = {
@@ -983,6 +990,12 @@ in {
                 servers = [{ url = "https://organice.200ok.ch/"; }];
               };
             };
+          } // lib.optionalAttrs prefs.enableCodeServer {
+            codeserver = {
+              loadBalancer = {
+                servers = [{ url = "http://127.0.0.1:4050"; }];
+              };
+            };
           };
         };
         tcp = {
@@ -1020,9 +1033,22 @@ in {
       };
       staticConfigOptions = {
         api = { dashboard = true; };
-        entryPoints = {
-          web = {
-            address = ":80";
+        entryPoints = let
+          getEntrypoint = address: {
+            address = address;
+            proxyProtocol = {
+              trustedIPs = [
+                "127.0.0.0/8"
+                "10.0.0.0/8"
+                "100.64.0.0/10"
+                "169.254.0.0/16"
+                "172.16.0.0/12"
+                "192.168.0.0/16"
+              ];
+            };
+          };
+        in {
+          web = getEntrypoint ":80" // {
             http = {
               redirections = {
                 entryPoint = {
@@ -1031,28 +1057,8 @@ in {
                 };
               };
             };
-            proxyProtocol = {
-              trustedIPs = [
-                "127.0.0.0/8"
-                "10.0.0.0/8"
-                "100.64.0.0/10"
-                "172.16.0.0/12"
-                "192.168.0.0/16"
-              ];
-            };
           };
-          websecure = {
-            address = ":443";
-            proxyProtocol = {
-              trustedIPs = [
-                "127.0.0.0/8"
-                "10.0.0.0/8"
-                "100.64.0.0/10"
-                "172.16.0.0/12"
-                "192.168.0.0/16"
-              ];
-            };
-          };
+          websecure = getEntrypoint ":443";
         };
         log = { level = "DEBUG"; };
         providers = {
@@ -1485,6 +1491,9 @@ in {
           "x86_64-linux" = "docker.io/wallabag/wallabag:2.4.2";
           "aarch64-linux" = "docker.io/ugeek/wallabag:arm-2.4";
         };
+        "cloudbeaver" = {
+          "x86_64-linux" = "docker.io/dbeaver/cloudbeaver:latest";
+        };
         "n8n" = {
           "x86_64-linux" = "docker.io/n8nio/n8n:latest";
           "aarch64-linux" = "docker.io/n8nio/n8n:latest-rpi";
@@ -1494,12 +1503,15 @@ in {
         pkgs.lib.optionalAttrs enable (let
           f = { environmentFiles ? [ ], enableTraefik ? true
             , enableTraefikTls ? true, traefikForwardingPort ? 80
+            , entrypoints ? [ "web" "websecure" ], middlewares ? [ ]
             , networkName ? prefs.ociContainerNetwork, ... }@args: {
               result = (builtins.removeAttrs args [
                 "environmentFiles"
                 "enableTraefik"
                 "enableTraefikTls"
                 "traefikForwardingPort"
+                "entrypoints"
+                "middlewares"
                 "networkName"
               ]) // {
                 image =
@@ -1508,9 +1520,18 @@ in {
                 extraOptions = (args.extraOptions or [ ])
                   ++ (builtins.map (x: "--env-file=" + x) environmentFiles)
                   ++ (if enableTraefik then
-                    (lib.optionals (traefikForwardingPort != null) [
+                    [
+                      "--label=traefik.http.routers.${name}.service=${name}"
                       "--label=traefik.http.services.${name}.loadbalancer.server.port=${
                         builtins.toString traefikForwardingPort
+                      }"
+                    ] ++ (lib.optionals (entrypoints != [ ]) [
+                      "--label=traefik.http.routers.${name}.entrypoints=${
+                        builtins.concatStringsSep "," entrypoints
+                      }"
+                    ]) ++ (lib.optionals (middlewares != [ ]) [
+                      "--label=traefik.http.routers.${name}.middlewares=${
+                        builtins.concatStringsSep "," middlewares
                       }"
                     ]) ++ (lib.optionals (enableTraefikTls)
                       [ "--label=traefik.http.routers.${name}.tls=true" ])
@@ -1561,7 +1582,13 @@ in {
           ];
           ports = [ "9091:9091" ];
         } { traefikForwardingPort = 9091; }
-        // mkContainer "wallabag" prefs.ociContainers.enableWallabag {
+        // mkContainer "cloudbeaver" prefs.ociContainers.enableCloudBeaver {
+          volumes =
+            [ "/var/data/cloudbeaver/workspace:/opt/cloudbeaver/workspace" ];
+        } {
+          traefikForwardingPort = 8978;
+          middlewares = [ "authelia" ];
+        } // mkContainer "wallabag" prefs.ociContainers.enableWallabag {
           dependsOn = [ "postgresql" ];
           environment = {
             "SYMFONY__ENV__DOMAIN_NAME" =
@@ -1576,6 +1603,7 @@ in {
           volumes = [ "/var/data/n8n:/home/node/.n8n" ];
           dependsOn = [ "postgresql" ];
         } {
+          middlewares = [ "authelia" ];
           environmentFiles = [ "/run/secrets/n8n-env" ];
           traefikForwardingPort = 5678;
         };
@@ -1753,13 +1781,13 @@ in {
             after = [ "network.target" ];
             wantedBy = [ "multi-user.target" ];
             path = [ pkgs.go pkgs.git pkgs.direnv ];
-
             serviceConfig = {
               Type = "simple";
               ExecStart =
                 "${pkgs.code-server}/bin/code-server --user-data-dir ${prefs.home}/.vscode --disable-telemetry";
               WorkingDirectory = prefs.home;
               NoNewPrivileges = true;
+              RuntimeDirectory = "code-server";
               User = prefs.owner;
               Group = prefs.ownerGroup;
             };

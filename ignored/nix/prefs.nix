@@ -182,7 +182,7 @@ let
     domainPrefixes = let
       originalPrefix = (builtins.replaceStrings [ "_" ] [ "" ] self.hostname);
     in (if originalPrefix == self.hubDomainPrefix then [ "hub" ] else [ ])
-    ++ [ originalPrefix ];
+    ++ [ "local" originalPrefix ];
     domainPrefix = builtins.elemAt self.domainPrefixes 0;
     domains = builtins.map (prefix: internalGetSubDomain prefix self.mainDomain)
       self.domainPrefixes;
@@ -310,6 +310,8 @@ let
     ociContainers = {
       enablePostgresql = self.enableAllOciContainers;
       enableRedis = self.enableAllOciContainers;
+      enableCloudBeaver = self.enableAllOciContainers
+        && (self.nixosSystem == "x86_64-linux");
       enableAuthelia = self.enableAllOciContainers;
       enableWallabag = self.enableAllOciContainers;
       enableN8n = self.enableAllOciContainers;
