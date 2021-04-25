@@ -182,7 +182,7 @@ let
     domainPrefixes = let
       originalPrefix = (builtins.replaceStrings [ "_" ] [ "" ] self.hostname);
     in (if originalPrefix == self.hubDomainPrefix then [ "hub" ] else [ ])
-    ++ [ "local" originalPrefix ];
+    ++ [ originalPrefix "local" ];
     domainPrefix = builtins.elemAt self.domainPrefixes 0;
     domains = builtins.map (prefix: internalGetSubDomain prefix self.mainDomain)
       self.domainPrefixes;
