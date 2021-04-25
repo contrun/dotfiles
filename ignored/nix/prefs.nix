@@ -270,7 +270,6 @@ let
     enableDocker = true;
     enablePodman = true;
     replaceDockerWithPodman = !self.enableDocker;
-    dockerStorageDriver = if self.enableZfs then "zfs" else "overlay2";
     enableLibvirtd = !self.isMinimalSystem;
     enableAnbox = false;
     enableUnifi = false;

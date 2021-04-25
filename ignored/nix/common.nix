@@ -1456,7 +1456,6 @@ in {
     };
     docker = {
       enable = prefs.enableDocker && !prefs.replaceDockerWithPodman;
-      storageDriver = prefs.dockerStorageDriver;
       autoPrune.enable = true;
     };
     anbox = { enable = prefs.enableAnbox; };
