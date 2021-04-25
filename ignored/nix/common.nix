@@ -1460,37 +1460,41 @@ in {
     };
     anbox = { enable = prefs.enableAnbox; };
     oci-containers = let
-      images = {
-        "postgresql" = {
-          "x86_64-linux" = "docker.io/postgres:13";
-          "aarch64-linux" = "docker.io/arm64v8/postgres:13";
-        };
-        "redis" = {
-          "x86_64-linux" = "docker.io/redis:6";
-          "aarch64-linux" = "docker.io/arm64v8/redis:6";
-        };
-        "authelia" = {
-          "x86_64-linux" = "docker.io/authelia/authelia:4";
-          "aarch64-linux" = "docker.io/authelia/authelia:4";
-        };
-        "wallabag" = {
-          "x86_64-linux" = "docker.io/wallabag/wallabag:2.4.2";
-          "aarch64-linux" = "docker.io/ugeek/wallabag:arm-2.4";
-        };
-        "cloudbeaver" = {
-          "x86_64-linux" = "docker.io/dbeaver/cloudbeaver:latest";
-        };
-        "n8n" = {
-          "x86_64-linux" = "docker.io/n8nio/n8n:latest";
-          "aarch64-linux" = "docker.io/n8nio/n8n:latest-rpi";
-        };
-        "codeserver" = {
-          "x86_64-linux" = "docker.io/codercom/code-server:latest";
-          "aarch64-linux" = "docker.io/codercom/code-server:latest-rpi";
-        };
-      };
       mkContainer = name: enable: config:
         pkgs.lib.optionalAttrs enable (let
+          images = {
+            "postgresql" = {
+              "x86_64-linux" = "docker.io/postgres:13";
+              "aarch64-linux" = "docker.io/arm64v8/postgres:13";
+            };
+            "redis" = {
+              "x86_64-linux" = "docker.io/redis:6";
+              "aarch64-linux" = "docker.io/arm64v8/redis:6";
+            };
+            "authelia" = {
+              "x86_64-linux" = "docker.io/authelia/authelia:4";
+              "aarch64-linux" = "docker.io/authelia/authelia:4";
+            };
+            "searx" = {
+              "x86_64-linux" = "docker.io/searx/searx:latest";
+              "aarch64-linux" = "docker.io/woahbase/alpine-searx:aarch64";
+            };
+            "wallabag" = {
+              "x86_64-linux" = "docker.io/wallabag/wallabag:2.4.2";
+              "aarch64-linux" = "docker.io/ugeek/wallabag:arm-2.4";
+            };
+            "cloudbeaver" = {
+              "x86_64-linux" = "docker.io/dbeaver/cloudbeaver:latest";
+            };
+            "n8n" = {
+              "x86_64-linux" = "docker.io/n8nio/n8n:latest";
+              "aarch64-linux" = "docker.io/n8nio/n8n:latest-rpi";
+            };
+            "codeserver" = {
+              "x86_64-linux" = "docker.io/codercom/code-server:latest";
+              "aarch64-linux" = "docker.io/codercom/code-server:latest-rpi";
+            };
+          };
           f = { environmentFiles ? [ ], enableTraefik ? true
             , enableTraefikTls ? true, traefikForwardingPort ? 80
             , entrypoints ? [ "web" "websecure" ], middlewares ? [ ]
@@ -1574,6 +1578,13 @@ in {
           volumes =
             [ "/var/data/cloudbeaver/workspace:/opt/cloudbeaver/workspace" ];
           traefikForwardingPort = 8978;
+          middlewares = [ "authelia" ];
+        } // mkContainer "searx" prefs.ociContainers.enableSearx {
+          environment = {
+            "BASE_URL" = "https://${prefs.getFullDomainName "searx"}";
+          };
+          volumes = [ "/var/data/searx:/etc/searx" ];
+          traefikForwardingPort = 8080;
           middlewares = [ "authelia" ];
         } // mkContainer "wallabag" prefs.ociContainers.enableWallabag {
           dependsOn = [ "postgresql" ];

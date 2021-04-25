@@ -312,6 +312,7 @@ let
       enableCloudBeaver = self.enableAllOciContainers
         && (self.nixosSystem == "x86_64-linux");
       enableAuthelia = self.enableAllOciContainers;
+      enableSearx = self.enableAllOciContainers;
       enableWallabag = self.enableAllOciContainers;
       enableCodeServer = self.enableAllOciContainers;
       enableN8n = self.enableAllOciContainers;
