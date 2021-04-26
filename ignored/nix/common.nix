@@ -725,7 +725,7 @@ in {
             ${getTemplate "A"}
             ${getTemplate "AAAA"}
             mdns ${prefs.mainDomain}
-            alternate original NXDOMAIN,SERVFAIL,REFUSED . 223.6.6.6
+            alternate original NXDOMAIN,SERVFAIL,REFUSED . 1.0.0.1 8.8.4.4 9.9.9.9 180.76.76.76 223.5.5.5
         }
               '';
     };
@@ -742,7 +742,9 @@ in {
     resolved = {
       enable = prefs.enableResolved;
       extraConfig = ''
-        DNS=127.0.0.1:${builtins.toString prefs.corednsPort}#${prefs.mainDomain}
+        DNS=127.0.0.1:${
+          builtins.toString prefs.corednsPort
+        }#${prefs.mainDomain} 1.0.0.1 8.8.4.4 9.9.9.9 180.76.76.76 223.5.5.5
       '';
     };
     openssh = {
@@ -1760,6 +1762,12 @@ in {
               Environment = "ARIA2_RPC_SECRET=token_nekot";
               EnvironmentFile = "/run/secrets/aria2-env";
             };
+          };
+        } // pkgs.lib.optionalAttrs (prefs.enableResolved) {
+          "systemd-resolved" = {
+            serviceConfig = { Environment = "SYSTEMD_LOG_LEVEL=debug"; };
+          } // lib.optionalAttrs prefs.enableCoredns {
+            after = [ "coredns.service" ];
           };
         } // pkgs.lib.optionalAttrs (prefs.ociContainers.enableWallabag) {
           "${prefs.ociContainerBackend}-wallabag" = {
