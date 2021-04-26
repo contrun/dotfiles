@@ -1902,6 +1902,7 @@ in {
         };
       };
 
+      extraConfig = "DefaultTimeoutStopSec=10s";
     };
 
     clash-redir = let
@@ -2132,7 +2133,6 @@ in {
         services.${name} = {
           description = "sync task warrior tasks";
           enable = prefs.enableTaskWarriorSync;
-          wantedBy = [ "default.target" ];
           serviceConfig = {
             Type = "oneshot";
             ExecStart = "${pkgs.taskwarrior}/bin/task synchronize";
