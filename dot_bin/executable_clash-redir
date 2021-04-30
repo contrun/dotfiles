@@ -156,9 +156,9 @@ do_setup_iptables_tproxy() {
     iptables -t mangle -A CLASH_EXTERNAL -d 10.0.0.0/8 -j RETURN
     iptables -t mangle -A CLASH_EXTERNAL -d 100.64.0.0/10 -j RETURN
     iptables -t mangle -A CLASH_EXTERNAL -d 255.255.255.255 -j RETURN
-    iptables -t mangle -A CLASH_EXTERNAL -p tcp -j TPROXY --on-port "$CLASH_TPROXY_PORT" --tproxy-mark "$CLASH_MARK"
+    iptables -t mangle -A CLASH_EXTERNAL -p tcp -j TPROXY --on-port "$CLASH_TPROXY_PORT" --on-ip 127.0.0.1 --tproxy-mark "$CLASH_MARK"
+    # iptables -t mangle -A CLASH_EXTERNAL -p udp -j TPROXY --on-port "$CLASH_TPROXY_PORT" --on-ip 127.0.0.1 --tproxy-mark "$CLASH_MARK"
     iptables -t mangle -I PREROUTING -p tcp -j CLASH_EXTERNAL
-    # iptables -t mangle -A CLASH_EXTERNAL -p udp -j TPROXY --on-port "$CLASH_TPROXY_PORT" --tproxy-mark "$CLASH_MARK"
     # iptables -t mangle -I PREROUTING -p udp -j CLASH_EXTERNAL
 }
 
