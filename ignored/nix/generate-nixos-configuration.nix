@@ -84,6 +84,8 @@ let
         authelia-users = { };
         n8n-env = { };
         wallabag-env = { };
+        restic-password = { };
+        rclone-config = { };
         yandex-passwd = {
           mode = "0400";
           owner = prefs.owner;

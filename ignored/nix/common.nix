@@ -298,6 +298,7 @@ in {
         firefox
         rsync
         rclone
+        restic
         sshfs
         termite
         xbindkeys
@@ -707,6 +708,34 @@ in {
       enable = prefs.enableOfflineimap;
       install = true;
       path = [ pkgs.libsecret pkgs.dbus ];
+    };
+    restic = {
+      backups = let
+        restic-exclude-files = pkgs.writeTextFile {
+          name = "restic-excluded-files";
+          text = "/var/data/postgresql";
+        };
+        go = name: conf: backend: {
+          "${name}-${backend}" = {
+            initialize = true;
+            passwordFile = "/run/secrets/restic-password";
+            repository = "rclone:${backend}:restic";
+            rcloneConfigFile = "/run/secrets/rclone-config";
+            timerConfig = {
+              OnCalendar = "00:05";
+              RandomizedDelaySec = "5h";
+            };
+            pruneOpts = [
+              "--keep-daily 7 --keep-weekly 5 --keep-monthly 12 --keep-yearly 75"
+            ];
+          } // conf;
+        };
+        mkBackup = name: conf:
+          go name conf "backup-primary" // go name conf "backup-secondary";
+      in mkBackup "vardata" {
+        extraBackupArgs = [ "--exclude=postgresql" ];
+        paths = [ "/var/data" ];
+      };
     };
     davfs2 = { enable = prefs.enableDavfs2; };
     coredns = {
