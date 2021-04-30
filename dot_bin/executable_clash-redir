@@ -123,7 +123,9 @@ setup_dns_iptables() {
 
 do_setup_iptables_tproxy() {
     setup_dns_iptables
-    ip rule add fwmark "$CLASH_MARK" table "$CLASH_TABLE"
+    if [[ -z "$(ip rule list fwmark "$CLASH_MARK" table "$CLASH_TABLE")" ]]; then
+        ip rule add fwmark "$CLASH_MARK" table "$CLASH_TABLE"
+    fi
     ip route replace local 0.0.0.0/0 dev lo table "$CLASH_TABLE"
 
     iptables -t mangle -N CLASH_LOCAL
@@ -132,7 +134,6 @@ do_setup_iptables_tproxy() {
     iptables -t mangle -A CLASH_LOCAL -d 127.0.0.0/8 -j RETURN
     iptables -t mangle -A CLASH_LOCAL -d 224.0.0.0/4 -j RETURN
     iptables -t mangle -A CLASH_LOCAL -d 172.16.0.0/12 -j RETURN
-    iptables -t mangle -A CLASH_LOCAL -d 127.0.0.0/8 -j RETURN
     iptables -t mangle -A CLASH_LOCAL -d 169.254.0.0/16 -j RETURN
     iptables -t mangle -A CLASH_LOCAL -d 240.0.0.0/4 -j RETURN
     iptables -t mangle -A CLASH_LOCAL -d 192.168.0.0/16 -j RETURN
@@ -149,7 +150,6 @@ do_setup_iptables_tproxy() {
     iptables -t mangle -A CLASH_EXTERNAL -d 127.0.0.0/8 -j RETURN
     iptables -t mangle -A CLASH_EXTERNAL -d 224.0.0.0/4 -j RETURN
     iptables -t mangle -A CLASH_EXTERNAL -d 172.16.0.0/12 -j RETURN
-    iptables -t mangle -A CLASH_EXTERNAL -d 127.0.0.0/8 -j RETURN
     iptables -t mangle -A CLASH_EXTERNAL -d 169.254.0.0/16 -j RETURN
     iptables -t mangle -A CLASH_EXTERNAL -d 240.0.0.0/4 -j RETURN
     iptables -t mangle -A CLASH_EXTERNAL -d 192.168.0.0/16 -j RETURN
@@ -171,7 +171,6 @@ do_setup_iptables_redirect() {
     iptables -t nat -A CLASH_LOCAL -d 127.0.0.0/8 -j RETURN
     iptables -t nat -A CLASH_LOCAL -d 224.0.0.0/4 -j RETURN
     iptables -t nat -A CLASH_LOCAL -d 172.16.0.0/12 -j RETURN
-    iptables -t nat -A CLASH_LOCAL -d 127.0.0.0/8 -j RETURN
     iptables -t nat -A CLASH_LOCAL -d 169.254.0.0/16 -j RETURN
     iptables -t nat -A CLASH_LOCAL -d 240.0.0.0/4 -j RETURN
     iptables -t nat -A CLASH_LOCAL -d 192.168.0.0/16 -j RETURN
@@ -186,7 +185,6 @@ do_setup_iptables_redirect() {
     iptables -t nat -A CLASH_EXTERNAL -d 127.0.0.0/8 -j RETURN
     iptables -t nat -A CLASH_EXTERNAL -d 224.0.0.0/4 -j RETURN
     iptables -t nat -A CLASH_EXTERNAL -d 172.16.0.0/12 -j RETURN
-    iptables -t nat -A CLASH_EXTERNAL -d 127.0.0.0/8 -j RETURN
     iptables -t nat -A CLASH_EXTERNAL -d 169.254.0.0/16 -j RETURN
     iptables -t nat -A CLASH_EXTERNAL -d 240.0.0.0/4 -j RETURN
     iptables -t nat -A CLASH_EXTERNAL -d 192.168.0.0/16 -j RETURN
@@ -214,6 +212,12 @@ stop() {
 }
 
 cleanup_iptables() {
+    do_cleanup_iptables || true
+}
+
+do_cleanup_iptables() {
+    ip rule delete fwmark "$CLASH_MARK" table "$CLASH_TABLE"
+    ip route delete local 0.0.0.0/0 dev lo table "$CLASH_TABLE"
     iptables-save -c | grep -v "$CLASH_IPTABLES_TAG" | iptables-restore -c
 }
 
