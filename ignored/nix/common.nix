@@ -2016,12 +2016,12 @@ in {
         name = "ddns";
         unitName = "${name}@";
         script = pkgs.writeShellScript "ddns" ''
-          set -xe
-          host="''${host:-$(hostname)}"
+          set -eu
+          host="''${DDNS_HOST:-$(hostname)}"
           if [[ -n "$1" ]] && [[ "$1" != "default" ]]; then host="$1"; fi
-          base="''${base:-example.com}"
+          base="$DDNS_BASE_DOMAIN"
           domain="$host.$base"
-          password="''${password:-simpelPassword}"
+          password="$DDNS_PASSWORD"
           interfaces="$(ip link show up | awk -F'[ :]' '/MULTICAST/&&/LOWER_UP/ {print $3}')"
           ipAddr="$(parallel -k -r -v upnpc -m {1} -s ::: $interfaces 2>/dev/null | awk '/ExternalIPAddress/ {print $3}' | head -n1 || true)"
           if [[ -z "$ipAddr" ]]; then ipAddr="$(curl -s myip.ipip.net | perl -pe 's/.*?([0-9]{1,3}.*[0-9]{1,3}?).*/\1/g')"; fi
@@ -2047,7 +2047,7 @@ in {
           serviceConfig = {
             Type = "oneshot";
             ExecStart = "${script} %i";
-            EnvironmentFile = "%h/.config/ddns/env";
+            EnvironmentFile = "/run/secrets/ddns-env";
           };
         };
         timers.${unitName} = {
