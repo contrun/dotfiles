@@ -1507,8 +1507,8 @@ in {
               "aarch64-linux" = "docker.io/authelia/authelia:4";
             };
             "searx" = {
-              "x86_64-linux" = "docker.io/searx/searx:latest";
-              "aarch64-linux" = "docker.io/woahbase/alpine-searx:aarch64";
+              "x86_64-linux" = "docker.io/searxng/searxng:latest";
+              "aarch64-linux" = "docker.io/searxng/searxng:latest";
             };
             "wallabag" = {
               "x86_64-linux" = "docker.io/wallabag/wallabag:2.4.2";
