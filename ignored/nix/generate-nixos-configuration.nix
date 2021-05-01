@@ -85,6 +85,7 @@ let
         n8n-env = { };
         wallabag-env = { };
         recipes-env = { };
+        wger-env = { };
         restic-password = { };
         rclone-config = { };
         yandex-passwd = {

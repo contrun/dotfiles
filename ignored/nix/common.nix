@@ -1519,6 +1519,8 @@ in {
               "x86_64-linux" = repo;
               "aarch64-linux" = repo;
             };
+            "wger" = let repo = "docker.io/wger/apache:2.0-dev";
+            in { "x86_64-linux" = repo; };
             "cloudbeaver" = {
               "x86_64-linux" = "docker.io/dbeaver/cloudbeaver:latest";
             };
@@ -1642,6 +1644,14 @@ in {
           dependsOn = [ "postgresql" ];
           environmentFiles = [ "/run/secrets/recipes-env" ];
           traefikForwardingPort = 8080;
+        } // mkContainer "wger" prefs.ociContainers.enableWger {
+          volumes = [ "/var/data/wger/media:/home/wger/media" ];
+          dependsOn = [ "postgresql" ];
+          environment = {
+            "SITE_URL" = "https://${prefs.getFullDomainName "wger"}";
+          };
+          environmentFiles = [ "/run/secrets/wger-env" ];
+          traefikForwardingPort = 80;
         } // mkContainer "n8n" prefs.ociContainers.enableN8n {
           volumes = [ "/var/data/n8n:/home/node/.n8n" ];
           dependsOn = [ "postgresql" ];

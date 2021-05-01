@@ -316,6 +316,8 @@ let
       enableWallabag = self.enableAllOciContainers;
       enableCodeServer = self.enableAllOciContainers;
       enableRecipes = self.enableAllOciContainers;
+      enableWger = self.enableAllOciContainers
+        && (self.nixosSystem == "x86_64-linux");
       enableN8n = self.enableAllOciContainers;
     };
     emulatedSystems =
