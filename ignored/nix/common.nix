@@ -1528,6 +1528,11 @@ in {
               "x86_64-linux" = "docker.io/n8nio/n8n:latest";
               "aarch64-linux" = "docker.io/n8nio/n8n:latest-rpi";
             };
+            "grocy" = let repo = "docker.io/linuxserver/grocy:latest";
+            in {
+              "x86_64-linux" = repo;
+              "aarch64-linux" = repo;
+            };
             "codeserver" = {
               "x86_64-linux" = "docker.io/codercom/code-server:latest";
               "aarch64-linux" = "docker.io/codercom/code-server:latest-rpi";
@@ -1658,6 +1663,16 @@ in {
           middlewares = [ "authelia" ];
           environmentFiles = [ "/run/secrets/n8n-env" ];
           traefikForwardingPort = 5678;
+        } // mkContainer "grocy" prefs.ociContainers.enableGrocy {
+          volumes = [ "/var/data/grocy:/config" ];
+          environment = {
+            "PUID" = "${builtins.toString prefs.ownerUid}";
+            "PGID" = "${builtins.toString prefs.ownerGroupGid}";
+            "TZ" = "Asia/Shanghai";
+            "GROCY_CURRENCY" = "CNY";
+            "GROCY_MODE" = "production";
+          };
+          traefikForwardingPort = 80;
         } // mkContainer "codeserver" prefs.ociContainers.enableCodeServer {
           volumes = [
             "${prefs.home}:/home/coder"

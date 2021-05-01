@@ -319,6 +319,7 @@ let
       enableWger = self.enableAllOciContainers
         && (self.nixosSystem == "x86_64-linux");
       enableN8n = self.enableAllOciContainers;
+      enableGrocy = self.enableAllOciContainers;
     };
     emulatedSystems =
       if (self.nixosSystem == "x86_64-linux") then [ "aarch64-linux" ] else [ ];
