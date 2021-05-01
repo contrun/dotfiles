@@ -1612,6 +1612,7 @@ in {
           middlewares = [ "authelia" ];
         } // mkContainer "searx" prefs.ociContainers.enableSearx {
           environment = {
+            "INSTANCE_NAME" = "searx@${prefs.domainPrefix}";
             "BASE_URL" = "https://${prefs.getFullDomainName "searx"}";
           };
           volumes = [ "/var/data/searx:/etc/searx" ];
