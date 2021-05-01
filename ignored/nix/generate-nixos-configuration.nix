@@ -84,6 +84,7 @@ let
         authelia-users = { };
         n8n-env = { };
         wallabag-env = { };
+        recipes-env = { };
         restic-password = { };
         rclone-config = { };
         yandex-passwd = {

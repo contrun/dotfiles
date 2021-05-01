@@ -1514,6 +1514,11 @@ in {
               "x86_64-linux" = "docker.io/wallabag/wallabag:2.4.2";
               "aarch64-linux" = "docker.io/ugeek/wallabag:arm-2.4";
             };
+            "recipes" = let repo = "docker.io/vabene1111/recipes:latest";
+            in {
+              "x86_64-linux" = repo;
+              "aarch64-linux" = repo;
+            };
             "cloudbeaver" = {
               "x86_64-linux" = "docker.io/dbeaver/cloudbeaver:latest";
             };
@@ -1629,6 +1634,14 @@ in {
             "/var/data/wallabag/images:/var/www/wallabag/web/assets/images"
           ];
           environmentFiles = [ "/run/secrets/wallabag-env" ];
+        } // mkContainer "recipes" prefs.ociContainers.enableRecipes {
+          volumes = [
+            "/var/data/recipes/staticfiles:/opt/recipes/staticfiles"
+            "/var/data/recipes/mediafiles:/opt/recipes/mediafiles"
+          ];
+          dependsOn = [ "postgresql" ];
+          environmentFiles = [ "/run/secrets/recipes-env" ];
+          traefikForwardingPort = 8080;
         } // mkContainer "n8n" prefs.ociContainers.enableN8n {
           volumes = [ "/var/data/n8n:/home/node/.n8n" ];
           dependsOn = [ "postgresql" ];

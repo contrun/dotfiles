@@ -315,6 +315,7 @@ let
       enableSearx = self.enableAllOciContainers;
       enableWallabag = self.enableAllOciContainers;
       enableCodeServer = self.enableAllOciContainers;
+      enableRecipes = self.enableAllOciContainers;
       enableN8n = self.enableAllOciContainers;
     };
     emulatedSystems =
