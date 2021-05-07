@@ -1076,9 +1076,13 @@ in {
               };
             };
           };
-          websecure = getEntrypoint ":443";
+          websecure = getEntrypoint ":443" // { http = { tls = { }; }; };
         };
         log = { level = "DEBUG"; };
+        accessLog = {
+          filePath = "/var/log/traefik/access.log.json";
+          format = "json";
+        };
         providers = {
           docker = {
             defaultRule = getRule
@@ -1089,6 +1093,8 @@ in {
               "unix:///var/run/podman/podman.sock";
             network = "${prefs.ociContainerNetwork}";
           };
+        } // pkgs.lib.optionalAttrs (prefs.enableK3s) {
+          kubernetesIngress = { };
         };
       };
     };
@@ -1149,7 +1155,7 @@ in {
     # k3s kubectl patch service traefik -n kube-system -p '{"spec": {"ports": [{"port": 443,"targetPort": 443, "nodePort": 30443, "protocol": "TCP", "name": "https"},{"port": 80,"targetPort": 80, "nodePort": 30080, "protocol": "TCP", "name": "http"}], "type": "LoadBalancer"}}'
     k3s = let
       # https://github.com/NixOS/nixpkgs/issues/111835#issuecomment-784905827
-      myArgs = "--kubelet-arg=cgroup-driver=systemd";
+      myArgs = "--kubelet-arg=cgroup-driver=systemd --no-deploy traefik";
     in {
       enable = prefs.enableK3s;
       extraFlags = myArgs;
@@ -1865,14 +1871,19 @@ in {
           "postgresql" = { serviceConfig = { SupplementaryGroups = "keys"; }; };
         } // pkgs.lib.optionalAttrs (prefs.enableTraefik) {
           "traefik" = {
-            serviceConfig =
-              (lib.optionalAttrs (prefs.ociContainerBackend == "docker") {
-                SupplementaryGroups = "keys docker acme";
-              }) // (lib.optionalAttrs (prefs.ociContainerBackend == "podman") {
-                User = lib.mkForce "root";
-              }) // (lib.optionalAttrs (prefs.enableK3s) {
-                Environment = "KUBECONFIG=/etc/rancher/k3s/k3s.yaml";
-              });
+            serviceConfig = {
+              LogsDirectory = "traefik";
+            } // (lib.optionalAttrs (prefs.ociContainerBackend == "docker") {
+              SupplementaryGroups = "keys docker acme";
+            }) // (lib.optionalAttrs (prefs.ociContainerBackend == "podman") {
+              User = lib.mkForce "root";
+            }) // (lib.optionalAttrs (prefs.enableK3s) {
+              # TODO: Use a less privileged kube config.
+              Environment = "KUBECONFIG=/kubeconfig.yaml";
+              ExecStartPre =
+                "+${pkgs.acl}/bin/setfacl -m 'u:traefik:r--' /kubeconfig.yaml";
+              BindPaths = "/etc/rancher/k3s/k3s.yaml:/kubeconfig.yaml";
+            });
           };
         } // pkgs.lib.optionalAttrs
         (prefs.enableAioproxy && ((pkgs.myPackages.aioproxy or null) != null)) {
