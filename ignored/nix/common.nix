@@ -1147,11 +1147,17 @@ in {
     # change port
     # sudo chown -R e /etc/rancher/k3s/
     # k3s kubectl patch service traefik -n kube-system -p '{"spec": {"ports": [{"port": 443,"targetPort": 443, "nodePort": 30443, "protocol": "TCP", "name": "https"},{"port": 80,"targetPort": 80, "nodePort": 30080, "protocol": "TCP", "name": "http"}], "type": "LoadBalancer"}}'
-    k3s = {
+    k3s = let
+      # https://github.com/NixOS/nixpkgs/issues/111835#issuecomment-784905827
+      myArgs = "--kubelet-arg=cgroup-driver=systemd";
+    in {
       enable = prefs.enableK3s;
+      extraFlags = myArgs;
     } // (if prefs.enableContainerd then {
-      extraFlags =
-        "--container-runtime-endpoint /run/containerd/containerd.sock";
+      extraFlags = builtins.concatStringsSep " " [
+        myArgs
+        "--container-runtime-endpoint=/run/containerd/containerd.sock"
+      ];
     } else if prefs.enableDocker then {
       docker = true;
     } else
@@ -1864,6 +1870,8 @@ in {
                 SupplementaryGroups = "keys docker acme";
               }) // (lib.optionalAttrs (prefs.ociContainerBackend == "podman") {
                 User = lib.mkForce "root";
+              }) // (lib.optionalAttrs (prefs.enableK3s) {
+                Environment = "KUBECONFIG=/etc/rancher/k3s/k3s.yaml";
               });
           };
         } // pkgs.lib.optionalAttrs
