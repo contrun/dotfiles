@@ -53,21 +53,9 @@ let
 
   default = self: {
     pkgsRelatedPrefs = {
-      helpers = import self.helpersPath { inherit pkgs; };
       kernelPackages = pkgs.linuxPackages_latest;
       rtl8188gu = (self.pkgsRelatedPrefs.kernelPackages.callPackage
         ./hardware/rtl8188gu.nix { });
-      autosshServers = with pkgs.lib;
-        let
-          configFiles = [ "${self.home}/.ssh/config" ];
-          goodConfigFiles =
-            builtins.filter (x: builtins.pathExists x) configFiles;
-          lines =
-            builtins.foldl' (a: e: a ++ (splitString "\n" (readFile e))) [ ]
-            goodConfigFiles;
-          autosshLines = filter (x: hasPrefix "Host autossh" x) lines;
-          servers = map (x: removePrefix "Host " x) autosshLines;
-        in filter (x: x != "autossh") servers;
     };
     isMinimalSystem = false;
     enableAarch64Cross = false;
@@ -83,6 +71,17 @@ let
     consoleFont = null;
     hostname = "hostname";
     hostId = "346b7a87";
+    helpers = import self.helpersPath { lib = args.inputs.nixpkgs.lib; };
+    autosshServers = with args.inputs.nixpkgs.lib;
+      let
+        configFiles = [ "${self.home}/.ssh/config" ];
+        goodConfigFiles =
+          builtins.filter (x: builtins.pathExists x) configFiles;
+        lines = builtins.foldl' (a: e: a ++ (splitString "\n" (readFile e))) [ ]
+          goodConfigFiles;
+        autosshLines = filter (x: hasPrefix "Host autossh" x) lines;
+        servers = map (x: removePrefix "Host " x) autosshLines;
+      in filter (x: x != "autossh") servers;
     enableSessionVariables = true;
     dpi = 144;
     enableHidpi = true;

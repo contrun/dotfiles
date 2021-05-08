@@ -1,8 +1,7 @@
-{ pkgs, ... }@args: rec {
+{ lib, ... }@args: rec {
   atoi = string:
     with builtins;
     let
-      lib = pkgs.lib;
       s = lib.toLower string;
       f = v: k: { "${k}" = v; };
       dec_alphabet = [ "0" "1" "2" "3" "4" "5" "6" "7" "8" "9" ];
@@ -32,9 +31,9 @@
 
   getAttrOrNull = attrset: path:
     builtins.foldl' (acc: x: if acc ? ${x} then acc.${x} else null) attrset
-    (pkgs.lib.splitString "." path);
+    (lib.splitString "." path);
 
   mkIfAttrExists = attrset: path:
     let r = getAttrOrNull attrset path;
-    in pkgs.lib.mkIf (r != null) r;
+    in lib.mkIf (r != null) r;
 }
