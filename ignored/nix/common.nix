@@ -1157,7 +1157,9 @@ in {
     # k3s kubectl patch service traefik -n kube-system -p '{"spec": {"ports": [{"port": 443,"targetPort": 443, "nodePort": 30443, "protocol": "TCP", "name": "https"},{"port": 80,"targetPort": 80, "nodePort": 30080, "protocol": "TCP", "name": "http"}], "type": "LoadBalancer"}}'
     k3s = let
       # https://github.com/NixOS/nixpkgs/issues/111835#issuecomment-784905827
-      myArgs = "--kubelet-arg=cgroup-driver=systemd --no-deploy traefik";
+      # Wait for k3s to support cgroup v2
+      # https://github.com/NixOS/nixpkgs/blob/8823855ce36de32b8b9118ce87bfa5ff9a641657/nixos/modules/services/cluster/k3s/default.nix#L80-L81
+      myArgs = "--no-deploy traefik";
     in {
       enable = prefs.enableK3s;
       extraFlags = myArgs;
