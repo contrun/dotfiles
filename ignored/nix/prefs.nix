@@ -13,21 +13,20 @@ let
   # NOTE: pkgs should not be forced unless we are sure pkgs == args.pkgs
   # This file is shared between flake.nix which generates a minimal host-specific nixos configuration and
   # common.nix which generates a more complete host-specific configuration.
-  # When called from flake.nix, there will be no pkgs argument given. We must make sure pkgs is not forces by then.
-  pkgs = let
-    hasPkgs = args ? pkgs;
-    hasInputs = args ? inputs;
-    hasHostname = args ? hostname;
-  in builtins.trace
-  "calling prefs ${if hasPkgs then "with" else "without"} argument pkgs, ${
-    if hasInputs then "with" else "without"
-  } argument inputs, ${
-    if hasHostname then
-      ("with argument hostname " + args.hostname)
-    else
-      "without argument hostname"
-  }" (args.pkgs or (builtins.throw
-    "Forcing pkgs in prefs.nix without given in the input parameter"));
+  # When called from flake.nix, there will be no pkgs argument given. We must make sure pkgs is not forced by then.
+  hasPkgs = args ? pkgs;
+  hasInputs = args ? inputs;
+  hasHostname = args ? hostname;
+  pkgs = builtins.trace
+    "calling prefs ${if hasPkgs then "with" else "without"} argument pkgs, ${
+      if hasInputs then "with" else "without"
+    } argument inputs, ${
+      if hasHostname then
+        ("with argument hostname " + args.hostname)
+      else
+        "without argument hostname"
+    }" (args.pkgs or (builtins.throw
+      "Forcing pkgs in prefs.nix without given in the input parameter"));
 
   hostname = args.hostname or (let
     # LC_CTYPE=C tr -dc 'a-z' < /dev/urandom | head -c3 | tee /tmp/hostname
@@ -53,6 +52,23 @@ let
     (builtins.hashString "sha512" "hostname: ${hostname}");
 
   default = self: {
+    pkgsRelatedPrefs = {
+      helpers = import self.helpersPath { inherit pkgs; };
+      kernelPackages = pkgs.linuxPackages_latest;
+      rtl8188gu = (self.pkgsRelatedPrefs.kernelPackages.callPackage
+        ./hardware/rtl8188gu.nix { });
+      autosshServers = with pkgs.lib;
+        let
+          configFiles = [ "${self.home}/.ssh/config" ];
+          goodConfigFiles =
+            builtins.filter (x: builtins.pathExists x) configFiles;
+          lines =
+            builtins.foldl' (a: e: a ++ (splitString "\n" (readFile e))) [ ]
+            goodConfigFiles;
+          autosshLines = filter (x: hasPrefix "Host autossh" x) lines;
+          servers = map (x: removePrefix "Host " x) autosshLines;
+        in filter (x: x != "autossh") servers;
+    };
     isMinimalSystem = false;
     enableAarch64Cross = false;
     owner = "e";
@@ -64,7 +80,6 @@ let
     getNixConfig = path: ./. + "/${path}";
     getDotfile = path: ./../.. + "/${path}";
     helpersPath = self.getNixConfig "lib/mkHelpers.nix";
-    helpers = import self.helpersPath { inherit pkgs; };
     consoleFont = null;
     hostname = "hostname";
     hostId = "346b7a87";
@@ -284,16 +299,6 @@ let
     enableAutoUpgrade = true;
     autoUpgradeChannel = "https://nixos.org/channels/nixos-unstable";
     enableAutossh = true;
-    autosshServers = with pkgs.lib;
-      let
-        configFiles = [ "${self.home}/.ssh/config" ];
-        goodConfigFiles =
-          builtins.filter (x: builtins.pathExists x) configFiles;
-        lines = builtins.foldl' (a: e: a ++ (splitString "\n" (readFile e))) [ ]
-          goodConfigFiles;
-        autosshLines = filter (x: hasPrefix "Host autossh" x) lines;
-        servers = map (x: removePrefix "Host " x) autosshLines;
-      in filter (x: x != "autossh") servers;
     enableAutoLogin = true;
     enableLibInput = true;
     enableFprintAuth = false;
@@ -326,7 +331,6 @@ let
     extraModulePackages = [ ];
     kernelPatches = [ ];
     kernelParams = [ "boot.shell_on_fail" ];
-    kernelPackages = pkgs.linuxPackages_latest;
     kernelModules = [
       # For the sysctl net.bridge.bridge-nf-call-* options to work
       "br_netfilter"
@@ -384,10 +388,7 @@ let
   };
 
   hostSpecific = self: super:
-    let
-      rtl8188gu =
-        (self.kernelPackages.callPackage ./hardware/rtl8188gu.nix { });
-    in {
+    {
       inherit hostname hostId;
     } // (if hostname == "default" then {
       isMinimalSystem = true;
@@ -417,7 +418,10 @@ let
     else if hostname == "uzq" then {
       enableHidpi = true;
       # enableAnbox = true;
-      consoleFont = "${pkgs.terminus_font}/share/consolefonts/ter-g20n.psf.gz";
+      pkgsRelatedPrefs = super.pkgsRelatedPrefs // {
+        consoleFont =
+          "${pkgs.terminus_font}/share/consolefonts/ter-g20n.psf.gz";
+      };
       hostId = "80d17333";
       enableX2goServer = true;
       # kernelPatches = [{
@@ -443,13 +447,18 @@ let
       enableK3s = true;
       enableWireless = true;
       enableAcme = true;
-      extraModulePackages = [ rtl8188gu ];
-      consoleFont = "${pkgs.terminus_font}/share/consolefonts/ter-g20n.psf.gz";
+      pkgsRelatedPrefs = super.pkgsRelatedPrefs // {
+        extraModulePackages = [ super.pkgsRelatedPrefs.rtl8188gu ];
+        consoleFont =
+          "${pkgs.terminus_font}/share/consolefonts/ter-g20n.psf.gz";
+      };
       enableTraefik = true;
       enableAllOciContainers = true;
     } else if hostname == "jxt" then {
       hostId = "5ee92b8d";
-      extraModulePackages = [ rtl8188gu ];
+      pkgsRelatedPrefs = super.pkgsRelatedPrefs // {
+        extraModulePackages = [ super.pkgsRelatedPrefs.rtl8188gu ];
+      };
       enableHolePuncher = false;
       enableAutossh = false;
       enablePrinting = false;
@@ -483,7 +492,9 @@ let
       nixosSystem = "aarch64-linux";
       isMinimalSystem = true;
       hostId = "6fce2459";
-      kernelPackages = pkgs.linuxPackages_rpi4;
+      pkgsRelatedPrefs = super.pkgsRelatedPrefs // {
+        kernelPackages = pkgs.linuxPackages_rpi4;
+      };
       enableCodeServer = false;
       enableAcme = true;
       enableZerotierone = true;
@@ -500,6 +511,12 @@ let
   overrides = builtins.map (path: (import (builtins.toPath path)))
     (builtins.filter (x: builtins.pathExists x) prefFiles);
 
-  final = fix (builtins.foldl' (acc: override: extends override acc) default
-    ([ hostSpecific ] ++ overrides));
+  unevaluated = fix
+    (builtins.foldl' (acc: override: extends override acc) default
+      ([ hostSpecific ] ++ overrides));
+  pkgsRelatedPrefs = unevaluated.pkgsRelatedPrefs;
+  notPkgsRelatedPrefs =
+    let p = builtins.removeAttrs unevaluated [ "pkgsRelatedPrefs" ];
+    in builtins.deepSeq p p;
+  final = notPkgsRelatedPrefs // pkgsRelatedPrefs;
 in final
