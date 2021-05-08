@@ -45,19 +45,26 @@
 
       getHostPreference = hostname:
         let
-          old =
-            (import (getNixConfig "prefs.nix")) { inherit hostname inputs; };
+          old = ((import (getNixConfig "prefs.nix")) {
+            inherit hostname inputs;
+          }).pure;
         in old // { system = old.nixosSystem; };
 
       generateHostConfigurations = hostname: inputs:
-        import (getNixConfig "generate-nixos-configuration.nix") {
-          prefs = getHostPreference hostname;
-          inputs = inputs;
+        let
+          p = getHostPreference hostname;
+          pjson = builtins.toJSON (inputs.nixpkgs.lib.filterAttrsRecursive
+            (n: v: !builtins.elem (builtins.typeOf v) [ "lambda" ]) p);
+          prefs =
+            builtins.trace "mininal json configuration for host ${hostname}"
+            (builtins.trace pjson p);
+        in import (getNixConfig "generate-nixos-configuration.nix") {
+          inherit prefs inputs;
         };
     in {
       nixosConfigurations = builtins.foldl'
         (acc: hostname: acc // generateHostConfigurations hostname inputs) { }
-        ([ "default" ] ++ [ "ssg" "jxt" "shl" ]
-          ++ (builtins.attrNames (import (getNixConfig "fixed-systems.nix")).systems));
+        ([ "default" ] ++ [ "ssg" "jxt" "shl" ] ++ (builtins.attrNames
+          (import (getNixConfig "fixed-systems.nix")).systems));
     };
 }

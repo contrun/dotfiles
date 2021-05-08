@@ -519,4 +519,8 @@ let
     let p = builtins.removeAttrs unevaluated [ "pkgsRelatedPrefs" ];
     in builtins.deepSeq p p;
   final = notPkgsRelatedPrefs // pkgsRelatedPrefs;
-in final
+in {
+  pure = notPkgsRelatedPrefs;
+  pkgsRelated = pkgsRelatedPrefs;
+  all = final;
+}
