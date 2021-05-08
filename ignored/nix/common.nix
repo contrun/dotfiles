@@ -1821,6 +1821,14 @@ in {
         (prefs.buildZerotierone && !prefs.enableZerotierone) {
           # build zero tier one anyway, but enable it on prefs.enableZerotierone is true;
           "zerotierone" = { wantedBy = lib.mkForce [ ]; };
+        } // pkgs.lib.optionalAttrs (config.virtualisation.docker.enable) {
+          "docker" = {
+            serviceConfig = {
+              ExecStartPost = [
+                "${pkgs.procps}/bin/sysctl net.bridge.bridge-nf-call-iptables=0 net.bridge.bridge-nf-call-ip6tables=0 net.bridge.bridge-nf-call-arptables=0"
+              ];
+            };
+          };
         } // pkgs.lib.optionalAttrs (prefs.enableK3s) {
           "k3s" = let
             k3sPatchScript = pkgs.writeShellScript "add-k3s-config" ''
@@ -1829,7 +1837,12 @@ in {
             '';
           in {
             path = if prefs.enableZfs then [ pkgs.zfs ] else [ ];
-            serviceConfig = { ExecStartPost = [ "${k3sPatchScript}" ]; };
+            serviceConfig = {
+              ExecStartPost = [
+                "${k3sPatchScript}"
+                "${pkgs.procps}/bin/sysctl net.bridge.bridge-nf-call-iptables=0 net.bridge.bridge-nf-call-ip6tables=0 net.bridge.bridge-nf-call-arptables=0"
+              ];
+            };
           };
         } // pkgs.lib.optionalAttrs (prefs.enableCrio) {
           "crio" = {
