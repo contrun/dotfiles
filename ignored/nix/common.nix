@@ -191,10 +191,10 @@ in {
         nix-du
         nix-index
         nix-top
-        # gnome3.adwaita-icon-theme
-        # gnome3.dconf
-        # gnome3.gsettings-desktop-schemas
-        # gnome3.zenity
+        # gnome.adwaita-icon-theme
+        # gnome.dconf
+        # gnome.gsettings-desktop-schemas
+        # gnome.zenity
         # font-manager
         udiskie
         fzf
@@ -272,7 +272,7 @@ in {
         sxhkd
         mimeo
         libsecret
-        gnome3.seahorse
+        gnome.seahorse
         mlocate
         htop
         iotop
@@ -1142,7 +1142,7 @@ in {
     # accounts-daemon.enable = prefs.enableAccountsDaemon || prefs.enableFlatpak;
     flatpak.enable = prefs.enableFlatpak;
     thermald = { enable = prefs.enableThermald; };
-    gnome3 = { gnome-keyring.enable = prefs.enableGnomeKeyring; };
+    gnome = { gnome-keyring.enable = prefs.enableGnomeKeyring; };
 
     locate = {
       enable = prefs.enableLocate;
@@ -1382,7 +1382,7 @@ in {
         nowlocker = locker;
       };
       # desktopManager.xfce.enable = true;
-      desktopManager.gnome3.enable = prefs.enableGnome;
+      desktopManager.gnome.enable = prefs.enableGnome;
       # desktopManager.plasma5.enable = true;
       # desktopManager.xfce.enableXfwm = false;
       windowManager = {

@@ -171,4 +171,4 @@ jobs:
         if [[ '${{ matrix.nix-system }}' == 'x86_64-linux' ]]; then git push; fi
         git switch ${{ matrix.nix-system }}
         git rebase --onto @{-1}
-        git push origin ${{ matrix.nix-system }}:${{ matrix.nix-system }}
+        git push --force-with-lease origin ${{ matrix.nix-system }}:${{ matrix.nix-system }}
