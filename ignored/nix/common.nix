@@ -1584,16 +1584,15 @@ in {
               "aarch64-linux" = "docker.io/codercom/code-server:latest-rpi";
             };
           };
-          f = { environmentFiles ? [ ], enableTraefik ? true
-            , enableTraefikTls ? true, traefikForwardingPort ? 80
-            , entrypoints ? [ "web" "websecure" ], middlewares ? [ ]
-            , networkName ? prefs.ociContainerNetwork, ... }@args:
+          f = { enableTraefik ? true, enableTraefikTls ? true
+            , traefikForwardingPort ? 80, entrypoints ? [ "web" "websecure" ]
+            , middlewares ? [ ], networkName ? prefs.ociContainerNetwork, ...
+            }@args:
             args // {
               image =
                 args.image or (images."${name}"."${prefs.nixosSystem}" or (builtins.throw
                   "Image for ${name} on ${prefs.nixosSystem} not found"));
               extraOptions = (args.extraOptions or [ ])
-                ++ (builtins.map (x: "--env-file=" + x) environmentFiles)
                 ++ (if enableTraefik then
                   [
                     "--label=traefik.http.routers.${name}.service=${name}"
@@ -1617,7 +1616,6 @@ in {
             };
           getConfig = config:
             builtins.removeAttrs (f config) [
-              "environmentFiles"
               "enableTraefik"
               "enableTraefikTls"
               "traefikForwardingPort"
