@@ -931,9 +931,12 @@ in {
       '';
     };
     traefik = let
-      getRule = domainPrefix:
+      getRuleByPrefix = domainPrefix:
         lib.concatMapStringsSep " || " (domain: "Host(`${domain}`)")
         (prefs.getFullDomainNames domainPrefix);
+      getRule = domainPrefixes:
+        lib.concatMapStringsSep " || " getRuleByPrefix
+        (lib.splitString "," domainPrefixes);
     in {
       enable = prefs.enableTraefik;
       dynamicConfigOptions = {
@@ -951,6 +954,16 @@ in {
             keeweb = {
               rule = getRule "keeweb";
               service = "keeweb";
+              tls = { };
+            };
+            etesync-pim = {
+              rule = getRule "etesync-pim";
+              service = "etesync-pim";
+              tls = { };
+            };
+            etesync-notes = {
+              rule = getRule "etesync-notes";
+              service = "etesync-notes";
               tls = { };
             };
             clash = {
@@ -989,6 +1002,18 @@ in {
               loadBalancer = {
                 passHostHeader = false;
                 servers = [{ url = "https://app.keeweb.info/"; }];
+              };
+            };
+            etesync-pim = {
+              loadBalancer = {
+                passHostHeader = false;
+                servers = [{ url = "https://pim.etesync.com/"; }];
+              };
+            };
+            etesync-notes = {
+              loadBalancer = {
+                passHostHeader = false;
+                servers = [{ url = "https://notes.etesync.com/"; }];
               };
             };
             clash = {
@@ -1549,6 +1574,11 @@ in {
               "x86_64-linux" = image;
               "aarch64-linux" = image;
             };
+            "etesync" = let image = "docker.io/victorrds/etesync:latest";
+            in {
+              "x86_64-linux" = image;
+              "aarch64-linux" = image;
+            };
             "codeserver" = {
               "x86_64-linux" = "docker.io/codercom/code-server:latest";
               "aarch64-linux" = "docker.io/codercom/code-server:latest-rpi";
@@ -1694,6 +1724,11 @@ in {
             "GROCY_MODE" = "production";
           };
           traefikForwardingPort = 80;
+        } // mkContainer "etesync" prefs.ociContainers.enableEtesync {
+          volumes = [ "/var/data/etesync:/data" ];
+          dependsOn = [ "postgresql" ];
+          environmentFiles = [ "/run/secrets/etesync-env" ];
+          traefikForwardingPort = 3735;
         } // mkContainer "codeserver" prefs.ociContainers.enableCodeServer {
           volumes = [
             "${prefs.home}:/home/coder"
@@ -1943,11 +1978,11 @@ in {
         };
     };
 
-    oci-container-postgresql = let
+    oci-containers = let
       postgresqlUnitName = "${prefs.ociContainerBackend}-postgresql";
       postgresqlBackupUnitName = "backup-${postgresqlUnitName}";
-    in pkgs.lib.optionalAttrs (prefs.ociContainers.enablePostgresql) {
-      services = {
+    in {
+      services = pkgs.lib.optionalAttrs prefs.ociContainers.enablePostgresql {
         "${postgresqlUnitName}" = {
           postStart = ''
             set -xe
@@ -1996,8 +2031,15 @@ in {
             Restart = "on-failure";
           };
         };
+      } // pkgs.lib.optionalAttrs prefs.ociContainers.enableEtesync {
+        "${prefs.ociContainerBackend}-etesync" = {
+          preStart = builtins.concatStringsSep "\n" [
+            "${pkgs.coreutils}/bin/mkdir -p /var/data/etesync/media"
+            "${pkgs.coreutils}/bin/chown -vR 373:373 /var/data/etesync"
+          ];
+        };
       };
-      timers = {
+      timers = pkgs.lib.optionalAttrs prefs.ociContainers.enablePostgresql {
         "${postgresqlBackupUnitName}" = {
           enable = true;
           wantedBy = [ "default.target" ];
@@ -2117,7 +2159,7 @@ in {
       # myPackages
       myServices
       clash-redir
-      oci-container-postgresql
+      oci-containers
     ];
   in (builtins.foldl' (a: e: pkgs.lib.recursiveUpdate a e) { } all) // {
     user = let

@@ -322,6 +322,7 @@ let
       enableRecipes = self.enableAllOciContainers;
       enableWger = self.enableAllOciContainers
         && (self.nixosSystem == "x86_64-linux");
+      enableEtesync = self.enableAllOciContainers;
       enableN8n = self.enableAllOciContainers;
       enableGrocy = self.enableAllOciContainers;
     };

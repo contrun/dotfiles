@@ -82,6 +82,7 @@ let
         redis-conf = { mode = "0444"; };
         authelia-conf = { };
         authelia-users = { };
+        etesync-env = { };
         n8n-env = { };
         wallabag-env = { };
         recipes-env = { };
