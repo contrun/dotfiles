@@ -1530,13 +1530,13 @@ in {
               "x86_64-linux" = "docker.io/wallabag/wallabag:2.4.2";
               "aarch64-linux" = "docker.io/ugeek/wallabag:arm-2.4";
             };
-            "recipes" = let repo = "docker.io/vabene1111/recipes:latest";
+            "recipes" = let image = "docker.io/vabene1111/recipes:latest";
             in {
-              "x86_64-linux" = repo;
-              "aarch64-linux" = repo;
+              "x86_64-linux" = image;
+              "aarch64-linux" = image;
             };
-            "wger" = let repo = "docker.io/wger/apache:2.0-dev";
-            in { "x86_64-linux" = repo; };
+            "wger" = let image = "docker.io/wger/apache:2.0-dev";
+            in { "x86_64-linux" = image; };
             "cloudbeaver" = {
               "x86_64-linux" = "docker.io/dbeaver/cloudbeaver:latest";
             };
@@ -1544,10 +1544,10 @@ in {
               "x86_64-linux" = "docker.io/n8nio/n8n:latest";
               "aarch64-linux" = "docker.io/n8nio/n8n:latest-rpi";
             };
-            "grocy" = let repo = "docker.io/linuxserver/grocy:latest";
+            "grocy" = let image = "docker.io/linuxserver/grocy:latest";
             in {
-              "x86_64-linux" = repo;
-              "aarch64-linux" = repo;
+              "x86_64-linux" = image;
+              "aarch64-linux" = image;
             };
             "codeserver" = {
               "x86_64-linux" = "docker.io/codercom/code-server:latest";
@@ -1640,7 +1640,12 @@ in {
           middlewares = [ "authelia" ];
         } // mkContainer "searx" prefs.ociContainers.enableSearx {
           environment = {
+            # Generate a new searx configuration, otherwise searx will not auto use the generated config.
+            "SEARX_SETTINGS_PATH" = "/searx.settings.yml";
+            # Currently does not work, https://github.com/searxng/searxng/blob/332e3a2a09d6a708ea2c17d2e731335b051c45aa/dockerfiles/docker-entrypoint.sh#L71
+            # assumes the default instance name is searx, which is not true for searxng.
             "INSTANCE_NAME" = "searx@${prefs.domainPrefix}";
+            "AUTOCOMPLETE" = "duckduckgo";
             "BASE_URL" = "https://${prefs.getFullDomainName "searx"}";
           };
           volumes = [ "/var/data/searx:/etc/searx" ];
