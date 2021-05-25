@@ -61,10 +61,21 @@
         in import (getNixConfig "generate-nixos-configuration.nix") {
           inherit prefs inputs;
         };
+
+      out = system:
+        let
+          pkgs = import inputs.nixpkgs {
+            inherit system;
+            overlays = [ ];
+          };
+        in { };
+
     in {
+      getDotfile = path: ./. + "/${path}";
+
       nixosConfigurations = builtins.foldl'
         (acc: hostname: acc // generateHostConfigurations hostname inputs) { }
         ([ "default" ] ++ [ "ssg" "jxt" "shl" ] ++ (builtins.attrNames
           (import (getNixConfig "fixed-systems.nix")).systems));
-    };
+    } // (with inputs.flake-utils.lib; eachSystem defaultSystems out);
 }
