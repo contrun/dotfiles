@@ -83,6 +83,7 @@ let
         authelia-conf = { };
         authelia-users = { };
         etesync-env = { };
+        vaultwarden-env = { };
         n8n-env = { };
         wallabag-env = { };
         recipes-env = { };

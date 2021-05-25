@@ -326,6 +326,7 @@ let
       enableN8n = self.enableAllOciContainers;
       enableGrocy = self.enableAllOciContainers;
       enableHomer = self.enableAllOciContainers;
+      enableVaultwarden = self.enableAllOciContainers;
     };
     emulatedSystems =
       if (self.nixosSystem == "x86_64-linux") then [ "aarch64-linux" ] else [ ];

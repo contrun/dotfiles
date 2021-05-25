@@ -1580,6 +1580,11 @@ in {
               "x86_64-linux" = image;
               "aarch64-linux" = image;
             };
+            "vaultwarden" = let image = "docker.io/vaultwarden/server:latest";
+            in {
+              "x86_64-linux" = image;
+              "aarch64-linux" = image;
+            };
             "homer" = let image = "docker.io/b4bz/homer:latest";
             in {
               "x86_64-linux" = image;
@@ -1733,6 +1738,10 @@ in {
             "GROCY_MODE" = "production";
           };
           traefikForwardingPort = 80;
+        } // mkContainer "vaultwarden" prefs.ociContainers.enableVaultwarden {
+          volumes = [ "/var/data/vaultwarden:/data" ];
+          environmentFiles = [ "/run/secrets/vaultwarden-env" ];
+          traefikForwardingPort = 80;
         } // mkContainer "homer" prefs.ociContainers.enableHomer {
           volumes = [ "/var/data/homer:/www/assets" ];
           traefikForwardingPort = 8080;
@@ -1862,6 +1871,13 @@ in {
                       subtitle = "Traefik Dashboard";
                       tag = "operations";
                       url = "https://${prefs.getFullDomainName "traefik"}";
+                    }
+                    {
+                      enable = prefs.ociContainers.enableVaultwarden;
+                      name = "vaultwarden";
+                      subtitle = "Password Management";
+                      tag = "security";
+                      url = "https://${prefs.getFullDomainName "vaultwarden"}";
                     }
                     {
                       name = "Keeweb";
