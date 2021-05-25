@@ -858,6 +858,7 @@ let
         "lolcat"
         "copyq"
         "kpcli"
+        "bitwarden"
         "bitwarden-cli"
         "keepassxc"
         "mkpasswd"

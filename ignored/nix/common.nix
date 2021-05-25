@@ -1595,9 +1595,10 @@ in {
               "x86_64-linux" = image;
               "aarch64-linux" = image;
             };
-            "codeserver" = {
-              "x86_64-linux" = "docker.io/codercom/code-server:latest";
-              "aarch64-linux" = "docker.io/codercom/code-server:latest-rpi";
+            "codeserver" = let image = "docker.io/codercom/code-server:latest";
+            in {
+              "x86_64-linux" = image;
+              "aarch64-linux" = image;
             };
           };
           f = { enableTraefik ? true, enableTraefikTls ? true
