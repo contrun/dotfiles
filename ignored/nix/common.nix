@@ -19,6 +19,12 @@ let
       "${prefs.home}/.local/secrets/initrd/ssh_host_ed25519_key"
     ];
   };
+  toYAML = name: attrs:
+    pkgs.runCommandNoCC name {
+      preferLocalBuild = true;
+      json = builtins.toFile "${name}.json" (builtins.toJSON attrs);
+      nativeBuildInputs = [ pkgs.remarshal ];
+    } "json2yaml -i $json -o $out";
 in {
   imports =
     (builtins.filter (x: builtins.pathExists x) [ ./machine.nix ./cachix.nix ]);
@@ -1574,6 +1580,11 @@ in {
               "x86_64-linux" = image;
               "aarch64-linux" = image;
             };
+            "homer" = let image = "docker.io/b4bz/homer:latest";
+            in {
+              "x86_64-linux" = image;
+              "aarch64-linux" = image;
+            };
             "etesync" = let image = "docker.io/victorrds/etesync:latest";
             in {
               "x86_64-linux" = image;
@@ -1722,6 +1733,167 @@ in {
             "GROCY_MODE" = "production";
           };
           traefikForwardingPort = 80;
+        } // mkContainer "homer" prefs.ociContainers.enableHomer {
+          volumes = [ "/var/data/homer:/www/assets" ];
+          traefikForwardingPort = 8080;
+          extraOptions = let
+            config = toYAML "homer-config" {
+              subtitle = "Home";
+              title = "Dashboard";
+              theme = "default";
+              colors = {
+                dark = {
+                  background = "#131313";
+                  card-background = "#2b2b2b";
+                  card-shadow = "rgba(0, 0, 0, 0.4)";
+                  highlight-hover = "#5a95f5";
+                  highlight-primary = "#3367d6";
+                  highlight-secondary = "#4285f4";
+                  link-hover = "#ffdd57";
+                  text = "#eaeaea";
+                  text-header = "#ffffff";
+                  text-subtitle = "#f5f5f5";
+                  text-title = "#fafafa";
+                };
+                light = {
+                  background = "#f5f5f5";
+                  card-background = "#ffffff";
+                  card-shadow = "rgba(0, 0, 0, 0.1)";
+                  highlight-hover = "#5a95f5";
+                  highlight-primary = "#3367d6";
+                  highlight-secondary = "#4285f4";
+                  link-hover = "#363636";
+                  text = "#363636";
+                  text-header = "#ffffff";
+                  text-subtitle = "#424242";
+                  text-title = "#303030";
+                };
+              };
+              footer = false;
+              header = false;
+              icon = "fas fa-skull-crossbones";
+              links = [ ];
+              services = [{
+                name = "Applications";
+                icon = "fas fa-cloud";
+                items =
+                  builtins.map (attrs: builtins.removeAttrs attrs [ "enable" ])
+                  (builtins.filter (x: x.enable or true) [
+                    {
+                      enable = prefs.ociContainers.enableCloudBeaver;
+                      name = "Cloud Beaver";
+                      subtitle = "Database Management";
+                      tag = "database";
+                      url = "https://${prefs.getFullDomainName "cloudbeaver"}";
+                    }
+                    {
+                      enable = prefs.ociContainers.enableAuthelia;
+                      name = "Authelia";
+                      subtitle = "Authentication and Authorization";
+                      tag = "auth";
+                      url = "https://${prefs.getFullDomainName "authelia"}";
+                    }
+                    {
+                      enable = prefs.ociContainers.enableSearx;
+                      name = "Searx";
+                      subtitle = "self-hosted search engine";
+                      tag = "search";
+                      url = "https://${prefs.getFullDomainName "searx"}";
+                    }
+                    {
+                      enable = prefs.ociContainers.enableWallabag;
+                      name = "Wallabag";
+                      subtitle = "Read it later";
+                      tag = "reading";
+                      url = "https://${prefs.getFullDomainName "wallabag"}";
+                    }
+                    {
+                      enable = prefs.ociContainers.enableCodeServer;
+                      name = "CodeServer";
+                      subtitle = "VS Code Server";
+                      tag = "coding";
+                      url = "https://${prefs.getFullDomainName "codeserver"}";
+                    }
+                    {
+                      enable = prefs.ociContainers.enableRecipes;
+                      name = "Recipes";
+                      subtitle = "Cooking Recipes";
+                      tag = "house-keeping";
+                      url = "https://${prefs.getFullDomainName "recipes"}";
+                    }
+                    {
+                      enable = prefs.ociContainers.enableWger;
+                      name = "wger";
+                      subtitle = "Fitness tracking";
+                      tag = "fitness";
+                      url = "https://${prefs.getFullDomainName "wger"}";
+                    }
+                    {
+                      enable = prefs.ociContainers.enableEtesync;
+                      name = "etesync";
+                      subtitle = "Calandar and Tasks";
+                      tag = "productivity";
+                      url = "https://${prefs.getFullDomainName "etesync-pim"}";
+                    }
+                    {
+                      enable = prefs.ociContainers.enableEtesync;
+                      name = "etesync notes";
+                      subtitle = "Notes";
+                      tag = "productivity";
+                      url =
+                        "https://${prefs.getFullDomainName "etesync-notes"}";
+                    }
+                    {
+                      enable = prefs.ociContainers.enableN8n;
+                      name = "n8n";
+                      subtitle = "Workflow Automation";
+                      tag = "productivity";
+                      url = "https://${prefs.getFullDomainName "n8n"}";
+                    }
+                    {
+                      enable = prefs.ociContainers.enableGrocy;
+                      name = "grocy";
+                      subtitle = "ERP for Household";
+                      tag = "house-keeping";
+                      url = "https://${prefs.getFullDomainName "grocy"}";
+                    }
+                    {
+                      name = "Traefik";
+                      subtitle = "Traefik Dashboard";
+                      tag = "operations";
+                      url = "https://${prefs.getFullDomainName "traefik"}";
+                    }
+                    {
+                      name = "Keeweb";
+                      subtitle = "Password Management";
+                      tag = "security";
+                      url = "https://${prefs.getFullDomainName "keeweb"}";
+                    }
+                    {
+                      name = "clash";
+                      subtitle = "Local Clash Instance Management";
+                      tag = "network";
+                      url = "https://${prefs.getFullDomainName "clash"}";
+                    }
+                    {
+                      name = "aria2";
+                      subtitle = "Download Management";
+                      tag = "network";
+                      url = "https://${prefs.getFullDomainName "aria2"}";
+                    }
+                    {
+                      name = "organice";
+                      subtitle = "Org-mode Files Editing";
+                      tag = "productivity";
+                      url = "https://${prefs.getFullDomainName "organice"}";
+                    }
+                  ]);
+              }];
+            };
+          in [
+            "--mount=type=bind,source=${config},target=/www/assets/config.yml"
+            "--label=domainprefix=home"
+          ];
         } // mkContainer "etesync" prefs.ociContainers.enableEtesync {
           volumes = [ "/var/data/etesync:/data" ];
           dependsOn = [ "postgresql" ];
