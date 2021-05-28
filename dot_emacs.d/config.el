@@ -1651,8 +1651,11 @@ With arg N, insert N newlines."
           )
   )
 
-(use-package lsp-python-ms
-  :init (setq lsp-python-ms-executable (executable-find "python-language-server")))
+(use-package lsp-pyright
+  :hook (python-mode . (lambda ()
+                         (require 'lsp-pyright)
+                         (lsp))))
+(use-package lsp-python-ms)
 (use-package lsp-metals)
 (use-package lsp-java)
 (use-package caml)
@@ -2594,6 +2597,28 @@ With arg N, insert N newlines."
                ("s-r t" . org-roam-tag-add)
                ("s-r i" . org-roam-insert)
                ("s-r I" . org-roam-insert-immediate))))
+
+(use-package org-roam-server)
+
+(use-package nroam
+  :straight '(nroam
+              :host github
+              :branch "master"
+              :repo "NicolasPetton/nroam")
+  :after org-roam
+  :config
+  (add-hook 'org-mode-hook #'nroam-setup-maybe))
+
+(use-package org-marginalia
+  :straight '(org-marginalia
+              :host github
+              :repo "nobiot/org-marginalia"))
+
+(use-package org-similarity
+  :straight '(org-similarity
+              :type git
+              :host github
+              :repo "brunoarine/org-similarity"))
 
 (use-package org-rich-yank
   :bind (:map org-mode-map
