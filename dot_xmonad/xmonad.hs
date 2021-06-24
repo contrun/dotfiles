@@ -21,6 +21,7 @@ import Data.Tuple.Curry
 import Debug.Trace
 import System.Environment
 import System.Exit
+import System.IO.Unsafe (unsafePerformIO)
 import System.Process (showCommandForUser)
 import Text.Regex.Posix ((=~))
 import XMonad
@@ -62,7 +63,7 @@ import XMonad.Util.XUtils (hideWindows)
 -- The preferred terminal program, which is used in a binding below and by
 -- certain contrib modules.
 --
-myTerminal = "alacritty"
+myTerminal = fromMaybe "alacritty" $ unsafePerformIO $ lookupEnv "MYTERMINAL"
 
 -- myTerminal      = "termite -e ~/.bin/tmux.sh"
 
@@ -405,7 +406,7 @@ myAddtionalKeys =
              (myMod "C-e", (windows . W.shift) "editor"),
              (myMod "d", toggleWindowOrRunInHiddenWorkspace "docs" "zeal" (className =? "Zeal")),
              (myMod "C-d", (windows . W.shift) "docs"),
-             (myMod "q", runInHiddenWorkspaceIfEmpty "quick" "alacritty --class 'QuickTerminal' -e tmux new 'exec zsh'"),
+             (myMod "q", runInHiddenWorkspaceIfEmpty "quick" myTerminal),
              (myMod "C-q", (windows . W.shift) "quick"),
              (myMod "z", toggleOrViewHiddenWorkspace' "zstash"),
              (myMod "C-z", (windows . W.shift) "zstash"),
@@ -540,7 +541,10 @@ runInHiddenWorkspaceIfEmpty tag command =
   whenX (toggleOrViewHiddenWorkspace tag) (whenX (withWindowSet (return . null . windowsInCurrentWorkspace)) (spawn command))
 
 myGetTerminalCommand :: Maybe String -> Maybe String -> [String] -> (String, [String])
-myGetTerminalCommand title cls command = ("alacritty", maybe [] (\x -> ["--title", x]) title ++ maybe [] (\x -> ["--class", x]) cls ++ (if null command then [] else "-e" : command))
+myGetTerminalCommand title cls command = case myTerminal of
+  "alacritty" -> ("alacritty", maybe [] (\x -> ["--title", x]) title ++ maybe [] (\x -> ["--class", x]) cls ++ (if null command then [] else "-e" : command))
+  "urxvtc" -> ("urxvtc", maybe [] (\x -> ["-title", x]) title ++ maybe [] (\x -> ["-class", x]) cls ++ (if null command then [] else "-e" : command))
+  x -> error $ "unsupported terminal " ++ x
 
 myGetTerminalCommandString :: Maybe String -> Maybe String -> [String] -> String
 myGetTerminalCommandString title cls command = uncurry showCommandForUser $ myGetTerminalCommand title cls command

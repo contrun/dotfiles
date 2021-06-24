@@ -137,8 +137,7 @@ gi() {
 
 test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
 
-zlua="$(lua ~/.z.lua/z.lua --init zsh)"
-[[ $? == "0" ]] && eval eval "$zlua"
+ccommand -v zoxide >/dev/null && eval "$(zoxide init zsh)"
 
 [[ -f ~/.config/broot/launcher/bash/br ]] && . ~/.config/broot/launcher/bash/br
 
