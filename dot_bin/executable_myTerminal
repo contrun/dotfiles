@@ -4,11 +4,11 @@ MYSHELL=${MYSHELL:-zsh}
 MYTERMINAL=${MYTERMINAL:-alacritty}
 case "$MYTERMINAL" in
     termite)
-        setsid "$MYTERMINAL" -e "tmux new \"$@; exec $MYSHELL\"" &
+        setsid "$MYTERMINAL" -e "tmux new \"$*; exec $MYSHELL\"" &
         ;;
-    urxvt)
+    urxvt|urxvtc)
         startup() {
-            urxvtc -e sh -c "tmux new \"$@; exec $MYSHELL\""
+            urxvtc -e sh -c "tmux new \"$*; exec $MYSHELL\""
         }
         startup "$@"
         if [ $? -eq 2 ]; then
@@ -17,7 +17,7 @@ case "$MYTERMINAL" in
         fi
         ;;
     alacritty)
-        setsid "$MYTERMINAL" -e tmux new "$@; exec $MYSHELL" &
+        setsid "$MYTERMINAL" -e tmux new "$*; exec $MYSHELL" &
         ;;
     *)
         echo "$MYTERMINAL is not supported"
