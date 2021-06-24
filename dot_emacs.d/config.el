@@ -98,7 +98,9 @@
         "\\." ""
         (replace-regexp-in-string
          "&" " and "
-         (downcase str)))))))
+         (replace-regexp-in-string
+          "[\(\)\[\]\{\}]" ""
+          (downcase str))))))))
   )
 
 
