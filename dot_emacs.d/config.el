@@ -586,11 +586,11 @@ This is useful when followed by an immediate kill."
 
 (use-package woman)
 
-(use-package info+
-  :straight (info+ :type git :host github :repo "emacsmirror/info-plus")
-  :init (with-eval-after-load 'info
-          (require 'info+))
-  :defer t)
+;; (use-package info+
+;;   :straight (info+ :type git :host github :repo "emacsmirror/info-plus")
+;;   :init (with-eval-after-load 'info
+;;           (require 'info+))
+;;   :defer t)
 
 (use-package helm-dash
   :hook
