@@ -125,9 +125,7 @@ Config
             "--off-icon-pattern",
             "<fn=1>\xf1e6</fn>",
             "--on-icon-pattern",
-            "<fn=1>\xf1e6</fn>",
-            "-a",
-            "notify-send -u critical 'Battery running out!!'"
+            "<fn=1>\xf1e6</fn>"
           ]
           10,
         Run Date "<fn=1>\xf017</fn>%a %b %d %H:%M:%S" "date" 10,

@@ -99,7 +99,7 @@
         (replace-regexp-in-string
          "&" " and "
          (replace-regexp-in-string
-          "[\(\)\[\]\{\}]" ""
+          "[\(\)]" ""
           (downcase str))))))))
   )
 
