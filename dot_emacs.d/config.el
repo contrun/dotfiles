@@ -4262,6 +4262,21 @@ With arg N, insert N newlines."
   ;; (run-with-timer 0 60 'gjstein-refresh-mu4e-alert-mode-line)
   )
 
+(use-package emacsql)
+
+(use-package emacsql-sqlite)
+
+(use-package emacsql-sqlite3)
+
+(use-package emacsql-mysql)
+
+(use-package emacsql-psql)
+
+(use-package wallabag
+  :straight (:host github :repo "chenyanming/wallabag.el" :files ("*.el" "*.alist" "*.css"))
+  :config
+  (setq wallabag-db-file (expand-file-name ".cache/wallabag.sqlite" my/emacs-d)))
+
 (use-package elfeed
   :bind
   (:map elfeed-search-mode-map

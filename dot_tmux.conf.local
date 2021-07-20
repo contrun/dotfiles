@@ -10,7 +10,7 @@ set -g history-limit 10000
 set-option -s set-clipboard off
 bind-key -n S-F5 copy-mode -u
 
-set-clipboard on
+# set-clipboard on
 set-option -g mouse on
 
 # bind-key -T copy-mode C-@ send-keys -X begin-selection
