@@ -4113,6 +4113,8 @@ With arg N, insert N newlines."
 (use-package matrix-client
   :straight (matrix-client :type git :host github :repo "alphapapa/matrix-client.el"))
 
+(use-package iscroll)
+
 (use-package nov
   :init
   :mode ("\\.epub\\'" . nov-mode )
