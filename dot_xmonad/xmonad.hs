@@ -568,7 +568,8 @@ myScratchpadTuples =
     centerFloating = customFloating $ W.RationalRect (1 / 6) (1 / 6) (2 / 3) (2 / 3)
     runTerminal name command windowTitle =
       let t = fromMaybe (unwords ["scratchpad", name]) windowTitle
-       in (name, myGetTerminalCommandString (Just t) Nothing command, title =? t, centerFloating)
+       in -- Use "WM_ICON_NAME" here as applications may change "WM_NAME"
+          (name, myGetTerminalCommandString (Just t) Nothing command, stringProperty "WM_ICON_NAME" =? t, centerFloating)
     runFzfLaunch name = runTerminal (unwords [name, "fzf"]) ["fo.sh", name] $ Just $ unwords ["scratchpad", name, "fzf"]
 
 myScratchpads = map (uncurryN NS) myScratchpadTuples
