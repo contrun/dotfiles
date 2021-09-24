@@ -1,4 +1,7 @@
+{-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE TypeSynonymInstances #-}
 
 --
 -- xmonad example config file.
@@ -45,6 +48,10 @@ import XMonad.Layout.Column
 import XMonad.Layout.Grid
 import XMonad.Layout.Hidden
 import XMonad.Layout.IndependentScreens
+import XMonad.Layout.LayoutModifier
+import XMonad.Layout.MultiToggle
+import XMonad.Layout.MultiToggle.Instances
+import XMonad.Layout.ResizeScreen
 import XMonad.Layout.ThreeColumns
 import XMonad.Prompt
 import XMonad.Prompt.FuzzyMatch (fuzzyMatch, fuzzySort)
@@ -170,6 +177,7 @@ myKeys conf@XConfig {XMonad.modMask = modm} =
       ((modm .|. controlMask, xK_l), sendMessage Shrink),
       -- Expand the master area
       ((modm, xK_l), sendMessage Expand),
+      ((modm, xK_y), sendMessage (Toggle Center)),
       -- Push window back into tiling
       ((modm, xK_t), withFocused $ windows . W.sink),
       -- Increment the number of windows in the master area
@@ -438,7 +446,7 @@ myAddtionalKeys =
         ++ [ (launcherMode1 "e", spawn "emacsclientmod"),
              (launcherMode1 "d", toggleWindowOrRunInHiddenWorkspace "docs" "zeal" (className =? "Zeal")),
              (launcherMode1 "g", spawn "goldendict"),
-             (launcherMode1 "b", runOrRaiseInHiddenWorkspace "web" "firefox" ((className =? "Nightly") <&&> (not <$> (title =? "Picture-in-Picture")))),
+             (launcherMode1 "b", runOrRaiseInHiddenWorkspace "web" "firefox" ((className =? "Nightly") <&&> (not <$> (stringProperty "WM_WINDOW_ROLE" =? "PictureInPicture")))),
              (launcherMode1 "r", runOrRaiseInHiddenWorkspace "reading" "koreader" (fmap (=~ ".*KOReader$") title)),
              (launcherMode1 "f", spawn "doublecmd"),
              (launcherMode1 "z", spawn "zotero"),
@@ -490,7 +498,7 @@ myAddtionalKeys =
 -- The available layouts.  Note that each layout is separated by |||,
 -- which denotes layout choice.
 --
-myLayout = hiddenWindows (tiled ||| Mirror tiled ||| Full ||| Column 1.6 ||| ThreeColMid 1 (3 / 100) (1 / 2))
+myLayout = hiddenWindows $ mkToggle (single Center) (tiled ||| Mirror tiled ||| Full ||| Column 1.6 ||| ThreeColMid 1 (3 / 100) (1 / 2))
   where
     -- default tiling algorithm partitions the screen into two panes
     tiled = Tall nmaster delta ratio
@@ -500,6 +508,22 @@ myLayout = hiddenWindows (tiled ||| Mirror tiled ||| Full ||| Column 1.6 ||| Thr
     ratio = 1 / 2
     -- Percent of screen to increment by when resizing panes
     delta = 3 / 100
+
+--  Copied from https://github.com/jb55/dotfiles/blob/a310aa67175d152e7ecc6c0dc010215809b972c7/.xmonad/xmonad.hs
+data Center = Center deriving (Show, Read, Eq, Typeable)
+
+orig (ModifiedLayout _ o) = o
+
+modi (ModifiedLayout mod _) = mod
+
+instance Transformer Center Window where
+  transform Center x k = k (centered x) (orig . orig . orig . orig)
+
+  -- TODO: this should be a ratio based off current screen width
+  centered =
+    let horizontalGap = 250
+        verticalGap = 100
+     in resizeHorizontal horizontalGap . resizeHorizontalRight horizontalGap . resizeVertical verticalGap . resizeVerticalBottom verticalGap
 
 viewHiddenWorkspace :: String -> X ()
 viewHiddenWorkspace tag = whenX (withWindowSet $ return . (tag /=) . W.currentTag) (addHiddenWorkspace tag >> windows (W.view tag))
@@ -612,7 +636,7 @@ myManageHook =
           (className =? "discord") --> doShiftHiddenWorkspace "chat",
           (className =? "zoom") --> doShiftHiddenWorkspace "chat",
           (className =? "telegram-desktop") --> doShiftHiddenWorkspace "chat",
-          (title =? "Picture-in-Picture") --> doShiftAndViewHiddenWorkspace "video",
+          (stringProperty "WM_WINDOW_ROLE" =? "PictureInPicture") --> doShiftAndViewHiddenWorkspace "video",
           (className =? "mpv") --> doShiftAndViewHiddenWorkspace "video",
           (className =? "vlc") --> doShiftAndViewHiddenWorkspace "video" <+> doHide,
           (className =? "Kodi") --> doShiftAndViewHiddenWorkspace "video",
