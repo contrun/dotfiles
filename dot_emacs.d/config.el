@@ -2585,20 +2585,21 @@ With arg N, insert N newlines."
 (use-package org-roam
   :init
   (require 'org-roam-protocol)
+  (setq org-roam-v2-ack t)
   :hook
-  (after-init . org-roam-mode)
+  (after-init . org-roam-db-autosync-mode)
   :config
   (setq-default org-download-image-dir (expand-file-name "assets/images" org-roam-directory))
   (setq-default org-download-heading-lvl nil)
   :custom
   (org-roam-directory (expand-file-name "roam/org" org-directory))
-  :bind (:map org-roam-mode-map
-              (("s-r r" . org-roam)
-               ("s-r f" . org-roam-find-file)
-               ("s-r g" . org-roam-graph)
-               ("s-r t" . org-roam-tag-add)
-               ("s-r i" . org-roam-insert)
-               ("s-r I" . org-roam-insert-immediate))))
+  :bind (("s-r r" . org-roam-node-find)
+         ("s-r c" . org-roam-capture)
+         ("s-r b" . org-roam-buffer-toggle)
+         ("s-r g" . org-roam-graph)
+         ("s-r t" . org-roam-tag-add)
+         ("s-r i" . org-roam-insert)
+         ("s-r I" . org-roam-insert-immediate)))
 
 (use-package org-roam-server)
 
@@ -3182,6 +3183,15 @@ With arg N, insert N newlines."
   ("s-a _" .  'wrap-with-underscores)
   ("s-a `" .  'wrap-with-back-quotes)
   )
+
+(use-package wrap-region
+  :config
+  (wrap-region-global-mode t)
+  (wrap-region-add-wrapper "~" "~" nil 'org-mode)  ; code
+  (wrap-region-add-wrapper "*" "*" nil 'org-mode)  ; bold
+  (wrap-region-add-wrapper "/" "/" nil 'org-mode)  ; italic
+  (wrap-region-add-wrapper "+" "+" nil 'org-mode)  ; strikethrough
+  (wrap-region-add-wrapper "=" "=" nil 'org-mode)) ; verbatim
 
 (use-package yasnippet
   :init
