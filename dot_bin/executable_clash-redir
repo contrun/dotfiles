@@ -11,7 +11,7 @@ CLASH_DIR="/etc/clash-redir"
 CLASH_DEFAULT_CONFIG_FILE=config.yaml
 CLASH_CONFIG="$CLASH_DIR/$CLASH_DEFAULT_CONFIG_FILE"
 CLASH_USER="clash"
-CLASH_UID=
+NOPROXY_GROUP=noproxy
 CLASH_DNS_LISTENING_PORT=
 CLASH_REDIRECT_PORT=
 CLASH_TPROXY_PORT=
@@ -62,7 +62,6 @@ parse_config() {
 run_clash() {
     useradd --system --no-create-home "$CLASH_USER" >/dev/null 2>&1 || true
     install -d -m 0777 -o clash "$CLASH_DIR"
-    CLASH_UID="$(id -u "$CLASH_USER")"
     capsh --user="$CLASH_USER" --caps='cap_net_admin+eip cap_setpcap,cap_setuid,cap_setgid+ep' --addamb=cap_net_admin -- -c "echo \$\$ > $PID_FILE; exec $(realpath "$(command -v clash)") -d $CLASH_DIR -f $CLASH_CONFIG >> $LOG_FILE" &
 }
 
@@ -110,7 +109,8 @@ setup_dns_iptables() {
     iptables -t nat -N CLASH_DNS_LOCAL
     iptables -t nat -A CLASH_DNS_LOCAL -p udp ! --dport 53 -j RETURN
     iptables -t nat -A CLASH_DNS_LOCAL -p udp -d 127.0.0.0/8 -j RETURN
-    iptables -t nat -A CLASH_DNS_LOCAL -m owner --uid-owner "$CLASH_UID" -j RETURN
+    iptables -t nat -A CLASH_DNS_LOCAL -m owner --uid-owner "$CLASH_USER" -j RETURN
+    iptables -t nat -A CLASH_DNS_LOCAL -m owner --gid-owner "$NOPROXY_GROUP" --suppl-groups -j RETURN || true
     iptables -t nat -A CLASH_DNS_LOCAL -p udp --dport 53 -j REDIRECT --to-ports "$CLASH_DNS_LISTENING_PORT"
     iptables -t nat -I OUTPUT -p udp -j CLASH_DNS_LOCAL
 
@@ -129,7 +129,8 @@ do_setup_iptables_tproxy() {
     ip route replace local 0.0.0.0/0 dev lo table "$CLASH_TABLE"
 
     iptables -t mangle -N CLASH_LOCAL
-    iptables -t mangle -I CLASH_LOCAL -m owner --uid-owner "$CLASH_UID" -j RETURN
+    iptables -t mangle -I CLASH_LOCAL -m owner --uid-owner "$CLASH_USER" -j RETURN
+    iptables -t mangle -I CLASH_LOCAL -m owner --gid-owner "$NOPROXY_GROUP" --suppl-groups -j RETURN || true
     iptables -t mangle -A CLASH_LOCAL -d 0.0.0.0/8 -j RETURN
     iptables -t mangle -A CLASH_LOCAL -d 127.0.0.0/8 -j RETURN
     iptables -t mangle -A CLASH_LOCAL -d 224.0.0.0/4 -j RETURN
@@ -166,7 +167,8 @@ do_setup_iptables_redirect() {
     setup_dns_iptables
 
     iptables -t nat -N CLASH_LOCAL
-    iptables -t nat -A CLASH_LOCAL -m owner --uid-owner "$CLASH_UID" -j RETURN
+    iptables -t nat -A CLASH_LOCAL -m owner --uid-owner "$CLASH_USER" -j RETURN
+    iptables -t nat -A CLASH_LOCAL -m owner --gid-owner "$NOPROXY_GROUP" --suppl-groups -j RETURN || true
     iptables -t nat -A CLASH_LOCAL -d 0.0.0.0/8 -j RETURN
     iptables -t nat -A CLASH_LOCAL -d 127.0.0.0/8 -j RETURN
     iptables -t nat -A CLASH_LOCAL -d 224.0.0.0/4 -j RETURN
