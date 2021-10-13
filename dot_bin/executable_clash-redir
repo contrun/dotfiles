@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -eu
+set -euo pipefail
 
 if [[ $EUID -ne 0 ]]; then
     exec sudo --preserve-env=DONT_TOUCH_IPTABLES /usr/bin/env bash "$0" "$@"
@@ -28,8 +28,12 @@ make_link() {
 }
 
 switch_to() {
+    local clash_api_listening_port=9090
+    if port="$(awk '/external-controller/ {print $2}' "$CLASH_CONFIG" | xargs | awk -F: '{print $2}' | xargs)"; then
+        clash_api_listening_port="$port"
+    fi
     make_link "$@"
-    if ! curl -X PUT -H 'content-type: application/json' -d "{\"path\": \"$CLASH_CONFIG\"}" 'http://localhost:9090/configs/'; then
+    if ! curl -X PUT -H 'content-type: application/json' -d "{\"path\": \"$CLASH_CONFIG\"}" "http://127.0.0.1:${clash_api_listening_port}/configs/"; then
         restart "$@"
     fi
 }
@@ -228,6 +232,10 @@ restart() {
     start "$@"
 }
 
+reload() {
+    switch_to "$@"
+}
+
 usage() {
     echo "$0 start|stop|restart|setup_iptables|cleanup_iptables"
     exit
@@ -239,7 +247,7 @@ fi
 
 action="$1"
 case "$action" in
-start | stop | switch_to | restart  | setup_iptables | cleanup_iptables)
+start | stop | restart | reload | switch_to | setup_iptables | cleanup_iptables)
     shift
     "$action" "$@"
     ;;
