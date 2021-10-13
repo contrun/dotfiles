@@ -24,7 +24,11 @@
         "node1": "linux",
         "node2": "linux",
         "node3": "linux",
-        "cef4": "linux"
+        "cef4": "linux",
+        "default": "linux",
+        "karl": "linux",
+        "cros": "linux",
+        "bzr": "linux"
     },
     "editor.multiCursorModifier": "alt",
     "editor.wordWrap": "on",
@@ -39,7 +43,7 @@
     "terminal.integrated.commandsToSkipShell": [
         "language-julia.interrupt"
     ],
-    "clangd.path": "/home/by/.config/Code/User/globalStorage/llvm-vs-code-extensions.vscode-clangd/install/11.0.0/clangd_11.0.0/bin/clangd",
+    "clangd.path": "/home/e/.config/Code/User/globalStorage/llvm-vs-code-extensions.vscode-clangd/install/11.0.0/clangd_11.0.0/bin/clangd",
     "cmake.configureOnOpen": true,
     "clangd.onConfigChanged": "restart",
     "[cpp]": {
@@ -51,5 +55,16 @@
         "**/.ammonite": true
     },
     "python.languageServer": "Pylance",
-    "lldb.verboseLogging": true
+    "lldb.verboseLogging": true,
+    "C_Cpp.updateChannel": "Insiders",
+    "workbench.editorAssociations": {
+        "*.ipynb": "jupyter.notebook.ipynb"
+    },
+    "java.imports.gradle.wrapper.checksums": [
+      {
+        "sha256": "ee3739525a995bcb5601621a6e2daec1f183bbefc375743acc235cec33547e04",
+        "allowed": true
+      }
+    ],
+    "window.zoomLevel": 1
 }
