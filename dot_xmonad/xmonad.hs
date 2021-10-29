@@ -518,12 +518,12 @@ modi (ModifiedLayout mod _) = mod
 
 instance Transformer Center Window where
   transform Center x k = k (centered x) (orig . orig . orig . orig)
-
-  -- TODO: this should be a ratio based off current screen width
-  centered =
-    let horizontalGap = 250
-        verticalGap = 100
-     in resizeHorizontal horizontalGap . resizeHorizontalRight horizontalGap . resizeVertical verticalGap . resizeVerticalBottom verticalGap
+    where
+      centered =
+        -- TODO: this should be a ratio based off current screen width
+        let horizontalGap = 160
+            verticalGap = 120
+         in resizeHorizontal horizontalGap . resizeHorizontalRight horizontalGap . resizeVertical verticalGap . resizeVerticalBottom verticalGap
 
 viewHiddenWorkspace :: String -> X ()
 viewHiddenWorkspace tag = whenX (withWindowSet $ return . (tag /=) . W.currentTag) (addHiddenWorkspace tag >> windows (W.view tag))
