@@ -101,9 +101,9 @@ myBorderWidth = 1
 -- ("right alt"), which does not conflict with emacs keybindings. The
 -- "windows key" is usually mod4Mask.
 --
-myModMask = mod3Mask
+myModMask = mod4Mask .|. mod1Mask
 
-myModMaskStr = "M3"
+myModMaskStr = "M4-M1"
 
 -- The default number of workspaces (virtual screens) and their names.
 -- By default we use numeric strings, but any string may be used as a

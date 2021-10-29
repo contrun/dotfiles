@@ -3,7 +3,9 @@
 set $TERMINAL termonad
 
 # setting mod3=hyper mod4=super
-set $mod mod3
+# set $mod mod3
+set $mod mod1+mod4
+set $altmod $mod+Control
 set $mod2 mod4
 
 # https://i3wm.org/docs/userguide.html#_focus_wrapping
@@ -34,7 +36,7 @@ font pango:Source Code Pro 10
 focus_follows_mouse no
 
 # Use Mouse+$mod to drag floating windows to their wanted position
-floating_modifier $mod
+floating_modifier mod4
 
 # http://build.i3wm.org/docs/userguide.html#focus_on_window_activation
 focus_on_window_activation smart
@@ -92,8 +94,8 @@ bindsym $mod+n exec i3-msg workspace number "$(($(i3-msg -t get_workspaces | jq 
 bindsym $mod+Control+n exec i3-msg move container to workspace number "$(($(i3-msg -t get_workspaces | jq '.[].num' | sort -rn | head -n1) + 1))"
 bindsym $mod+Shift+bracketright exec i3-msg workspace number "$(i3-msg -t get_workspaces | jq '.[].num' | sort -n | tail -n1)"
 bindsym $mod+Shift+bracketleft exec i3-msg workspace number "$(i3-msg -t get_workspaces | jq '.[].num' | sort -rn | tail -n1)"
-bindsym $mod+Mod1+bracketright exec i3-msg move container to workspace number "$(i3-msg -t get_workspaces | jq '.[].num' | sort -n | tail -n1)"
-bindsym $mod+Mod1+bracketleft exec i3-msg move container to workspace number "$(i3-msg -t get_workspaces | jq '.[].num' | sort -rn | tail -n1)"
+bindsym $altmod+bracketright exec i3-msg move container to workspace number "$(i3-msg -t get_workspaces | jq '.[].num' | sort -n | tail -n1)"
+bindsym $altmod+bracketleft exec i3-msg move container to workspace number "$(i3-msg -t get_workspaces | jq '.[].num' | sort -rn | tail -n1)"
 
 # flash focused window
 # bindsym $mod+w exec flash_window
