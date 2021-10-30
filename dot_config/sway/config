@@ -12,7 +12,11 @@ set $mod2 mod4
 focus_wrapping yes
 
 # default workspace layout
-workspace_layout tabbed
+workspace_layout default
+
+default_border pixel
+
+default_floating_border none
 
 # Assume you are on workspace "1: www" and switch to "2: IM" using mod+2
 # because somebody sent you a message. You don’t need to remember
@@ -60,15 +64,23 @@ bindsym $mod+Left focus left
 bindsym $mod+Down focus down
 bindsym $mod+Up focus up
 bindsym $mod+Right focus right
+bindsym $mod+Shift+Left focus output left
+bindsym $mod+Shift+Down focus output down
+bindsym $mod+Shift+Up focus output up
+bindsym $mod+Shift+Right focus output right
 # changeFocusLeft.sh will do (windmove-left) if the focused window is emacs
-bindsym $mod+j focus prev
-bindsym $mod+k focus next
+bindsym $mod+j focus prev sibling
+bindsym $mod+k focus next sibling
 
 # move focused window
 bindsym $altmod+Left move left
 bindsym $altmod+Down move down
 bindsym $altmod+Up move up
 bindsym $altmod+Right move right
+bindsym $altmod+Shift+Left move output left
+bindsym $altmod+Shift+Down move output down
+bindsym $altmod+Shift+Up move output up
+bindsym $altmod+Shift+Right move output right
 
 # move workspace
 bindsym $mod+grave workspace number 0
@@ -263,7 +275,7 @@ mode "resize_precise" {
 # https://faq.i3wm.org/question/2787/move-floating-window-with-arrows/
 
 mode "move_window" {
-    bindsym Up move up 16px
+        bindsym Up move up 16px
         bindsym Left move left 16px
         bindsym Down move down 16px
         bindsym Right move right 16px
@@ -276,7 +288,7 @@ mode "move_window" {
 mode "mouse" {
 # set your three speeds here
 
-    set $slow 1
+        set $slow 1
         set $quick 10
         set $fast 50
 
@@ -363,17 +375,17 @@ mode "mouse" {
 
 # this serves as the exhaustive collection of things one can do with workspaces
 mode "workspace" {
-    bindsym Left   workspace prev_on_output
+        bindsym Left   workspace prev_on_output
         bindsym Right  workspace next_on_ouput
         bindsym Down   workspace prev
         bindsym Up     workspace next
 
         bindsym Tab    layout toggle all
 
-        bindsym r      exec i3-input -F 'rename workspace to "%s"' -P 'New name: '
+        bindsym r      mode "default"; exec i3-input -F 'rename workspace to "%s"' -P 'New name: '
 
         bindsym comma    move workspace to output left
-        bindsym period    move workspace to output right
+        bindsym period   move workspace to output right
 
 # back to normal: Enter or Escape
         bindsym $mod+w mode "switch_mode"
@@ -383,7 +395,7 @@ mode "workspace" {
 
 # easy marking window http://www.slackword.net/?p=657
 mode "mark_window" {
-    bindsym 1 mark m1
+        bindsym 1 mark m1
         bindsym 2 mark m2
         bindsym 3 mark m3
         bindsym 4 mark m4
@@ -403,8 +415,7 @@ mode "mark_window" {
 bindsym $mod+g mode "goto_window"
 
 mode "goto_window" {
-
-    bindsym 1 [con_mark="m1"] focus
+        bindsym 1 [con_mark="m1"] focus
         bindsym 2 [con_mark="m2"] focus
         bindsym 3 [con_mark="m3"] focus
         bindsym 4 [con_mark="m4"] focus
@@ -419,7 +430,6 @@ mode "goto_window" {
         bindsym $mod+w mode "switch_mode"
         bindsym Return mode "default"
         bindsym Escape mode "default"
-
 }
 
 # Start i3bar to display a workspace bar (plus the system information i3status
@@ -545,12 +555,16 @@ for_window [instance="^crx.*$" window_role="pop-up"]  sticky   enable
 
 # no focus for some windows
 
-
 # function key mode
 bindsym $mod+F10 mode "fnkey"
 
+output "Unknown GOOVIS_T2 0x00008800" {
+       scale 1.5
+}
+
+
 mode "output" {
-    bindsym Left exec i3-msg move workspace to output left
+        bindsym Left exec i3-msg move workspace to output left
         bindsym Down exec i3-msg move workspace to output down
         bindsym Up exec i3-msg move workspace to output up
         bindsym Right exec i3-msg move workspace to output right
@@ -567,7 +581,7 @@ mode "output" {
 
 mode "fnkey" {
 # for chromebooks to change volume and backlight
-    bindsym F8 exec pamixer --toggle-mute && pkill -RTMIN+17 i3blocks
+        bindsym F8 exec pamixer --toggle-mute && pkill -RTMIN+17 i3blocks
         bindsym F9 exec pamixer --decrease 5 && pkill -RTMIN+17 i3blocks
         bindsym F10 exec pamixer --increase 5 && pkill -RTMIN+17 i3blocks
         bindsym F7 exec xbacklight -inc 10
@@ -605,7 +619,7 @@ mode "ui_tweak" {
 bindsym $mod+w mode "switch_mode"
 
 mode "switch_mode" {
-    bindsym m mode "mouse"
+        bindsym m mode "mouse"
         bindsym r mode "resize_window"
         bindsym p mode "resize_precise"
         bindsym v mode "move_window"
@@ -624,7 +638,7 @@ mode "switch_mode" {
 bindsym $mod+o mode "opener"
 
 mode "opener" {
-    bindsym f exec --no-startup-id "~/.config/i3/scripts/run_or_raise.py 'Firefox' firefox"; mode "default"
+        bindsym f exec --no-startup-id "~/.config/i3/scripts/run_or_raise.py 'Firefox' firefox"; mode "default"
         bindsym g exec --no-startup-id shadowsocksRControl.sh restart 6 2; mode  "default"
         bindsym l exec i3lock -i ~/.config/i3/i3-lock-screen.png -t -f; mode  "default"
 #    bindsym v exec --no-startup-id "~/.config/i3/scripts/run_or_raise.py 'mpv' mpv"; mode "default"
