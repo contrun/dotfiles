@@ -1,6 +1,6 @@
 # Please see http://i3wm.org/docs/userguide.html for a complete reference!
 # setting terminal to xfce4-terminal
-set $TERMINAL termonad
+set $terminal termite
 
 # setting mod3=hyper mod4=super
 # set $mod mod3
@@ -43,7 +43,7 @@ focus_on_window_activation smart
 
 # start a terminal
 # bindsym $mod+Return exec xfce4-terminal
-bindsym $mod+Return exec $terminal -e tmux.sh
+bindsym $mod+Return exec $terminal
 #bindsym $mod+t [con_mark="scratchpadTerminal"] scratchpad show
 # bindsym $mod+t exec ~/.config/i3/i3-quickterm/i3-quickterm shell
 
@@ -52,7 +52,8 @@ bindsym $mod+Return exec $terminal -e tmux.sh
 
 # kill focused window
 bindsym Mod1+F4 kill
-bindsym $mod+Control+q kill
+bindsym $altmod+q kill
+bindsym $mod+Escape kill
 
 # change focus
 bindsym $mod+Left focus left
@@ -60,20 +61,14 @@ bindsym $mod+Down focus down
 bindsym $mod+Up focus up
 bindsym $mod+Right focus right
 # changeFocusLeft.sh will do (windmove-left) if the focused window is emacs
-bindsym $mod+h focus left
-bindsym $mod+j focus down
-bindsym $mod+k focus up
-bindsym $mod+l focus right
+bindsym $mod+j focus prev
+bindsym $mod+k focus next
 
 # move focused window
-bindsym $mod+Control+Left move left
-bindsym $mod+Control+Down move down
-bindsym $mod+Control+Up move up
-bindsym $mod+Control+Right move right
-bindsym $mod+Control+h move left
-bindsym $mod+Control+j move down
-bindsym $mod+Control+k move up
-bindsym $mod+Control+l move right
+bindsym $altmod+Left move left
+bindsym $altmod+Down move down
+bindsym $altmod+Up move up
+bindsym $altmod+Right move right
 
 # move workspace
 bindsym $mod+grave workspace number 0
@@ -83,15 +78,15 @@ bindsym $mod+bracketleft workspace prev
 bindsym $mod+bracketright workspace next
 
 # split in horizontal orientation
-bindsym $mod+semicolon split h
+bindsym $mod+h split h
 
 # split in vertical orientation
 bindsym $mod+v split v
 
 # next and last workspace
 # bindsym $mod+n exec ~/.config/i3/scripts/next_workspace.py
-bindsym $mod+n exec i3-msg workspace number "$(($(i3-msg -t get_workspaces | jq '.[].num' | sort -rn | head -n1) + 1))"
-bindsym $mod+Control+n exec i3-msg move container to workspace number "$(($(i3-msg -t get_workspaces | jq '.[].num' | sort -rn | head -n1) + 1))"
+# bindsym $mod+n exec i3-msg workspace number "$(($(i3-msg -t get_workspaces | jq '.[].num' | sort -rn | head -n1) + 1))"
+# bindsym $altmod+n exec i3-msg move container to workspace number "$(($(i3-msg -t get_workspaces | jq '.[].num' | sort -rn | head -n1) + 1))"
 bindsym $mod+Shift+bracketright exec i3-msg workspace number "$(i3-msg -t get_workspaces | jq '.[].num' | sort -n | tail -n1)"
 bindsym $mod+Shift+bracketleft exec i3-msg workspace number "$(i3-msg -t get_workspaces | jq '.[].num' | sort -rn | tail -n1)"
 bindsym $altmod+bracketright exec i3-msg move container to workspace number "$(i3-msg -t get_workspaces | jq '.[].num' | sort -n | tail -n1)"
@@ -104,10 +99,10 @@ bindsym $altmod+bracketleft exec i3-msg move container to workspace number "$(i3
 bindsym $mod+f fullscreen
 
 # change container layout
-bindsym $mod+e layout toggle all
+bindsym $mod+n layout toggle all
 
 # toggle tiling / floating
-bindsym $mod+Control+space floating toggle
+bindsym $altmod+space floating toggle
 
 # change focus between tiling / floating windows
 bindsym $mod+space focus mode_toggle
@@ -141,39 +136,39 @@ bindsym $mod+9    workspace number 9
 bindsym $mod+0    workspace number 0
 
 # move focused container to workspace
-bindsym $mod+Control+KP_1 move container to workspace number 1
-bindsym $mod+Control+KP_2 move container to workspace number 2
-bindsym $mod+Control+KP_3 move container to workspace number 3
-bindsym $mod+Control+KP_4 move container to workspace number 4
-bindsym $mod+Control+KP_5 move container to workspace number 5
-bindsym $mod+Control+KP_6 move container to workspace number 6
-bindsym $mod+Control+KP_7 move container to workspace number 7
-bindsym $mod+Control+KP_8 move container to workspace number 8
-bindsym $mod+Control+KP_9 move container to workspace number 8
-bindsym $mod+Control+KP_0 move container to workspace number 8
-bindsym $mod+Control+1    move container to workspace number 1
-bindsym $mod+Control+2    move container to workspace number 2
-bindsym $mod+Control+3    move container to workspace number 3
-bindsym $mod+Control+4    move container to workspace number 4
-bindsym $mod+Control+5    move container to workspace number 5
-bindsym $mod+Control+6    move container to workspace number 6
-bindsym $mod+Control+7    move container to workspace number 7
-bindsym $mod+Control+8    move container to workspace number 8
-bindsym $mod+Control+9    move container to workspace number 9
-bindsym $mod+Control+0    move container to workspace number 0
+bindsym $altmod+KP_1 move container to workspace number 1
+bindsym $altmod+KP_2 move container to workspace number 2
+bindsym $altmod+KP_3 move container to workspace number 3
+bindsym $altmod+KP_4 move container to workspace number 4
+bindsym $altmod+KP_5 move container to workspace number 5
+bindsym $altmod+KP_6 move container to workspace number 6
+bindsym $altmod+KP_7 move container to workspace number 7
+bindsym $altmod+KP_8 move container to workspace number 8
+bindsym $altmod+KP_9 move container to workspace number 8
+bindsym $altmod+KP_0 move container to workspace number 8
+bindsym $altmod+1    move container to workspace number 1
+bindsym $altmod+2    move container to workspace number 2
+bindsym $altmod+3    move container to workspace number 3
+bindsym $altmod+4    move container to workspace number 4
+bindsym $altmod+5    move container to workspace number 5
+bindsym $altmod+6    move container to workspace number 6
+bindsym $altmod+7    move container to workspace number 7
+bindsym $altmod+8    move container to workspace number 8
+bindsym $altmod+9    move container to workspace number 9
+bindsym $altmod+0    move container to workspace number 0
 
-bindsym $mod+Control+grave move container to workspace number 0
-bindsym $mod+Control+F1    move container to workspace prev
-bindsym $mod+Control+F2    move container to workspace next
+bindsym $altmod+grave move container to workspace number 0
+bindsym $altmod+F1    move container to workspace prev
+bindsym $altmod+F2    move container to workspace next
 
 # restart i3 inplace (preserves your layout/session, can be used to upgrade i3)
-bindsym $mod+Control+r restart
+bindsym $altmod+r restart
 # exit i3 (logs you out of your X session)
-bindsym $mod+Control+e exec "i3-nagbar -t warning -m 'You pressed the exit shortcut. Do you really want to exit i3? This will end your X session.' -b 'Yes, exit i3' 'i3-msg exit'"
+bindsym $altmod+e exec "i3-nagbar -t warning -m 'You pressed the exit shortcut. Do you really want to exit i3? This will end your X session.' -b 'Yes, exit i3' 'i3-msg exit'"
 
 set $mode_system System (l) lock, (i) restart i3, (e) logout, (s) suspend, (h) hibernate, (r) reboot, (p) shutdown
 mode "$mode_system" {
-    bindsym l exec i3lock -i ~/.config/i3/i3-lock-screen.png -t -d; mode  "default"
+        bindsym l exec i3lock -i ~/.config/i3/i3-lock-screen.png -t -d; mode  "default"
         bindsym i restart; mode "default"
         bindsym e exec i3-msg exit, mode "default"
         bindsym s exec systemctl suspend, mode "default"
@@ -193,7 +188,7 @@ bindsym $mod+Delete mode "$mode_system"
 bindsym $mod+s mode "xselection_run"
 # resize window (you can also use the mouse for that)
 mode "xselection_run" {
-    bindsym space                 exec clipOpener.py -d; mode "default"
+        bindsym space                 exec clipOpener.py -d; mode "default"
         bindsym $mod+space            exec clipOpener.py -d; mode "default"
         bindsym a                     exec clipOpener.py -a; mode "default"
         bindsym b                     exec clipOpener.py -b; mode "default"
@@ -230,7 +225,7 @@ mode "xselection_run" {
 
 # resize window (you can also use the mouse for that)
 mode "resize_window" {
-    bindsym Left        resize shrink width  16 px or 5 ppt
+        bindsym Left        resize shrink width  16 px or 5 ppt
         bindsym Down        resize shrink height 16 px or 5 ppt
         bindsym Up          resize grow height   16 px or 5 ppt
         bindsym Right       resize grow width    16 px or 5 ppt
@@ -451,7 +446,7 @@ bar {
 }
 
 # Make the currently focused window a scratchpad
-bindsym $mod+Control+z move scratchpad
+bindsym $altmod+z move scratchpad
 
 # Show the first scratchpad window
 bindsym $mod+z scratchpad show
@@ -466,7 +461,7 @@ hide_edge_borders none
 
 # $mod+tab switch between the current and the previously focused one
 bindsym $mod+Tab workspace back_and_forth
-bindsym $mod+Control+Tab move container to workspace back_and_forth; workspace back_and_forth
+bindsym $altmod+Tab move container to workspace back_and_forth; workspace back_and_forth
 
 # chromebook keybinding, for some unknown reason, does not work
 bindsym XF86AudioMute exec pamixer --toggle-mute && pkill -RTMIN+17 i3blocks
@@ -494,7 +489,7 @@ bindsym Mod1+space exec "rofi -show combi -combi-modi window,drun,run"
 # exec --no-startup-id keyboard.sh
 # exec --no-startup-id feh --bg-fill "$(shuf -n1 -e ~/Storage/wallpapers/*)"
 # exec --no-startup-id terminalLayout.sh 3
-exec --no-startup-id pkill -RTMIN+17 i3blocks
+# exec --no-startup-id pkill -RTMIN+17 i3blocks
 # exec --no-startup-id startupLinux.sh
 # exec --no-startup-id dunst
 # exec --no-startup-id compton
@@ -587,11 +582,11 @@ mode "fnkey" {
 # mode "project"{
 
 # # project workflow bindings
-#     bindsym $mod+Control+p         exec ~/.config/i3/i3-project-focus-workflow/newProjectWorkspaces.py
+#     bindsym $altmod+p         exec ~/.config/i3/i3-project-focus-workflow/newProjectWorkspaces.py
 #         bindsym $mod+p               exec ~/.config/i3/i3-project-focus-workflow/switchNextProject.py
 #         bindsym $mod+Tab             exec ~/.config/i3/i3-project-focus-workflow/cycleProjectWorkspacesFocus.py
-#         bindsym $mod+Control+Tab       exec ~/.config/i3/i3-project-focus-workflow/cycleProjectWorkspacesOutput.py
-#         bindsym $mod+Control+Tab     exec ~/.config/i3/i3-project-focus-workflow/cycleContainerProjectWorkspaces.py
+#         bindsym $altmod+Tab       exec ~/.config/i3/i3-project-focus-workflow/cycleProjectWorkspacesOutput.py
+#         bindsym $altmod+Tab     exec ~/.config/i3/i3-project-focus-workflow/cycleContainerProjectWorkspaces.py
 #         bindsym $mod+n               exec ~/.config/i3/i3-project-focus-workflow/renameProject.py
 
 # }
@@ -662,7 +657,7 @@ bindsym $mod+c mode "reference"
 #scripts/run_or_raise get window info by xwininfo and xprop
 
 mode "reference" {
-    bindsym i workspace focus; exec --no-startup-id orgCapture.sh i; mode "default"
+        bindsym i workspace focus; exec --no-startup-id orgCapture.sh i; mode "default"
         bindsym c workspace focus; exec --no-startup-id orgCapture.sh c; mode "default"
         bindsym j workspace focus; exec --no-startup-id orgCapture.sh j; mode "default"
         bindsym w exec --no-startup-id "tiddlywiki.sh"; mode  "default"
