@@ -1,22 +1,40 @@
-# Please see http://i3wm.org/docs/userguide.html for a complete reference!
-# setting terminal to xfce4-terminal
 set $terminal termite
+set $reload_command make -C ~/.local/share/chezmoi/ home-install && swaymsg reload
+set $browser_command env MOZ_ENABLE_WAYLAND=1 firefox
 
-# setting mod3=hyper mod4=super
-# set $mod mod3
+# mod1=alt mod3=hyper mod4=super
 set $mod mod1+mod4
 set $altmod $mod+Control
-set $mod2 mod4
 
 # https://i3wm.org/docs/userguide.html#_focus_wrapping
 focus_wrapping yes
 
+# turn on mouse following
+focus_follows_mouse no
+
+# Use Mouse+$mod to drag floating windows to their wanted position
+floating_modifier mod4
+
+# http://build.i3wm.org/docs/userguide.html#focus_on_window_activation
+focus_on_window_activation smart
+
 # default workspace layout
 workspace_layout default
+
+# Font for window titles. Will also be used by the bar unless a different font
+# is used in the bar {} block below.
+# This font is widely installed, provides lots of unicode glyphs, right-to-left
+# text rendering and scalability on retina/hidpi displays (thanks to pango).
+# font pango:DejaVu Sans Mono 8
+font pango:Source Code Pro 10
 
 default_border pixel
 
 default_floating_border none
+
+popup_during_fullscreen leave_fullscreen
+
+show_marks yes
 
 # Assume you are on workspace "1: www" and switch to "2: IM" using mod+2
 # because somebody sent you a message. You don’t need to remember
@@ -29,30 +47,67 @@ client.placeholder      #000000 #0C0C0C #FFFFFF #000000   #0C0C0C
 
 client.background       #FFFFFF
 
-# Font for window titles. Will also be used by the bar unless a different font
-# is used in the bar {} block below.
-# This font is widely installed, provides lots of unicode glyphs, right-to-left
-# text rendering and scalability on retina/hidpi displays (thanks to pango).
-# font pango:DejaVu Sans Mono 8
-font pango:Source Code Pro 10
+# startup applications
+# exec feh --bg-fill "$(shuf -n1 -e ~/Storage/wallpapers/*)"
+# exec terminalLayout.sh 3
+# exec startupLinux.sh
+exec dunst
+exec_always copyq
+# exec redshift -l 39.9:116.4
+# exec libinput-gestures-setup start
 
-# turn on mouse following
-focus_follows_mouse no
+# move specific application to specific workspace
+assign [class="Pale moon" window_role="^(?!GtkFileChooserDialog)"] 2
+assign [class="Firefox" window_role="^(?!GtkFileChooserDialog)"] 2
+assign [class="Luakit" window_role="^(?!GtkFileChooserDialog)"] 2
+assign [instance="Browser" window_role="^(?!GtkFileChooserDialog)"] 2
+# assign [class="qpdfview"] 1
+# assign [class="Zathura"] 1
+assign [class="mpv" window_role="^(?!GtkFileChooserDialog)"] 6:leisure
+# assign [class="keepassxc"] 4
+assign [title=".*mpsyt$" class="^Xfce4-terminal$"] 6:leisure
 
-# Use Mouse+$mod to drag floating windows to their wanted position
-floating_modifier mod4
+# specific window settings
+for_window [class="Firefox"] move --no-auto-back-and-forth to workspace w
+for_window [class="Nightly"] move --no-auto-back-and-forth to workspace w
+for_window [app_id="firefox"] move --no-auto-back-and-forth to workspace w
+for_window [class="Zotero"] move --no-auto-back-and-forth to workspace r
+for_window [class="Zathura"] move --no-auto-back-and-forth to workspace r
+for_window [app_id="calibre-gui"] move --no-auto-back-and-forth to workspace r
+for_window [app_id="org.zealdocs.Zeal"] move --no-auto-back-and-forth to workspace d
+for_window [app_id="org.keepassxc.KeePassXC"] move --no-auto-back-and-forth to workspace p
+for_window [class="mpv"] exec wmctrl -r mpv -b remove,demands_attention
+for_window [class="^floating-.*$"] floating enable
+for_window [class="Nemo" instance="^desktop_window$"] floating disable
+for_window [class="copyq"] floating enable
+for_window [title=".*mpsyt$" class="^Xfce4-terminal$"] move --no-auto-back-and-forth to workspace v
+for_window [title=".*mpsyt$" class="^Xfce4-terminal$"] focus
+for_window [title="scratchpad.*" class="^Xfce4-terminal$"] floating enable, move scratchpad
+for_window [title="scratchpad.*" class="^URxvt$"] floating enable, move scratchpad
+#for_window [title="scratchpad.*" class="^Xfce4-terminal$"] move scratchpad, scratchpad show
+#for_window [title="scratchpad.*" class="^Xfce4-terminal$"] mark "scratchpadTerminal", floating enable, move scratchpad
+for_window [title="scratchpad.*" class="^Termite$"] floating enable, move scratchpad
+#for_window [title="scratchpad.*" class="^Termite$"] mark "scratchpadTerminal", floating enable, move scratchpad
+for_window [title="floating.*" class="^Xfce4-terminal$"] floating enable
+for_window [title="floating.*" class="^URxvt$"] floating enable
+for_window [title="floating.*" class="^Termite$"] floating enable
 
-# http://build.i3wm.org/docs/userguide.html#focus_on_window_activation
-focus_on_window_activation smart
+for_window [window_role="pop-up"] floating enable
+# chrome extension popups
+for_window [instance="^crx.*$" window_role="pop-up"]  floating enable
+for_window [instance="^crx.*$" window_role="pop-up"]  sticky   enable
+
+output "Unknown GOOVIS_T2 0x00008800" {
+       scale 1.5
+}
+
+output "Unknown 0x5D2D 0x00000000" {
+       scale 1.2
+}
 
 # start a terminal
 # bindsym $mod+Return exec xfce4-terminal
 bindsym $mod+Return exec $terminal
-#bindsym $mod+t [con_mark="scratchpadTerminal"] scratchpad show
-# bindsym $mod+t exec ~/.config/i3/i3-quickterm/i3-quickterm shell
-
-# show i3bar
-# bindsym $mod+q exec ~/.config/i3/scripts/i3bar_visibility.sh $mod
 
 # kill focused window
 bindsym Mod1+F4 kill
@@ -89,16 +144,12 @@ bindsym $mod+bracketleft workspace prev
 bindsym $mod+bracketright workspace next
 
 # next and last workspace
-# bindsym $mod+n exec ~/.config/i3/scripts/next_workspace.py
-# bindsym $mod+n exec i3-msg workspace number "$(($(i3-msg -t get_workspaces | jq '.[].num' | sort -rn | head -n1) + 1))"
-# bindsym $altmod+n exec i3-msg move container to workspace number "$(($(i3-msg -t get_workspaces | jq '.[].num' | sort -rn | head -n1) + 1))"
-bindsym $mod+Shift+bracketright exec i3-msg workspace number "$(i3-msg -t get_workspaces | jq '.[].num' | sort -n | tail -n1)"
-bindsym $mod+Shift+bracketleft exec i3-msg workspace number "$(i3-msg -t get_workspaces | jq '.[].num' | sort -rn | tail -n1)"
-bindsym $altmod+bracketright exec i3-msg move container to workspace number "$(i3-msg -t get_workspaces | jq '.[].num' | sort -n | tail -n1)"
-bindsym $altmod+bracketleft exec i3-msg move container to workspace number "$(i3-msg -t get_workspaces | jq '.[].num' | sort -rn | tail -n1)"
-
-# flash focused window
-# bindsym $mod+w exec flash_window
+# bindsym $mod+n exec swaymsg workspace number "$(($(swaymsg -t get_workspaces | jq '.[].num' | sort -rn | head -n1) + 1))"
+# bindsym $altmod+n exec swaymsg move container to workspace number "$(($(swaymsg -t get_workspaces | jq '.[].num' | sort -rn | head -n1) + 1))"
+bindsym $mod+Shift+bracketright exec swaymsg workspace number "$(swaymsg -t get_workspaces | jq '.[].num' | sort -n | tail -n1)"
+bindsym $mod+Shift+bracketleft exec swaymsg workspace number "$(swaymsg -t get_workspaces | jq '.[].num' | sort -rn | tail -n1)"
+bindsym $altmod+bracketright exec swaymsg move container to workspace number "$(swaymsg -t get_workspaces | jq '.[].num' | sort -n | tail -n1)"
+bindsym $altmod+bracketleft exec swaymsg move container to workspace number "$(swaymsg -t get_workspaces | jq '.[].num' | sort -rn | tail -n1)"
 
 # enter fullscreen mode for the focused container
 bindsym $mod+f fullscreen
@@ -143,6 +194,8 @@ bindsym $mod+0    workspace number 0
 bindsym $mod+h    workspace h
 # w for web
 bindsym $mod+w    workspace w
+# r for reference
+bindsym $mod+r    workspace r
 # e for editor
 bindsym $mod+e    workspace e
 # d for documentation
@@ -183,6 +236,8 @@ bindsym $altmod+0    move container to workspace number 0
 bindsym $altmod+h    move container to workspace h
 # w for web
 bindsym $altmod+w    move container to workspace w
+# r for reference
+bindsym $altmod+r    move container to workspace r
 # e for editor
 bindsym $altmod+e    move container to workspace e
 # d for documentation
@@ -204,19 +259,18 @@ bindsym $altmod+F1    move container to workspace prev
 bindsym $altmod+F2    move container to workspace next
 
 # restart i3 inplace (preserves your layout/session, can be used to upgrade i3)
-bindsym $altmod+Shift+r restart
-# exit i3 (logs you out of your X session)
-bindsym $altmod+Shift+e exec "i3-nagbar -t warning -m 'You pressed the exit shortcut. Do you really want to exit i3? This will end your X session.' -b 'Yes, exit i3' 'i3-msg exit'"
+bindsym $altmod+Shift+c exec $reload_command
 
-set $mode_system System (l) lock, (i) restart i3, (e) logout, (s) suspend, (h) hibernate, (r) reboot, (p) shutdown
+set $mode_system System (l) lock, (i) restart sway, (e) logout, (c) reload config, (s) suspend, (h) hibernate, (r) reboot, (p) poweroff
 mode "$mode_system" {
-        bindsym l exec i3lock -i ~/.config/i3/i3-lock-screen.png -t -d; mode  "default"
+        bindsym l exec swaylock; mode  "default"
         bindsym i restart; mode "default"
-        bindsym e exec i3-msg exit, mode "default"
+        bindsym e exec swaymsg exit, mode "default"
+        bindsym c exec $reload_command, mode "default"
         bindsym s exec systemctl suspend, mode "default"
         bindsym h exec systemctl hibernate, mode "default"
-        bindsym r exec power.sh reboot, mode "default"
-        bindsym p exec power.sh poweroff, mode "default"
+        bindsym r exec systemctl reboot, mode "default"
+        bindsym p exec systemctl poweroff, mode "default"
 
 # back to normal: Enter or Escape
         bindsym Return mode "default"
@@ -227,8 +281,6 @@ bindsym $mod+Pause mode "$mode_system"
 bindsym $mod+Delete mode "$mode_system"
 
 
-bindsym $mod+s mode "xselection_run"
-# resize window (you can also use the mouse for that)
 mode "xselection_run" {
         bindsym space                 exec clipOpener.py -d; mode "default"
         bindsym $mod+space            exec clipOpener.py -d; mode "default"
@@ -286,7 +338,7 @@ mode "resize_window" {
 
 # https://www.reddit.com/r/i3wm/comments/2a1zru/some_useful_i3_mode_menus/ciqpepf/
 mode "resize_precise" {
-    bindsym h resize shrink left 1 px or 1 ppt
+        bindsym h resize shrink left 1 px or 1 ppt
         bindsym j resize shrink down 1 px or 1 ppt
         bindsym k resize shrink up 1 px or 1 ppt
         bindsym l resize shrink right 1 px or 1 ppt
@@ -329,76 +381,76 @@ mode "mouse" {
 
 # Mouse movement (slow/fine-tuned) -- vim keybindings
 
-        bindsym h exec xdotool mousemove_relative -- -$slow 0
-        bindsym j exec xdotool mousemove_relative 0 $slow
-        bindsym k exec xdotool mousemove_relative -- 0 -$slow
-        bindsym l exec xdotool mousemove_relative $slow 0
+        bindsym h exec ydotool mousemove_relative -- -$slow 0
+        bindsym j exec ydotool mousemove_relative 0 $slow
+        bindsym k exec ydotool mousemove_relative -- 0 -$slow
+        bindsym l exec ydotool mousemove_relative $slow 0
 
 # Mouse movement (slow/fine-tuned) -- arrow keys
 
-        bindsym Left exec xdotool mousemove_relative -- -$slow 0
-        bindsym Down exec xdotool mousemove_relative 0 $slow
-        bindsym Up exec xdotool mousemove_relative -- 0 -$slow
-        bindsym Right exec xdotool mousemove_relative $slow 0
+        bindsym Left exec ydotool mousemove_relative -- -$slow 0
+        bindsym Down exec ydotool mousemove_relative 0 $slow
+        bindsym Up exec ydotool mousemove_relative -- 0 -$slow
+        bindsym Right exec ydotool mousemove_relative $slow 0
 
 # Mouse movement (quicker) -- vim keybindings
 
-        bindsym Shift+h exec xdotool mousemove_relative -- -$quick 0
-        bindsym Shift+j exec xdotool mousemove_relative 0 $quick
-        bindsym Shift+k exec xdotool mousemove_relative -- 0 -$quick
-        bindsym Shift+l exec xdotool mousemove_relative $quick 0
+        bindsym Shift+h exec ydotool mousemove_relative -- -$quick 0
+        bindsym Shift+j exec ydotool mousemove_relative 0 $quick
+        bindsym Shift+k exec ydotool mousemove_relative -- 0 -$quick
+        bindsym Shift+l exec ydotool mousemove_relative $quick 0
 
 # Mouse movement (quicker) -- arrow keys
 
-        bindsym Shift+Left exec xdotool mousemove_relative -- -$quick 0
-        bindsym Shift+Down exec xdotool mousemove_relative 0 $quick
-        bindsym Shift+Up exec xdotool mousemove_relative -- 0 -$quick
-        bindsym Shift+Right exec xdotool mousemove_relative $quick 0
+        bindsym Shift+Left exec ydotool mousemove_relative -- -$quick 0
+        bindsym Shift+Down exec ydotool mousemove_relative 0 $quick
+        bindsym Shift+Up exec ydotool mousemove_relative -- 0 -$quick
+        bindsym Shift+Right exec ydotool mousemove_relative $quick 0
 
 # Mouse movement (fast) -- vim keybindings
 
-        bindsym Shift+$mod+h exec xdotool mousemove_relative -- -$fast 0
-        bindsym Shift+$mod+j exec xdotool mousemove_relative 0 $fast
-        bindsym Shift+$mod+k exec xdotool mousemove_relative -- 0 -$fast
-        bindsym Shift+$mod+l exec xdotool mousemove_relative $fast 0
+        bindsym Shift+$mod+h exec ydotool mousemove_relative -- -$fast 0
+        bindsym Shift+$mod+j exec ydotool mousemove_relative 0 $fast
+        bindsym Shift+$mod+k exec ydotool mousemove_relative -- 0 -$fast
+        bindsym Shift+$mod+l exec ydotool mousemove_relative $fast 0
 
 # Mouse movement (fast) -- arrow keys
 
-        bindsym Shift+$mod+Left exec xdotool mousemove_relative -- -$fast 0
-        bindsym Shift+$mod+Down exec xdotool mousemove_relative 0 $fast
-        bindsym Shift+$mod+Up exec xdotool mousemove_relative -- 0 -$fast
-        bindsym Shift+$mod+Right exec xdotool mousemove_relative $fast 0
+        bindsym Shift+$mod+Left exec ydotool mousemove_relative -- -$fast 0
+        bindsym Shift+$mod+Down exec ydotool mousemove_relative 0 $fast
+        bindsym Shift+$mod+Up exec ydotool mousemove_relative -- 0 -$fast
+        bindsym Shift+$mod+Right exec ydotool mousemove_relative $fast 0
 
 # Mouse movement (special down-right)
 
-        bindsym m exec xdotool mousemove_relative 10 10
+        bindsym m exec ydotool mousemove_relative 10 10
 
 # Left Click
-        bindsym f exec xdotool click 1
+        bindsym f exec ydotool click 1
 
 # Middle Click
-        bindsym d exec xdotool click 2
+        bindsym d exec ydotool click 2
 
 # Right Click
-        bindsym s exec xdotool click 3
+        bindsym s exec ydotool click 3
 
 # Left Click-and-drag
-        bindsym Shift+f exec xdotool mousedown 1
+        bindsym Shift+f exec ydotool mousedown 1
 
 # Middle Click-and-drag
-        bindsym Shift+d exec xdotool mousedown 2
+        bindsym Shift+d exec ydotool mousedown 2
 
 # Right Click-and-drag
-        bindsym Shift+s exec xdotool mousedown 3
+        bindsym Shift+s exec ydotool mousedown 3
 
 # Left Drag release
-        bindsym $mod+f exec xdotool mouseup 1
+        bindsym $mod+f exec ydotool mouseup 1
 
 # Middle Drag release
-        bindsym $mod+d exec xdotool mouseup 2
+        bindsym $mod+d exec ydotool mouseup 2
 
 # Right Drag release
-        # bindsym $mod+m exec xdotool mouseup 3
+        # bindsym $mod+m exec ydotool mouseup 3
 
 
 # return to normal keybindings -- IMPORTANT!!
@@ -467,18 +519,13 @@ mode "goto_window" {
         bindsym Escape mode "default"
 }
 
-# Start i3bar to display a workspace bar (plus the system information i3status
-# finds out, if available)
-# bindsym $mod+$mod2 bar hidden_state show
-# bindsym --release $mod+$mod2 bar hidden_state hide
 bar {
         mode hide
         hidden_state hide
-        # modifier mod2
         modifier $mod
+        position top
         status_command i3blocks
         tray_output primary
-        position bottom
         colors {
                 separator #ffffff
                 background #3c3b37
@@ -522,92 +569,21 @@ bindsym Mod5+F7 exec xbacklight -inc 10
 bindsym Mod5+F6 exec xbacklight -dec 10
 
 # rofi bindings
-bindsym Mod1+space exec "rofi -show combi -combi-modi window,drun,run"
+bindsym Mod1+space exec bemenu-run
+bindsym $mod+s exec bemenu-run
 
 # move any window to the current workspace
 # bindsym F8 exec python ~/.config/i3/quickswitch.py
 
-# create initial workspaces
-# exec --no-startup-id ~/.config/i3/i3-project-focus-workflow/newProjectWorkspaces.py default
-
-# startup applications
-# exec --no-startup-id keyboard.sh
-# exec --no-startup-id feh --bg-fill "$(shuf -n1 -e ~/Storage/wallpapers/*)"
-# exec --no-startup-id terminalLayout.sh 3
-# exec --no-startup-id pkill -RTMIN+17 i3blocks
-# exec --no-startup-id startupLinux.sh
-# exec --no-startup-id dunst
-# exec --no-startup-id compton
-# exec --no-startup-id flashfocus
-# exec --no-startup-id sh -c "sleep 4; startupLinux.sh"
-exec_always copyq
-# exec --no-startup-id redshift -l 39.9:116.4
-# exec --no-startup-id libinput-gestures-setup start
-# exec --no-startup-id autoMount.sh
-# exec --no-startup-id systemctl --user start emacs.service
-# solid wallpaper
-# exec --no-startup-id xsetroot -solid "#333333"
-
-
-popup_during_fullscreen leave_fullscreen
-show_marks yes
-
-# move specific application to specific workspace
-assign [class="Pale moon" window_role="^(?!GtkFileChooserDialog)"] 2
-assign [class="Firefox" window_role="^(?!GtkFileChooserDialog)"] 2
-assign [class="Luakit" window_role="^(?!GtkFileChooserDialog)"] 2
-assign [instance="Browser" window_role="^(?!GtkFileChooserDialog)"] 2
-# assign [class="qpdfview"] 1
-# assign [class="Zathura"] 1
-assign [class="mpv" window_role="^(?!GtkFileChooserDialog)"] 6:leisure
-# assign [class="keepassxc"] 4
-assign [title=".*mpsyt$" class="^Xfce4-terminal$"] 6:leisure
-
-# specific window settings
-for_window [class="Firefox"] move to workspace w
-for_window [class="Nightly"] move to workspace w
-for_window [app_id="org.zealdocs.Zeal"] move to workspace d
-for_window [app_id="org.keepassxc.KeePassXC"] move to workspace p
-for_window [class="mpv"] exec --no-startup-id wmctrl -r mpv -b remove,demands_attention
-for_window [class="^floating-.*$"] floating enable
-for_window [class="Nemo" instance="^desktop_window$"] floating disable
-for_window [class="copyq"] floating enable
-for_window [title=".*mpsyt$" class="^Xfce4-terminal$"] move to workspace 6:leisure
-for_window [title=".*mpsyt$" class="^Xfce4-terminal$"] focus
-for_window [title="scratchpad.*" class="^Xfce4-terminal$"] floating enable, move scratchpad
-for_window [title="scratchpad.*" class="^URxvt$"] floating enable, move scratchpad
-#for_window [title="scratchpad.*" class="^Xfce4-terminal$"] move scratchpad, scratchpad show
-#for_window [title="scratchpad.*" class="^Xfce4-terminal$"] mark "scratchpadTerminal", floating enable, move scratchpad
-for_window [title="scratchpad.*" class="^Termite$"] floating enable, move scratchpad
-#for_window [title="scratchpad.*" class="^Termite$"] mark "scratchpadTerminal", floating enable, move scratchpad
-for_window [title="floating.*" class="^Xfce4-terminal$"] floating enable
-for_window [title="floating.*" class="^URxvt$"] floating enable
-for_window [title="floating.*" class="^Termite$"] floating enable
-
-
-for_window [window_role="pop-up"] floating enable
-# chrome extension popups
-for_window [instance="^crx.*$" window_role="pop-up"]  floating enable
-for_window [instance="^crx.*$" window_role="pop-up"]  sticky   enable
-
-#for_window [class="^Emacs$"]               title_format "Emacs .......... %title"
-
-# no focus for some windows
-
-output "Unknown GOOVIS_T2 0x00008800" {
-       scale 1.5
-}
-
-
 mode "output" {
-        bindsym Left exec i3-msg move workspace to output left
-        bindsym Down exec i3-msg move workspace to output down
-        bindsym Up exec i3-msg move workspace to output up
-        bindsym Right exec i3-msg move workspace to output right
-        bindsym h exec i3-msg move workspace to output left
-        bindsym j exec i3-msg move workspace to output down
-        bindsym k exec i3-msg move workspace to output up
-        bindsym l exec i3-msg move workspace to output right
+        bindsym Left exec swaymsg move workspace to output left
+        bindsym Down exec swaymsg move workspace to output down
+        bindsym Up exec swaymsg move workspace to output up
+        bindsym Right exec swaymsg move workspace to output right
+        bindsym h exec swaymsg move workspace to output left
+        bindsym j exec swaymsg move workspace to output down
+        bindsym k exec swaymsg move workspace to output up
+        bindsym l exec swaymsg move workspace to output right
 
         bindsym $mod+m mode "switch_modes"
         bindsym Escape mode "default"
@@ -646,7 +622,7 @@ mode "fnkey" {
 
 # user interface tweak mode
 mode "ui_tweak" {
-    bindsym b border toggle
+        bindsym b border toggle
 
         bindsym $mod+m mode "switch_modes"
         bindsym Escape mode "default"
@@ -668,6 +644,7 @@ mode "switch_modes" {
         bindsym o mode "output"
         bindsym t mode "go_to_window"
         bindsym u mode "ui_tweak"
+        bindsym x mode "xselection_run"
 
         bindsym Escape mode "default"
         bindsym Return mode "default"
@@ -677,24 +654,22 @@ mode "switch_modes" {
 bindsym $mod+o mode "opener"
 
 mode "opener" {
-        bindsym f exec firefox; mode "default"
-        bindsym g exec --no-startup-id shadowsocksRControl.sh restart 6 2; mode  "default"
-        bindsym l exec i3lock -i ~/.config/i3/i3-lock-screen.png -t -f; mode  "default"
+        bindsym f exec $browse_command; mode "default"
 #    bindsym v exec mpv; mode "default"
-        bindsym x exec --no-startup-id "eval `xclip -selection clipboard -o`"; mode  "default"
+        bindsym x exec "eval `xclip -selection clipboard -o`"; mode  "default"
 #    bindsym m exec xvkbd -text '\S\CU'; exec mpv.sh $(xclip -selection clipboard -o); mode "default"
-        bindsym d exec --no-startup-id noDisturb.sh; mode "default"
-        bindsym m exec --no-startup-id mpvClipboard.sh; mode "default"
-        bindsym n exec --no-startup-id networkRestart.sh; mode "default"
-#    bindsym t exec --no-startup-id xvkbd -xsendevent -text '\S\CU'; mode "default"
-        bindsym t exec --no-startup-id toggleTouchpad.sh tap; mode "default"
-        bindsym a exec --no-startup-id artpip.sh tap; mode "default"
-        bindsym i exec --no-startup-id xdotool getactivewindow getwindowname | xclip; mode "default"
-        bindsym p exec --no-startup-id toggleTouchpad.sh; mode "default"
-        bindsym r exec --no-startup-id latexReference.sh; mode "default"
-        bindsym o exec --no-startup-id openFileWithCurrentProgram.sh; mode "default"
-        bindsym v exec sleep 1 && xdotool type --clearmodifiers `xclip -selection c -out`; mode "default"
-        bindsym s exec --no-startup-id stickyWindow.sh; mode "default"
+        bindsym d exec noDisturb.sh; mode "default"
+        bindsym m exec mpvClipboard.sh; mode "default"
+        bindsym n exec networkRestart.sh; mode "default"
+#    bindsym t exec xvkbd -xsendevent -text '\S\CU'; mode "default"
+        bindsym t exec toggleTouchpad.sh tap; mode "default"
+        bindsym a exec artpip.sh tap; mode "default"
+        bindsym i exec ydotool getactivewindow getwindowname | xclip; mode "default"
+        bindsym p exec toggleTouchpad.sh; mode "default"
+        bindsym r exec latexReference.sh; mode "default"
+        bindsym o exec openFileWithCurrentProgram.sh; mode "default"
+        bindsym v exec sleep 1 && ydotool type --clearmodifiers `xclip -selection c -out`; mode "default"
+        bindsym s exec stickyWindow.sh; mode "default"
         bindsym e exec spacemacs; mode "default"
         bindsym z exec zeal; mode "default"
 # bindsym z fullscreen disable; floating enable; resize set 422 240; sticky enable; move position 870 25; mode default
@@ -705,17 +680,17 @@ mode "opener" {
 }
 
 mode "reference" {
-        bindsym i workspace focus; exec --no-startup-id orgCapture.sh i; mode "default"
-        bindsym c workspace focus; exec --no-startup-id orgCapture.sh c; mode "default"
-        bindsym j workspace focus; exec --no-startup-id orgCapture.sh j; mode "default"
-        bindsym w exec --no-startup-id "tiddlywiki.sh"; mode  "default"
-        bindsym n exec --no-startup-id exec $terminal --title 'floating fzf live notes files' -e noting.sh; mode "default"
-        bindsym z exec --no-startup-id exec $terminal --title 'floating fzf zotero files' -e 'bash -c "fzfLauncher.sh zotero"'; mode "default"
-        bindsym r exec --no-startup-id exec readingNotes.py; mode "default"
-        bindsym a exec --no-startup-id exec $terminal --title 'floating fzf reading materials' -e 'bash -c "fzfLauncher.sh reading"'; mode "default"
-        bindsym l exec --no-startup-id exec $terminal --title 'floating fzf calibre library' -e 'bash -c "fzfLauncher.sh calibre"'; mode "default"
-        bindsym f exec --no-startup-id exec $terminal --title 'floating fzf zotero files' -e 'bash -c "fzfLauncher.sh choosing"'; mode "default"
-        bindsym d exec --no-startup-id exec $terminal --title 'floating fzf zotero files' -e 'bash -c "fo.sh ~/Downloads"'; mode "default"
+        bindsym i workspace focus; exec orgCapture.sh i; mode "default"
+        bindsym c workspace focus; exec orgCapture.sh c; mode "default"
+        bindsym j workspace focus; exec orgCapture.sh j; mode "default"
+        bindsym w exec "tiddlywiki.sh"; mode  "default"
+        bindsym n exec exec $terminal --title 'floating fzf live notes files' -e noting.sh; mode "default"
+        bindsym z exec exec $terminal --title 'floating fzf zotero files' -e 'bash -c "fzfLauncher.sh zotero"'; mode "default"
+        bindsym r exec exec readingNotes.py; mode "default"
+        bindsym a exec exec $terminal --title 'floating fzf reading materials' -e 'bash -c "fzfLauncher.sh reading"'; mode "default"
+        bindsym l exec exec $terminal --title 'floating fzf calibre library' -e 'bash -c "fzfLauncher.sh calibre"'; mode "default"
+        bindsym f exec exec $terminal --title 'floating fzf zotero files' -e 'bash -c "fzfLauncher.sh choosing"'; mode "default"
+        bindsym d exec exec $terminal --title 'floating fzf zotero files' -e 'bash -c "fo.sh ~/Downloads"'; mode "default"
         bindsym s exec screenshot.sh; mode  "default"
         bindsym o exec $terminal --title 'floating fzf files' -e fo.sh; mode "default"
 # bindsym z exec $terminal --title 'floating zotero files' -e zoteroOpen.sh; mode "default"
@@ -732,20 +707,22 @@ bindsym $mod+x mode "launcher"
 
 mode "launcher" {
         bindsym $mod+x mode "opener"
-        bindsym w exec firefox; mode "default"
-        bindsym e exec LC_CTYPE=zh_CN.UTF-8 emacsclient -c -a emacs; mode "default"
+        bindsym $mod+r mode "reference"
+        bindsym w exec $browser_command; mode "default"
+        bindsym e exec env LC_CTYPE=zh_CN.UTF-8 emacsclient -c -a emacs; mode "default"
         # bindsym s exec kupfer; mode "default"
         bindsym d exec goldendict; mode "default"
-        bindsym c exec doublecmd; mode "default"
+        bindsym c exec code; mode "default"
         bindsym f exec pcmanfm; mode "default"
         bindsym z exec zotero; mode "default"
         bindsym q exec qpdfview; mode "default"
-        bindsym s exec --no-startup-id $terminal -e htop; mode "default"
+        bindsym s exec $terminal -e htop; mode "default"
         bindsym y exec geany; mode "default"
+        bindsym l exec calibre; mode "default"
         # bindsym v exec vlc; mode "default"
         bindsym k exec keepassxc; mode "default"
-        # bindsym n exec --no-startup-id exec xfce4-terminal -T 'floating fzf zotero files' -x fzfLauncher.sh notes; mode "default"
-        # bindsym v exec --no-startup-id "xdg-open `xclip -selection clipboard -o`"; mode  "default"
+        # bindsym n exec exec xfce4-terminal -T 'floating fzf zotero files' -x fzfLauncher.sh notes; mode "default"
+        # bindsym v exec "xdg-open `xclip -selection clipboard -o`"; mode  "default"
         bindsym v exec copyq show; mode "default"
         bindsym t exec $terminal; mode "default"
         bindsym o exec okular; mode  "default"
@@ -757,8 +734,3 @@ mode "launcher" {
         bindsym Escape mode "default"
         bindsym Return mode "default"
 }
-
-client.focused #526532 #526532 #ffffff #a4cb64
-client.focused_inactive #aea79f #aea79f #3c3b37 #aea79f
-client.unfocused #3c3b37 #3c3b37 #aea79f #3c3b37
-client.urgent #FF0000 #FF0000 #ffffff #FF0000
