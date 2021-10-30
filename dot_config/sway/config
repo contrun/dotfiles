@@ -524,16 +524,16 @@ bar {
         hidden_state hide
         modifier $mod
         position top
-        status_command i3blocks
+        status_command i3status-rs
         tray_output primary
         colors {
-                separator #ffffff
-                background #3c3b37
-                statusline #ffffff
-                focused_workspace #526532 #526532 #ffffff
-                active_workspace #aea79f #aea79f #3c3b37
-                inactive_workspace #3c3b37 #3c3b37 #aea79f
-                urgent_workspace #FF0000 #FF0000 #ffffff
+                separator #666666
+                background #222222
+                statusline #dddddd
+                focused_workspace #0088CC #0088CC #ffffff
+                active_workspace #333333 #333333 #ffffff
+                inactive_workspace #333333 #333333 #888888
+                urgent_workspace #2f343a #900000 #ffffff
         }
 }
 
