@@ -56,7 +56,6 @@ bindsym $mod+Return exec $terminal
 
 # kill focused window
 bindsym Mod1+F4 kill
-bindsym $altmod+q kill
 bindsym $mod+Escape kill
 
 # change focus
@@ -89,12 +88,6 @@ bindsym $mod+F2 workspace next
 bindsym $mod+bracketleft workspace prev
 bindsym $mod+bracketright workspace next
 
-# split in horizontal orientation
-bindsym $mod+h split h
-
-# split in vertical orientation
-bindsym $mod+v split v
-
 # next and last workspace
 # bindsym $mod+n exec ~/.config/i3/scripts/next_workspace.py
 # bindsym $mod+n exec i3-msg workspace number "$(($(i3-msg -t get_workspaces | jq '.[].num' | sort -rn | head -n1) + 1))"
@@ -123,7 +116,7 @@ bindsym $mod+space focus mode_toggle
 bindsym $mod+a focus parent
 
 # focus the child container
-bindsym $mod+d focus child
+# bindsym $mod+d focus child
 
 # switch to workspace
 bindsym $mod+KP_1 workspace number 1
@@ -146,6 +139,24 @@ bindsym $mod+7    workspace number 7
 bindsym $mod+8    workspace number 8
 bindsym $mod+9    workspace number 9
 bindsym $mod+0    workspace number 0
+# h for hidden
+bindsym $mod+h    workspace h
+# w for web
+bindsym $mod+w    workspace w
+# e for editor
+bindsym $mod+e    workspace e
+# d for documentation
+bindsym $mod+d    workspace d
+# q for quick workspace
+bindsym $mod+q    workspace q
+# i for ide
+bindsym $mod+i    workspace i
+# p for private
+bindsym $mod+p    workspace p
+# c for chat
+bindsym $mod+c    workspace c
+# v for video
+bindsym $mod+v    workspace v
 
 # move focused container to workspace
 bindsym $altmod+KP_1 move container to workspace number 1
@@ -168,15 +179,34 @@ bindsym $altmod+7    move container to workspace number 7
 bindsym $altmod+8    move container to workspace number 8
 bindsym $altmod+9    move container to workspace number 9
 bindsym $altmod+0    move container to workspace number 0
+# h for hidden
+bindsym $altmod+h    move container to workspace h
+# w for web
+bindsym $altmod+w    move container to workspace w
+# e for editor
+bindsym $altmod+e    move container to workspace e
+# d for documentation
+bindsym $altmod+d    move container to workspace d
+# q for quick workspace
+bindsym $altmod+q    move container to workspace q
+# i for ide
+bindsym $altmod+i    move container to workspace i
+# p for private
+bindsym $altmod+p    move container to workspace p
+# c for chat
+bindsym $altmod+c    move container to workspace c
+# v for video
+bindsym $altmod+v    move container to workspace v
+
 
 bindsym $altmod+grave move container to workspace number 0
 bindsym $altmod+F1    move container to workspace prev
 bindsym $altmod+F2    move container to workspace next
 
 # restart i3 inplace (preserves your layout/session, can be used to upgrade i3)
-bindsym $altmod+r restart
+bindsym $altmod+Shift+r restart
 # exit i3 (logs you out of your X session)
-bindsym $altmod+e exec "i3-nagbar -t warning -m 'You pressed the exit shortcut. Do you really want to exit i3? This will end your X session.' -b 'Yes, exit i3' 'i3-msg exit'"
+bindsym $altmod+Shift+e exec "i3-nagbar -t warning -m 'You pressed the exit shortcut. Do you really want to exit i3? This will end your X session.' -b 'Yes, exit i3' 'i3-msg exit'"
 
 set $mode_system System (l) lock, (i) restart i3, (e) logout, (s) suspend, (h) hibernate, (r) reboot, (p) shutdown
 mode "$mode_system" {
@@ -230,7 +260,7 @@ mode "xselection_run" {
         bindsym z                     exec clipOpener.py -z; mode "default"
 
 # back to normal: Enter or Escape
-        bindsym $mod+w mode "switch_mode"
+        bindsym $mod+m mode "switch_modes"
         bindsym Return mode "default"
         bindsym Escape mode "default"
 }
@@ -249,7 +279,7 @@ mode "resize_window" {
         bindsym period      resize shrink height 9 px or 5 ppt; resize shrink width  16 px or 5 ppt
 
 # back to normal: Enter or Escape
-        bindsym $mod+w mode "switch_mode"
+        bindsym $mod+m mode "switch_modes"
         bindsym Return mode "default"
         bindsym Escape mode "default"
 }
@@ -266,7 +296,7 @@ mode "resize_precise" {
         bindsym Shift+L resize grow right 1 px or 1 ppt
 
         bindsym p mode "resize"
-        bindsym $mod+w mode "switch_mode"
+        bindsym $mod+m mode "switch_modes"
         bindsym Return mode "default"
         bindsym Escape mode "default"
 }
@@ -274,13 +304,18 @@ mode "resize_precise" {
 # move floating window
 # https://faq.i3wm.org/question/2787/move-floating-window-with-arrows/
 
-mode "move_window" {
+mode "windows" {
         bindsym Up move up 16px
         bindsym Left move left 16px
         bindsym Down move down 16px
         bindsym Right move right 16px
 
-        bindsym $mod+w mode "switch_mode"
+        # split in horizontal orientation
+        bindsym h split h
+        # split in vertical orientation
+        bindsym v split v
+
+        bindsym $mod+m mode "switch_modes"
         bindsym Return mode "default"
         bindsym Escape mode "default"
 }
@@ -363,12 +398,12 @@ mode "mouse" {
         bindsym $mod+d exec xdotool mouseup 2
 
 # Right Drag release
-        # bindsym $mod+w exec xdotool mouseup 3
+        # bindsym $mod+m exec xdotool mouseup 3
 
 
 # return to normal keybindings -- IMPORTANT!!
 
-        bindsym $mod+w mode "switch_mode"
+        bindsym $mod+m mode "switch_modes"
         bindsym Return mode "default"
         bindsym Escape mode "default"
 }
@@ -388,7 +423,7 @@ mode "workspace" {
         bindsym period   move workspace to output right
 
 # back to normal: Enter or Escape
-        bindsym $mod+w mode "switch_mode"
+        bindsym $mod+m mode "switch_modes"
         bindsym Return mode "default"
         bindsym Escape mode "default"
 }
@@ -406,7 +441,7 @@ mode "mark_window" {
         bindsym d mark md
         bindsym e mark me
 
-        bindsym $mod+w mode "switch_mode"
+        bindsym $mod+m mode "switch_modes"
         bindsym Return mode "default"
         bindsym Escape mode "default"
 }
@@ -427,7 +462,7 @@ mode "goto_window" {
         bindsym e [con_mark="me"] focus
         bindsym m [class="^mpv$"] focus; mode "default"
 
-        bindsym $mod+w mode "switch_mode"
+        bindsym $mod+m mode "switch_modes"
         bindsym Return mode "default"
         bindsym Escape mode "default"
 }
@@ -437,15 +472,15 @@ mode "goto_window" {
 # bindsym $mod+$mod2 bar hidden_state show
 # bindsym --release $mod+$mod2 bar hidden_state hide
 bar {
-    mode hide
+        mode hide
         hidden_state hide
-# modifier mod2
+        # modifier mod2
         modifier $mod
         status_command i3blocks
         tray_output primary
         position bottom
         colors {
-            separator #ffffff
+                separator #ffffff
                 background #3c3b37
                 statusline #ffffff
                 focused_workspace #526532 #526532 #ffffff
@@ -505,7 +540,7 @@ bindsym Mod1+space exec "rofi -show combi -combi-modi window,drun,run"
 # exec --no-startup-id compton
 # exec --no-startup-id flashfocus
 # exec --no-startup-id sh -c "sleep 4; startupLinux.sh"
-# exec --no-startup-id copyq
+exec_always copyq
 # exec --no-startup-id redshift -l 39.9:116.4
 # exec --no-startup-id libinput-gestures-setup start
 # exec --no-startup-id autoMount.sh
@@ -529,6 +564,10 @@ assign [class="mpv" window_role="^(?!GtkFileChooserDialog)"] 6:leisure
 assign [title=".*mpsyt$" class="^Xfce4-terminal$"] 6:leisure
 
 # specific window settings
+for_window [class="Firefox"] move to workspace w
+for_window [class="Nightly"] move to workspace w
+for_window [app_id="org.zealdocs.Zeal"] move to workspace d
+for_window [app_id="org.keepassxc.KeePassXC"] move to workspace p
 for_window [class="mpv"] exec --no-startup-id wmctrl -r mpv -b remove,demands_attention
 for_window [class="^floating-.*$"] floating enable
 for_window [class="Nemo" instance="^desktop_window$"] floating disable
@@ -555,9 +594,6 @@ for_window [instance="^crx.*$" window_role="pop-up"]  sticky   enable
 
 # no focus for some windows
 
-# function key mode
-bindsym $mod+F10 mode "fnkey"
-
 output "Unknown GOOVIS_T2 0x00008800" {
        scale 1.5
 }
@@ -573,11 +609,13 @@ mode "output" {
         bindsym k exec i3-msg move workspace to output up
         bindsym l exec i3-msg move workspace to output right
 
-        bindsym $mod+w mode "switch_mode"
+        bindsym $mod+m mode "switch_modes"
         bindsym Escape mode "default"
         bindsym Return mode "default"
 }
 
+# function key mode
+bindsym $mod+F10 mode "fnkey"
 
 mode "fnkey" {
 # for chromebooks to change volume and backlight
@@ -587,7 +625,7 @@ mode "fnkey" {
         bindsym F7 exec xbacklight -inc 10
         bindsym F6 exec xbacklight -dec 10
 
-        bindsym $mod+w mode "switch_mode"
+        bindsym $mod+m mode "switch_modes"
         bindsym Escape mode "default"
         bindsym Return mode "default"
 }
@@ -610,26 +648,27 @@ mode "fnkey" {
 mode "ui_tweak" {
     bindsym b border toggle
 
-        bindsym $mod+w mode "switch_mode"
+        bindsym $mod+m mode "switch_modes"
         bindsym Escape mode "default"
         bindsym Return mode "default"
 }
 
 # switch currently active mode
-bindsym $mod+w mode "switch_mode"
+bindsym $mod+m mode "switch_modes"
 
-mode "switch_mode" {
+mode "switch_modes" {
         bindsym m mode "mouse"
         bindsym r mode "resize_window"
         bindsym p mode "resize_precise"
-        bindsym v mode "move_window"
+        bindsym w mode "windows"
         bindsym k mode "mark_window"
         bindsym g mode "go_to_window"
-        bindsym w mode "workspace"
+        bindsym s mode "workspace"
         bindsym f mode "fnkey"
         bindsym o mode "output"
         bindsym t mode "go_to_window"
         bindsym u mode "ui_tweak"
+
         bindsym Escape mode "default"
         bindsym Return mode "default"
 }
@@ -638,10 +677,10 @@ mode "switch_mode" {
 bindsym $mod+o mode "opener"
 
 mode "opener" {
-        bindsym f exec --no-startup-id "~/.config/i3/scripts/run_or_raise.py 'Firefox' firefox"; mode "default"
+        bindsym f exec firefox; mode "default"
         bindsym g exec --no-startup-id shadowsocksRControl.sh restart 6 2; mode  "default"
         bindsym l exec i3lock -i ~/.config/i3/i3-lock-screen.png -t -f; mode  "default"
-#    bindsym v exec --no-startup-id "~/.config/i3/scripts/run_or_raise.py 'mpv' mpv"; mode "default"
+#    bindsym v exec mpv; mode "default"
         bindsym x exec --no-startup-id "eval `xclip -selection clipboard -o`"; mode  "default"
 #    bindsym m exec xvkbd -text '\S\CU'; exec mpv.sh $(xclip -selection clipboard -o); mode "default"
         bindsym d exec --no-startup-id noDisturb.sh; mode "default"
@@ -654,21 +693,16 @@ mode "opener" {
         bindsym p exec --no-startup-id toggleTouchpad.sh; mode "default"
         bindsym r exec --no-startup-id latexReference.sh; mode "default"
         bindsym o exec --no-startup-id openFileWithCurrentProgram.sh; mode "default"
-        bindsym v exec sleep 1 && xdotool type --clearmodifiers `xclip -selection c -out`
-        bindsym s exec --no-startup-id stickyWindow.sh; mode default
+        bindsym v exec sleep 1 && xdotool type --clearmodifiers `xclip -selection c -out`; mode "default"
+        bindsym s exec --no-startup-id stickyWindow.sh; mode "default"
         bindsym e exec spacemacs; mode "default"
-        bindsym z exec zeal
+        bindsym z exec zeal; mode "default"
 # bindsym z fullscreen disable; floating enable; resize set 422 240; sticky enable; move position 870 25; mode default
 
-        bindsym $mod+w mode "switch_mode"
+        bindsym $mod+m mode "switch_modes"
         bindsym Escape mode "default"
         bindsym Return mode "default"
 }
-
-# reference mode, favorite applications
-bindsym $mod+c mode "reference"
-
-#scripts/run_or_raise get window info by xwininfo and xprop
 
 mode "reference" {
         bindsym i workspace focus; exec --no-startup-id orgCapture.sh i; mode "default"
@@ -688,7 +722,7 @@ mode "reference" {
         bindsym m exec $terminal --title 'floating mail' -e mail.sh; mode "default"
         bindsym e exec $terminal --title 'floating files' -e ranger; mode "default"
 
-        bindsym $mod+w mode "switch_mode"
+        bindsym $mod+m mode "switch_modes"
         bindsym Escape mode "default"
         bindsym Return mode "default"
 }
@@ -696,36 +730,30 @@ mode "reference" {
 # launcher mode, favorite applications
 bindsym $mod+x mode "launcher"
 
-#scripts/run_or_raise get window info by xwininfo and xprop
-
 mode "launcher" {
-    bindsym $mod+x mode "opener"
-        # bindsym w exec --no-startup-id "~/.config/i3/scripts/run_or_raise.py 'Pale moon' palemoon"; mode "default"
-        bindsym w exec --no-startup-id "~/.config/i3/scripts/run_or_raise.py Firefox firefox"; mode "default"
-        bindsym g exec --no-startup-id proxyControl.sh toggle; mode "default"
-        bindsym l exec --no-startup-id proxychains calibre; mode "default"
+        bindsym $mod+x mode "opener"
+        bindsym w exec firefox; mode "default"
         bindsym e exec LC_CTYPE=zh_CN.UTF-8 emacsclient -c -a emacs; mode "default"
-#    bindsym e exec "~/.config/i3/scripts/run_or_raise.py 'emacs' 'LC_CTYPE=zh_CN.UTF-8 emacsclient -c -a emacs'"; mode "default"
-# bindsym s exec kupfer; mode "default"
+        # bindsym s exec kupfer; mode "default"
         bindsym d exec goldendict; mode "default"
         bindsym c exec doublecmd; mode "default"
         bindsym f exec pcmanfm; mode "default"
-        bindsym z exec --no-startup-id "~/.config/i3/scripts/run_or_raise.py 'zotero' 'proxychains -q zotero'"; mode "default"
-        bindsym q exec --no-startup-id "~/.config/i3/scripts/run_or_raise.py 'qpdfview' qpdfview"; mode "default"
+        bindsym z exec zotero; mode "default"
+        bindsym q exec qpdfview; mode "default"
         bindsym s exec --no-startup-id $terminal -e htop; mode "default"
-        bindsym y exec --no-startup-id "~/.config/i3/scripts/run_or_raise.py 'geany' geany"; mode "default"
-#    bindsym v exec vlc; mode "default"
-        bindsym k exec --no-startup-id "~/.config/i3/scripts/run_or_raise.py 'keepassxc' keepass.sh"; mode "default"
-#    bindsym n exec --no-startup-id exec xfce4-terminal -T 'floating fzf zotero files' -x fzfLauncher.sh notes; mode "default"
-#    bindsym v exec --no-startup-id "xdg-open `xclip -selection clipboard -o`"; mode  "default"
-        bindsym v exec typeClipboard.sh; mode "default"
+        bindsym y exec geany; mode "default"
+        # bindsym v exec vlc; mode "default"
+        bindsym k exec keepassxc; mode "default"
+        # bindsym n exec --no-startup-id exec xfce4-terminal -T 'floating fzf zotero files' -x fzfLauncher.sh notes; mode "default"
+        # bindsym v exec --no-startup-id "xdg-open `xclip -selection clipboard -o`"; mode  "default"
+        bindsym v exec copyq show; mode "default"
         bindsym t exec $terminal; mode "default"
         bindsym o exec okular; mode  "default"
         bindsym r exec okular; mode  "default"
         bindsym p exec zathura; mode  "default"
-        bindsym m exec --no-startup-id "~/.config/i3/scripts/run_or_raise.py 'TelegramDesktop' telegram-desktop"; mode "default"
+        bindsym m exec tdesktop; mode "default"
 
-        bindsym $mod+w mode "switch_mode"
+        bindsym $mod+m mode "switch_modes"
         bindsym Escape mode "default"
         bindsym Return mode "default"
 }
