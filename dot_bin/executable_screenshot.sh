@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
 file="$HOME/Pictures/screenshot-$(date +%Y-%m-%d-%H-%M-%S).png"
-maim -s "$file"
+if [[ -z "$WAYLAND_DISPLAY" ]]; then
+    maim -s "$file"
+else
+    grimshot save area "$file"
+fi
+
 if [[ "$?" -eq "0" ]]; then
-    notifications.sh "saved to $file" "screenshot"
-    echo "$file"
+    noti -t "screenshot" -m "saved to $file"
 fi

@@ -1,10 +1,11 @@
-set $terminal termite
-set $reload_command make -C ~/.local/share/chezmoi/ home-install && swaymsg reload
-set $browser_command env MOZ_ENABLE_WAYLAND=1 firefox
-
 # mod1=alt mod3=hyper mod4=super
 set $mod mod1+mod4
 set $altmod $mod+Control
+
+set $terminal termite
+set $reload_command make -C ~/.local/share/chezmoi/ home-install && swaymsg reload
+set $browser_command env MOZ_ENABLE_WAYLAND=1 firefox
+set $scratchpad_terminal_name scratchpad_terminal
 
 # https://i3wm.org/docs/userguide.html#_focus_wrapping
 focus_wrapping yes
@@ -28,7 +29,7 @@ workspace_layout default
 # font pango:DejaVu Sans Mono 8
 font pango:Source Code Pro 10
 
-default_border pixel
+default_border none
 
 default_floating_border none
 
@@ -48,12 +49,15 @@ client.placeholder      #000000 #0C0C0C #FFFFFF #000000   #0C0C0C
 client.background       #FFFFFF
 
 # startup applications
-# exec feh --bg-fill "$(shuf -n1 -e ~/Storage/wallpapers/*)"
-# exec terminalLayout.sh 3
-# exec startupLinux.sh
 exec dunst
+exec wlsunset -l 39.9 -L 116.4
+exec aw-server
+exec aw-watcher-afk
+exec aw-watcher-window
+exec_always kdeconnect-indicator
+exec_always fcitx -d --replace
 exec_always copyq
-# exec redshift -l 39.9:116.4
+exec_always swaybg -m fill -i "$(shuf -n1 -e ~/Storage/wallpapers/*)"
 # exec libinput-gestures-setup start
 
 # move specific application to specific workspace
@@ -66,6 +70,11 @@ assign [instance="Browser" window_role="^(?!GtkFileChooserDialog)"] 2
 assign [class="mpv" window_role="^(?!GtkFileChooserDialog)"] 6:leisure
 # assign [class="keepassxc"] 4
 assign [title=".*mpsyt$" class="^Xfce4-terminal$"] 6:leisure
+
+# for_window [app_id="(?i)$scratchpad_terminal_name"] floating enable, move to scratchpad, scratchpad show, move position 1000px 20px, mark $scratchpad_terminal_name
+
+# Run with `exec swaymsg "[con_mark=scratchpad_pyradio] scratchpad show" || $terminal --name scratchpad_pyradio`
+for_window [app_id="(?i)scratchpad.*"] exec swaymsg mark "$(swaymsg -t get_tree | jq -r '.. | select(.type?) | select(.focused==true).app_id')", floating enable, move to scratchpad, scratchpad show
 
 # specific window settings
 for_window [class="Firefox"] move --no-auto-back-and-forth to workspace w
@@ -86,11 +95,11 @@ for_window [title="scratchpad.*" class="^Xfce4-terminal$"] floating enable, move
 for_window [title="scratchpad.*" class="^URxvt$"] floating enable, move scratchpad
 #for_window [title="scratchpad.*" class="^Xfce4-terminal$"] move scratchpad, scratchpad show
 #for_window [title="scratchpad.*" class="^Xfce4-terminal$"] mark "scratchpadTerminal", floating enable, move scratchpad
-for_window [title="scratchpad.*" class="^Termite$"] floating enable, move scratchpad
-#for_window [title="scratchpad.*" class="^Termite$"] mark "scratchpadTerminal", floating enable, move scratchpad
+for_window [title="scratchpad.*" app_id="termite"] floating enable, move scratchpad
+#for_window [title="scratchpad.*" app_id="^Termite"] mark "scratchpadTerminal", floating enable, move scratchpad
 for_window [title="floating.*" class="^Xfce4-terminal$"] floating enable
 for_window [title="floating.*" class="^URxvt$"] floating enable
-for_window [title="floating.*" class="^Termite$"] floating enable
+for_window [title="floating.*" app_id="termite"] floating enable
 
 for_window [window_role="pop-up"] floating enable
 # chrome extension popups
@@ -116,6 +125,7 @@ output "Unknown 0x8544 0x00000000" {
 # start a terminal
 # bindsym $mod+Return exec xfce4-terminal
 bindsym $mod+Return exec $terminal
+bindsym $mod+t exec swaymsg "[con_mark=$scratchpad_terminal_name] scratchpad show" || $terminal --name $scratchpad_terminal_name
 
 # kill focused window
 bindsym Mod1+F4 kill
@@ -130,9 +140,9 @@ bindsym $mod+Shift+Left focus output left
 bindsym $mod+Shift+Down focus output down
 bindsym $mod+Shift+Up focus output up
 bindsym $mod+Shift+Right focus output right
-# changeFocusLeft.sh will do (windmove-left) if the focused window is emacs
-bindsym $mod+j focus prev sibling
-bindsym $mod+k focus next sibling
+
+bindsym $mod+j focus child
+bindsym $mod+k focus parent
 
 # move focused window
 bindsym $altmod+Left move left
@@ -145,7 +155,6 @@ bindsym $altmod+Shift+Up move output up
 bindsym $altmod+Shift+Right move output right
 
 # move workspace
-bindsym $mod+grave workspace number 0
 bindsym $mod+F1 workspace prev
 bindsym $mod+F2 workspace next
 bindsym $mod+bracketleft workspace prev
@@ -170,12 +179,6 @@ bindsym $altmod+space floating toggle
 
 # change focus between tiling / floating windows
 bindsym $mod+space focus mode_toggle
-
-# focus the parent container
-bindsym $mod+a focus parent
-
-# focus the child container
-# bindsym $mod+d focus child
 
 # switch to workspace
 bindsym $mod+KP_1 workspace number 1
@@ -262,7 +265,6 @@ bindsym $altmod+c    move container to workspace c
 bindsym $altmod+v    move container to workspace v
 
 
-bindsym $altmod+grave move container to workspace number 0
 bindsym $altmod+F1    move container to workspace prev
 bindsym $altmod+F2    move container to workspace next
 
@@ -614,20 +616,6 @@ mode "fnkey" {
         bindsym Return mode "default"
 }
 
-
-# mode "project"{
-
-# # project workflow bindings
-#     bindsym $altmod+p         exec ~/.config/i3/i3-project-focus-workflow/newProjectWorkspaces.py
-#         bindsym $mod+p               exec ~/.config/i3/i3-project-focus-workflow/switchNextProject.py
-#         bindsym $mod+Tab             exec ~/.config/i3/i3-project-focus-workflow/cycleProjectWorkspacesFocus.py
-#         bindsym $altmod+Tab       exec ~/.config/i3/i3-project-focus-workflow/cycleProjectWorkspacesOutput.py
-#         bindsym $altmod+Tab     exec ~/.config/i3/i3-project-focus-workflow/cycleContainerProjectWorkspaces.py
-#         bindsym $mod+n               exec ~/.config/i3/i3-project-focus-workflow/renameProject.py
-
-# }
-
-
 # user interface tweak mode
 mode "ui_tweak" {
         bindsym b border toggle
@@ -659,6 +647,33 @@ mode "switch_modes" {
 }
 
 # opener mode, less frequently used applications
+bindsym $mod+a mode "alternative launcher"
+
+mode "alternative launcher" {
+        bindsym y exec swaymsg "[con_mark=scratchpad_pyradio] scratchpad show" || $terminal --name scratchpad_pyradio -e pyradio; mode "default"
+        bindsym t exec swaymsg "[con_mark=scratchpad_htop] scratchpad show" || $terminal --name scratchpad_pyradio -e htop; mode "default"
+        bindsym m exec swaymsg "[con_mark=scratchpad_neomutt] scratchpad show" || $terminal --name scratchpad_pyradio -e neomutt; mode "default"
+        bindsym i workspace focus; exec orgCapture.sh i; mode "default"
+        bindsym c workspace focus; exec orgCapture.sh c; mode "default"
+        bindsym j workspace focus; exec orgCapture.sh j; mode "default"
+        bindsym w exec "tiddlywiki.sh"; mode  "default"
+        bindsym n exec exec $terminal --title 'floating fzf live notes files' -e noting.sh; mode "default"
+        bindsym z exec exec $terminal --title 'floating fzf zotero files' -e 'bash -c "fzfLauncher.sh zotero"'; mode "default"
+        bindsym r exec exec readingNotes.py; mode "default"
+        bindsym a exec exec $terminal --title 'floating fzf reading materials' -e 'bash -c "fzfLauncher.sh reading"'; mode "default"
+        bindsym l exec exec $terminal --title 'floating fzf calibre library' -e 'bash -c "fzfLauncher.sh calibre"'; mode "default"
+        bindsym f exec exec $terminal --title 'floating fzf zotero files' -e 'bash -c "fzfLauncher.sh choosing"'; mode "default"
+        bindsym d exec exec $terminal --title 'floating fzf zotero files' -e 'bash -c "fo.sh ~/Downloads"'; mode "default"
+        bindsym o exec $terminal --title 'floating fzf files' -e fo.sh; mode "default"
+        # bindsym z exec $terminal --title 'floating zotero files' -e zoteroOpen.sh; mode "default"
+        bindsym e exec $terminal --title 'floating files' -e ranger; mode "default"
+
+        bindsym $mod+m mode "switch_modes"
+        bindsym Escape mode "default"
+        bindsym Return mode "default"
+}
+
+# opener mode, less frequently used applications
 bindsym $mod+o mode "opener"
 
 mode "opener" {
@@ -674,7 +689,6 @@ mode "opener" {
         bindsym a exec artpip.sh tap; mode "default"
         bindsym i exec ydotool getactivewindow getwindowname | xclip; mode "default"
         bindsym p exec toggleTouchpad.sh; mode "default"
-        bindsym r exec latexReference.sh; mode "default"
         bindsym o exec openFileWithCurrentProgram.sh; mode "default"
         bindsym v exec sleep 1 && ydotool type --clearmodifiers `xclip -selection c -out`; mode "default"
         bindsym s exec stickyWindow.sh; mode "default"
@@ -699,7 +713,6 @@ mode "reference" {
         bindsym l exec exec $terminal --title 'floating fzf calibre library' -e 'bash -c "fzfLauncher.sh calibre"'; mode "default"
         bindsym f exec exec $terminal --title 'floating fzf zotero files' -e 'bash -c "fzfLauncher.sh choosing"'; mode "default"
         bindsym d exec exec $terminal --title 'floating fzf zotero files' -e 'bash -c "fo.sh ~/Downloads"'; mode "default"
-        bindsym s exec screenshot.sh; mode  "default"
         bindsym o exec $terminal --title 'floating fzf files' -e fo.sh; mode "default"
 # bindsym z exec $terminal --title 'floating zotero files' -e zoteroOpen.sh; mode "default"
         bindsym m exec $terminal --title 'floating mail' -e mail.sh; mode "default"
@@ -724,7 +737,7 @@ mode "launcher" {
         bindsym f exec pcmanfm; mode "default"
         bindsym z exec zotero; mode "default"
         bindsym q exec qpdfview; mode "default"
-        bindsym s exec $terminal -e htop; mode "default"
+        bindsym s exec screenshot.sh; mode  "default"
         bindsym y exec geany; mode "default"
         bindsym l exec calibre; mode "default"
         # bindsym v exec vlc; mode "default"
@@ -736,7 +749,7 @@ mode "launcher" {
         bindsym o exec okular; mode  "default"
         bindsym r exec okular; mode  "default"
         bindsym p exec zathura; mode  "default"
-        bindsym m exec tdesktop; mode "default"
+        bindsym m exec telegram-desktop; mode "default"
 
         bindsym $mod+m mode "switch_modes"
         bindsym Escape mode "default"

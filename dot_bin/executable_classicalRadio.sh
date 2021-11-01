@@ -91,7 +91,7 @@ EOF
         )"
         while true; do
                 r="$(shuf -n1 <<<"$radioStations")"
-                notifications.sh "$r" "classic radio"
+                noti -t "classic radio" -m "station: $r"
                 cvlc --play-and-exit "$r"
         done
 }
@@ -101,11 +101,11 @@ download_radio_browser_data() {
         pyradio_file="$HOME/.config/pyradio/stations.csv"
         declare -a tags=("classical")
         for tag in "${tags[@]}"; do
-                url="https://de1.api.radio-browser.info/json/stations/bytagexact/$tag"
+                url="https://fr1.api.radio-browser.info/json/stations/bytagexact/$tag"
                 filename="$dir/$tag.json"
                 if [[ ! -f "$filename" ]] || [[ $(find "$filename" -mtime +7 -print) ]]; then
                         if ! curl -s -L --create-dirs -o "$filename" "$url"; then
-                                echo "Downloading $url to $name failed"
+                                echo "Downloading $url to $filename failed"
                         fi
                 fi
         done
