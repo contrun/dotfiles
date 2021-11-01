@@ -3,6 +3,8 @@ set $mod mod1+mod4
 set $altmod $mod+Control
 
 set $terminal termite
+set $terminal_with_app_id termite --name
+set $terminal_with_title termite --title
 set $reload_command make -C ~/.local/share/chezmoi/ home-install && swaymsg reload
 set $browser_command env MOZ_ENABLE_WAYLAND=1 firefox
 set $scratchpad_terminal_name scratchpad_terminal
@@ -69,7 +71,7 @@ for_window [title=".*mpsyt$" class="^Xfce4-terminal$"] move --no-auto-back-and-f
 
 # for_window [app_id="(?i)$scratchpad_terminal_name"] floating enable, move to scratchpad, scratchpad show, move position 1000px 20px, mark $scratchpad_terminal_name
 
-# Run with `exec swaymsg "[con_mark=scratchpad_pyradio] scratchpad show" || $terminal --name scratchpad_pyradio`
+# Run with `exec swaymsg "[con_mark=scratchpad_pyradio] scratchpad show" || $terminal_with_app_id scratchpad_pyradio`
 for_window [app_id="(?i)scratchpad.*"] exec swaymsg mark "$(swaymsg -t get_tree | jq -r '.. | select(.type?) | select(.focused==true).app_id')", floating enable, move to scratchpad, scratchpad show
 
 # specific window settings
@@ -122,7 +124,7 @@ output "Unknown 0x8544 0x00000000" {
 
 # start a terminal
 bindsym $mod+Return exec $terminal
-bindsym $mod+t exec swaymsg "[con_mark=$scratchpad_terminal_name] scratchpad show" || $terminal --name $scratchpad_terminal_name
+bindsym $mod+t exec swaymsg "[con_mark=$scratchpad_terminal_name] scratchpad show" || $terminal_with_app_id $scratchpad_terminal_name
 
 # kill focused window
 bindsym Mod1+F4 kill
@@ -647,24 +649,24 @@ mode "$switch_modes" {
 bindsym $mod+a mode "alternative launcher"
 
 mode "alternative launcher" {
-        bindsym y exec swaymsg "[con_mark=scratchpad_pyradio] scratchpad show" || $terminal --name scratchpad_pyradio -e pyradio; mode "default"
-        bindsym t exec swaymsg "[con_mark=scratchpad_htop] scratchpad show" || $terminal --name scratchpad_htop -e htop; mode "default"
-        bindsym m exec swaymsg "[con_mark=scratchpad_neomutt] scratchpad show" || $terminal --name scratchpad_neomutt -e neomutt; mode "default"
+        bindsym y exec swaymsg "[con_mark=scratchpad_pyradio] scratchpad show" || $terminal_with_app_id scratchpad_pyradio -e pyradio; mode "default"
+        bindsym t exec swaymsg "[con_mark=scratchpad_htop] scratchpad show" || $terminal_with_app_id -e htop; mode "default"
+        bindsym m exec swaymsg "[con_mark=scratchpad_neomutt] scratchpad show" || $terminal_with_app_id scratchpad_neomutt -e neomutt; mode "default"
         bindsym i workspace focus; exec orgCapture.sh i; mode "default"
         bindsym c workspace focus; exec orgCapture.sh c; mode "default"
         bindsym j workspace focus; exec orgCapture.sh j; mode "default"
         bindsym r exec readingNotes.py; mode "default"
-        bindsym n exec $terminal --title 'floating fzf live notes files' -e noting.sh; mode "default"
-        bindsym z exec $terminal --title 'floating fzf zotero files' -e 'fzfLauncher.sh zotero'; mode "default"
-        bindsym s exec $terminal --title 'floating sway tree' -e 'bash -c "nvim <(swaymsg -t get_tree | jq)"'; mode "default"
-        bindsym a exec $terminal --title 'floating fzf reading materials' -e 'fzfLauncher.sh reading'; mode "default"
-        bindsym l exec $terminal --title 'floating fzf calibre library' -e 'fzfLauncher.sh calibre'; mode "default"
-        bindsym f exec $terminal --title 'floating fzf zotero files' -e 'fzfLauncher.sh choosing'; mode "default"
+        bindsym n exec $terminal_with_title 'floating fzf live notes files' -e noting.sh; mode "default"
+        bindsym z exec $terminal_with_title 'floating fzf zotero files' -e 'fzfLauncher.sh zotero'; mode "default"
+        bindsym s exec $terminal_with_title 'floating sway tree' -e 'bash -c "nvim <(swaymsg -t get_tree | jq)"'; mode "default"
+        bindsym a exec $terminal_with_title 'floating fzf reading materials' -e 'fzfLauncher.sh reading'; mode "default"
+        bindsym l exec $terminal_with_title 'floating fzf calibre library' -e 'fzfLauncher.sh calibre'; mode "default"
+        bindsym f exec $terminal_with_title 'floating fzf zotero files' -e 'fzfLauncher.sh choosing'; mode "default"
         # need shell to expand `~`
-        bindsym d exec $terminal --title 'floating fzf downloaded files' -e 'sh -c "fzfLauncher.sh ~/Downloads"'; mode "default"
-        bindsym o exec $terminal --title 'floating fzf files' -e fzfLauncher.sh; mode "default"
-        # bindsym z exec $terminal --title 'floating zotero files' -e zoteroOpen.sh; mode "default"
-        bindsym e exec $terminal --title 'floating files' -e ranger; mode "default"
+        bindsym d exec $terminal_with_title 'floating fzf downloaded files' -e 'sh -c "fzfLauncher.sh ~/Downloads"'; mode "default"
+        bindsym o exec $terminal_with_title 'floating fzf files' -e fzfLauncher.sh; mode "default"
+        # bindsym z exec $terminal_with_title 'floating zotero files' -e zoteroOpen.sh; mode "default"
+        bindsym e exec $terminal_with_title 'floating files' -e ranger; mode "default"
 
         bindsym $mod+m mode "$switch_modes"
         bindsym Escape mode "default"
