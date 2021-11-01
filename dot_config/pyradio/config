@@ -1,0 +1,89 @@
+# PyRadio Configuration File
+
+# Player selection
+# This is the eqivelant to the -u , --use-player command line parameter
+# Specify the player to use with PyRadio, or the player detection order
+# Example:
+#   player = vlc
+# or
+#   player = vlc,mpv, mplayer
+player = mplayer, vlc, mpv
+
+# Default playlist
+# This is the playlist to open if none is specified
+# You can scecify full path to CSV file, or if the playlist is in the
+# config directory, playlist name (filename without extension or
+# playlist number (as reported by -ls command line option)
+default_playlist = stations
+
+# Default station
+# This is the equivalent to the -p , --play command line parameter
+# The station number within the default playlist to play
+# Value is 1..number of stations, "-1" or "False" means no auto play,
+# "0" or "Random" means play a random station
+default_station = False
+
+# Default encoding
+# This is the encoding used by default when reading data provided by
+# a station (such as song title, etc.) If reading said data ends up
+# in an error, 'utf-8' will be used instead.
+#
+# A valid encoding list can be found at:
+#   https://docs.python.org/2.7/library/codecs.html#standard-encodings
+# replacing 2.7 with specific version:
+#   3.0 up to current python version.
+#
+# Default value: utf-8
+default_encoding = utf-8
+
+# Connection timeout
+# PyRadio will wait for this number of seconds to get a station/server
+# message indicating that playback has actually started.
+# If this does not happen (within this number of seconds after the
+# connection is initiated), PyRadio will consider the station
+# unreachable, and display the "Failed to connect to: [station]"
+# message.
+#
+# Valid values: 5 - 60
+# Default value: 10
+connection_timeout = 10
+
+# Default theme
+# Hardcooded themes:
+#   dark (default) (8 colors)
+#   light (8 colors)
+#   dark_16_colors (16 colors dark theme alternative)
+#   light_16_colors (16 colors light theme alternative)
+#   black_on_white (bow) (256 colors)
+#   white_on_black (wob) (256 colors)
+# Default value = 'dark'
+theme = dark
+
+# Transparency setting
+# If False, theme colors will be used.
+# If True and a compositor is running, the stations' window
+# background will be transparent. If True and a compositor is
+# not running, the terminal's background color will be used.
+# Valid values: True, true, False, false
+# Default value: False
+use_transparency = True
+
+
+# Playlist management
+#
+# Specify whether you will be asked to confirm
+# every station deletion action
+# Valid values: True, true, False, false
+confirm_station_deletion = True
+
+# Specify whether you will be asked to confirm
+# playlist reloading, when the playlist has not
+# been modified within Pyradio
+# Valid values: True, true, False, false
+confirm_playlist_reload = True
+
+# Specify whether you will be asked to save a
+# modified playlist whenever it needs saving
+# Valid values: True, true, False, false
+auto_save_playlist = False
+
