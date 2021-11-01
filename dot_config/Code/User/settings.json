@@ -28,7 +28,8 @@
         "default": "linux",
         "karl": "linux",
         "cros": "linux",
-        "bzr": "linux"
+        "bzr": "linux",
+        "lizj": "linux"
     },
     "editor.multiCursorModifier": "alt",
     "editor.wordWrap": "on",

@@ -97,11 +97,19 @@ for_window [window_role="pop-up"] floating enable
 for_window [instance="^crx.*$" window_role="pop-up"]  floating enable
 for_window [instance="^crx.*$" window_role="pop-up"]  sticky   enable
 
+output "Lenovo Group Limited LEN S28u-10 VNA48A99" {
+       scale 1.4
+}
+
 output "Unknown GOOVIS_T2 0x00008800" {
        scale 1.5
 }
 
 output "Unknown 0x5D2D 0x00000000" {
+       scale 1.2
+}
+
+output "Unknown 0x8544 0x00000000" {
        scale 1.2
 }
 
@@ -258,7 +266,7 @@ bindsym $altmod+grave move container to workspace number 0
 bindsym $altmod+F1    move container to workspace prev
 bindsym $altmod+F2    move container to workspace next
 
-# restart i3 inplace (preserves your layout/session, can be used to upgrade i3)
+bindsym $altmod+Shift+d output eDP-1 toggle
 bindsym $altmod+Shift+c exec $reload_command
 
 set $mode_system System (l) lock, (i) restart sway, (e) logout, (c) reload config, (s) suspend, (h) hibernate, (r) reboot, (p) poweroff
