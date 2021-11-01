@@ -61,15 +61,12 @@ exec_always swaybg -m fill -i "$(shuf -n1 -e ~/Storage/wallpapers/*)"
 # exec libinput-gestures-setup start
 
 # move specific application to specific workspace
-assign [class="Pale moon" window_role="^(?!GtkFileChooserDialog)"] 2
-assign [class="Firefox" window_role="^(?!GtkFileChooserDialog)"] 2
-assign [class="Luakit" window_role="^(?!GtkFileChooserDialog)"] 2
-assign [instance="Browser" window_role="^(?!GtkFileChooserDialog)"] 2
-# assign [class="qpdfview"] 1
-# assign [class="Zathura"] 1
-assign [class="mpv" window_role="^(?!GtkFileChooserDialog)"] 6:leisure
-# assign [class="keepassxc"] 4
-assign [title=".*mpsyt$" class="^Xfce4-terminal$"] 6:leisure
+for_window [class="Pale moon" window_role="^(?!GtkFileChooserDialog)"] floating enable
+for_window [class="Firefox" window_role="^(?!GtkFileChooserDialog)"] floating enable
+for_window [class="Luakit" window_role="^(?!GtkFileChooserDialog)"] floating enable
+for_window [instance="Browser" window_role="^(?!GtkFileChooserDialog)"] floating enable
+for_window [class="mpv" window_role="^(?!GtkFileChooserDialog)"] move --no-auto-back-and-forth to workspace v
+for_window [title=".*mpsyt$" class="^Xfce4-terminal$"] move --no-auto-back-and-forth to workspace w
 
 # for_window [app_id="(?i)$scratchpad_terminal_name"] floating enable, move to scratchpad, scratchpad show, move position 1000px 20px, mark $scratchpad_terminal_name
 
@@ -81,7 +78,7 @@ for_window [class="Firefox"] move --no-auto-back-and-forth to workspace w
 for_window [class="Nightly"] move --no-auto-back-and-forth to workspace w
 for_window [app_id="firefox"] move --no-auto-back-and-forth to workspace w
 for_window [class="Zotero"] move --no-auto-back-and-forth to workspace r
-for_window [class="Zathura"] move --no-auto-back-and-forth to workspace r
+# for_window [app_id="org.pwmt.zathura"] move --no-auto-back-and-forth to workspace r
 for_window [app_id="calibre-gui"] move --no-auto-back-and-forth to workspace r
 for_window [app_id="org.zealdocs.Zeal"] move --no-auto-back-and-forth to workspace d
 for_window [app_id="org.keepassxc.KeePassXC"] move --no-auto-back-and-forth to workspace p
@@ -103,8 +100,8 @@ for_window [title="floating.*" app_id="termite"] floating enable
 
 for_window [window_role="pop-up"] floating enable
 # chrome extension popups
-for_window [instance="^crx.*$" window_role="pop-up"]  floating enable
-for_window [instance="^crx.*$" window_role="pop-up"]  sticky   enable
+# for_window [instance="^crx.*$" window_role="pop-up"]  floating enable
+# for_window [instance="^crx.*$" window_role="pop-up"]  sticky   enable
 
 output "Lenovo Group Limited LEN S28u-10 VNA48A99" {
        scale 1.4
@@ -123,7 +120,6 @@ output "Unknown 0x8544 0x00000000" {
 }
 
 # start a terminal
-# bindsym $mod+Return exec xfce4-terminal
 bindsym $mod+Return exec $terminal
 bindsym $mod+t exec swaymsg "[con_mark=$scratchpad_terminal_name] scratchpad show" || $terminal --name $scratchpad_terminal_name
 
@@ -271,21 +267,22 @@ bindsym $altmod+F2    move container to workspace next
 bindsym $altmod+Shift+d output eDP-1 toggle
 bindsym $altmod+Shift+c exec $reload_command
 
-set $mode_system System (l) lock, (i) restart sway, (e) logout, (c) reload config, (s) suspend, (h) hibernate, (r) reboot, (p) poweroff
+set $mode_system (l)ock, r(e)start sway, log(o)ut, reload (c)onfig, (s)uspend, (h)ibernate, (r)eboot, (p)oweroff
 mode "$mode_system" {
         bindsym l exec swaylock; mode  "default"
-        bindsym i restart; mode "default"
-        bindsym e exec swaymsg exit, mode "default"
+        bindsym e restart; mode "default"
+        bindsym o exec swaymsg exit, mode "default"
         bindsym c exec $reload_command, mode "default"
         bindsym s exec systemctl suspend, mode "default"
         bindsym h exec systemctl hibernate, mode "default"
         bindsym r exec systemctl reboot, mode "default"
         bindsym p exec systemctl poweroff, mode "default"
 
-# back to normal: Enter or Escape
+        bindsym $mod+m mode "$switch_modes"
         bindsym Return mode "default"
         bindsym Escape mode "default"
 }
+
 bindsym $mod+XF86PowerOff mode "$mode_system"
 bindsym $mod+Pause mode "$mode_system"
 bindsym $mod+Delete mode "$mode_system"
@@ -321,8 +318,7 @@ mode "xselection_run" {
         bindsym y                     exec clipOpener.py -y; mode "default"
         bindsym z                     exec clipOpener.py -z; mode "default"
 
-# back to normal: Enter or Escape
-        bindsym $mod+m mode "switch_modes"
+        bindsym $mod+m mode "$switch_modes"
         bindsym Return mode "default"
         bindsym Escape mode "default"
 }
@@ -333,15 +329,15 @@ mode "resize_window" {
         bindsym Down        resize shrink height 16 px or 5 ppt
         bindsym Up          resize grow height   16 px or 5 ppt
         bindsym Right       resize grow width    16 px or 5 ppt
-        bindsym j           resize shrink width  16 px or 5 ppt
-        bindsym k           resize shrink height 16 px or 5 ppt
-        bindsym l           resize grow height   16 px or 5 ppt
-        bindsym semicolon   resize grow width    16 px or 5 ppt
+        bindsym h           resize shrink width  16 px or 5 ppt
+        bindsym j           resize shrink height 16 px or 5 ppt
+        bindsym k           resize grow height   16 px or 5 ppt
+        bindsym l           resize grow width    16 px or 5 ppt
         bindsym comma       resize grow height   9 px or 5 ppt; resize grow width    16 px or 5 ppt
         bindsym period      resize shrink height 9 px or 5 ppt; resize shrink width  16 px or 5 ppt
 
 # back to normal: Enter or Escape
-        bindsym $mod+m mode "switch_modes"
+        bindsym $mod+m mode "$switch_modes"
         bindsym Return mode "default"
         bindsym Escape mode "default"
 }
@@ -358,7 +354,7 @@ mode "resize_precise" {
         bindsym Shift+L resize grow right 1 px or 1 ppt
 
         bindsym p mode "resize"
-        bindsym $mod+m mode "switch_modes"
+        bindsym $mod+m mode "$switch_modes"
         bindsym Return mode "default"
         bindsym Escape mode "default"
 }
@@ -377,7 +373,7 @@ mode "windows" {
         # split in vertical orientation
         bindsym v split v
 
-        bindsym $mod+m mode "switch_modes"
+        bindsym $mod+m mode "$switch_modes"
         bindsym Return mode "default"
         bindsym Escape mode "default"
 }
@@ -465,7 +461,7 @@ mode "mouse" {
 
 # return to normal keybindings -- IMPORTANT!!
 
-        bindsym $mod+m mode "switch_modes"
+        bindsym $mod+m mode "$switch_modes"
         bindsym Return mode "default"
         bindsym Escape mode "default"
 }
@@ -485,7 +481,7 @@ mode "workspace" {
         bindsym period   move workspace to output right
 
 # back to normal: Enter or Escape
-        bindsym $mod+m mode "switch_modes"
+        bindsym $mod+m mode "$switch_modes"
         bindsym Return mode "default"
         bindsym Escape mode "default"
 }
@@ -503,7 +499,7 @@ mode "mark_window" {
         bindsym d mark md
         bindsym e mark me
 
-        bindsym $mod+m mode "switch_modes"
+        bindsym $mod+m mode "$switch_modes"
         bindsym Return mode "default"
         bindsym Escape mode "default"
 }
@@ -524,7 +520,7 @@ mode "goto_window" {
         bindsym e [con_mark="me"] focus
         bindsym m [class="^mpv$"] focus; mode "default"
 
-        bindsym $mod+m mode "switch_modes"
+        bindsym $mod+m mode "$switch_modes"
         bindsym Return mode "default"
         bindsym Escape mode "default"
 }
@@ -595,7 +591,7 @@ mode "output" {
         bindsym k exec swaymsg move workspace to output up
         bindsym l exec swaymsg move workspace to output right
 
-        bindsym $mod+m mode "switch_modes"
+        bindsym $mod+m mode "$switch_modes"
         bindsym Escape mode "default"
         bindsym Return mode "default"
 }
@@ -611,24 +607,25 @@ mode "fnkey" {
         bindsym F7 exec xbacklight -inc 10
         bindsym F6 exec xbacklight -dec 10
 
-        bindsym $mod+m mode "switch_modes"
+        bindsym $mod+m mode "$switch_modes"
         bindsym Escape mode "default"
         bindsym Return mode "default"
 }
 
 # user interface tweak mode
 mode "ui_tweak" {
-        bindsym b border toggle
+        bindsym b border toggle; mode "default"
 
-        bindsym $mod+m mode "switch_modes"
+        bindsym $mod+m mode "$switch_modes"
         bindsym Escape mode "default"
         bindsym Return mode "default"
 }
 
 # switch currently active mode
-bindsym $mod+m mode "switch_modes"
+bindsym $mod+m mode "$switch_modes"
 
-mode "switch_modes" {
+set $switch_modes (m)ouse, (r)esize, resize_(p)recise, (w)indows, mar(k), (g)oto, work(s)pace, (f)nkey, (o)utput, (u)i_tweak, (x)selection_run
+mode "$switch_modes" {
         bindsym m mode "mouse"
         bindsym r mode "resize_window"
         bindsym p mode "resize_precise"
@@ -638,7 +635,6 @@ mode "switch_modes" {
         bindsym s mode "workspace"
         bindsym f mode "fnkey"
         bindsym o mode "output"
-        bindsym t mode "go_to_window"
         bindsym u mode "ui_tweak"
         bindsym x mode "xselection_run"
 
@@ -656,19 +652,20 @@ mode "alternative launcher" {
         bindsym i workspace focus; exec orgCapture.sh i; mode "default"
         bindsym c workspace focus; exec orgCapture.sh c; mode "default"
         bindsym j workspace focus; exec orgCapture.sh j; mode "default"
-        bindsym w exec "tiddlywiki.sh"; mode  "default"
-        bindsym n exec exec $terminal --title 'floating fzf live notes files' -e noting.sh; mode "default"
-        bindsym z exec exec $terminal --title 'floating fzf zotero files' -e 'bash -c "fzfLauncher.sh zotero"'; mode "default"
-        bindsym r exec exec readingNotes.py; mode "default"
-        bindsym a exec exec $terminal --title 'floating fzf reading materials' -e 'bash -c "fzfLauncher.sh reading"'; mode "default"
-        bindsym l exec exec $terminal --title 'floating fzf calibre library' -e 'bash -c "fzfLauncher.sh calibre"'; mode "default"
-        bindsym f exec exec $terminal --title 'floating fzf zotero files' -e 'bash -c "fzfLauncher.sh choosing"'; mode "default"
-        bindsym d exec exec $terminal --title 'floating fzf zotero files' -e 'bash -c "fo.sh ~/Downloads"'; mode "default"
-        bindsym o exec $terminal --title 'floating fzf files' -e fo.sh; mode "default"
+        bindsym r exec readingNotes.py; mode "default"
+        bindsym n exec $terminal --title 'floating fzf live notes files' -e noting.sh; mode "default"
+        bindsym z exec $terminal --title 'floating fzf zotero files' -e 'fzfLauncher.sh zotero'; mode "default"
+        bindsym s exec $terminal --title 'floating sway tree' -e 'bash -c "nvim <(swaymsg -t get_tree | jq)"'; mode "default"
+        bindsym a exec $terminal --title 'floating fzf reading materials' -e 'fzfLauncher.sh reading'; mode "default"
+        bindsym l exec $terminal --title 'floating fzf calibre library' -e 'fzfLauncher.sh calibre'; mode "default"
+        bindsym f exec $terminal --title 'floating fzf zotero files' -e 'fzfLauncher.sh choosing'; mode "default"
+        # need shell to expand `~`
+        bindsym d exec $terminal --title 'floating fzf downloaded files' -e 'sh -c "fzfLauncher.sh ~/Downloads"'; mode "default"
+        bindsym o exec $terminal --title 'floating fzf files' -e fzfLauncher.sh; mode "default"
         # bindsym z exec $terminal --title 'floating zotero files' -e zoteroOpen.sh; mode "default"
         bindsym e exec $terminal --title 'floating files' -e ranger; mode "default"
 
-        bindsym $mod+m mode "switch_modes"
+        bindsym $mod+m mode "$switch_modes"
         bindsym Escape mode "default"
         bindsym Return mode "default"
 }
@@ -696,29 +693,7 @@ mode "opener" {
         bindsym z exec zeal; mode "default"
 # bindsym z fullscreen disable; floating enable; resize set 422 240; sticky enable; move position 870 25; mode default
 
-        bindsym $mod+m mode "switch_modes"
-        bindsym Escape mode "default"
-        bindsym Return mode "default"
-}
-
-mode "reference" {
-        bindsym i workspace focus; exec orgCapture.sh i; mode "default"
-        bindsym c workspace focus; exec orgCapture.sh c; mode "default"
-        bindsym j workspace focus; exec orgCapture.sh j; mode "default"
-        bindsym w exec "tiddlywiki.sh"; mode  "default"
-        bindsym n exec exec $terminal --title 'floating fzf live notes files' -e noting.sh; mode "default"
-        bindsym z exec exec $terminal --title 'floating fzf zotero files' -e 'bash -c "fzfLauncher.sh zotero"'; mode "default"
-        bindsym r exec exec readingNotes.py; mode "default"
-        bindsym a exec exec $terminal --title 'floating fzf reading materials' -e 'bash -c "fzfLauncher.sh reading"'; mode "default"
-        bindsym l exec exec $terminal --title 'floating fzf calibre library' -e 'bash -c "fzfLauncher.sh calibre"'; mode "default"
-        bindsym f exec exec $terminal --title 'floating fzf zotero files' -e 'bash -c "fzfLauncher.sh choosing"'; mode "default"
-        bindsym d exec exec $terminal --title 'floating fzf zotero files' -e 'bash -c "fo.sh ~/Downloads"'; mode "default"
-        bindsym o exec $terminal --title 'floating fzf files' -e fo.sh; mode "default"
-# bindsym z exec $terminal --title 'floating zotero files' -e zoteroOpen.sh; mode "default"
-        bindsym m exec $terminal --title 'floating mail' -e mail.sh; mode "default"
-        bindsym e exec $terminal --title 'floating files' -e ranger; mode "default"
-
-        bindsym $mod+m mode "switch_modes"
+        bindsym $mod+m mode "$switch_modes"
         bindsym Escape mode "default"
         bindsym Return mode "default"
 }
@@ -728,7 +703,6 @@ bindsym $mod+x mode "launcher"
 
 mode "launcher" {
         bindsym $mod+x mode "opener"
-        bindsym $mod+r mode "reference"
         bindsym w exec $browser_command; mode "default"
         bindsym e exec env LC_CTYPE=zh_CN.UTF-8 emacsclient -c -a emacs; mode "default"
         # bindsym s exec kupfer; mode "default"
@@ -742,8 +716,6 @@ mode "launcher" {
         bindsym l exec calibre; mode "default"
         # bindsym v exec vlc; mode "default"
         bindsym k exec keepassxc; mode "default"
-        # bindsym n exec exec xfce4-terminal -T 'floating fzf zotero files' -x fzfLauncher.sh notes; mode "default"
-        # bindsym v exec "xdg-open `xclip -selection clipboard -o`"; mode  "default"
         bindsym v exec copyq show; mode "default"
         bindsym t exec $terminal; mode "default"
         bindsym o exec okular; mode  "default"
@@ -751,7 +723,7 @@ mode "launcher" {
         bindsym p exec zathura; mode  "default"
         bindsym m exec telegram-desktop; mode "default"
 
-        bindsym $mod+m mode "switch_modes"
+        bindsym $mod+m mode "$switch_modes"
         bindsym Escape mode "default"
         bindsym Return mode "default"
 }

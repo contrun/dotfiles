@@ -9,7 +9,7 @@ DESTDIR ?= ${HOME}
 DESTROOTDIR ?= /
 # The chezmoi state directory is stored in the same directory as the config file,
 # which may not be writable.
-CHEZMOIFLAGS := -v $(if $(findstring /nix/store/,$(DIR)),,-c $(IGNOREDDIR)/chezmoi.toml)
+CHEZMOIFLAGS := -v --keep-going $(if $(findstring /nix/store/,$(DIR)),,-c $(IGNOREDDIR)/chezmoi.toml)
 
 CHEZMOI.home = chezmoi
 CHEZMOI.root = sudo chezmoi
@@ -57,10 +57,10 @@ remove-build-artifacts:
 home-install: remove-build-artifacts
 	[[ -f $(DESTDIR)/.config/Code/User/settings.json ]] || install -DT $(DIR)/dot_config/Code/User/settings.json $(DESTDIR)/.config/Code/User/settings.json
 	diff $(DESTDIR)/.config/Code/User/settings.json $(DIR)/dot_config/Code/User/settings.json || nvim -d $(DESTDIR)/.config/Code/User/settings.json $(DIR)/dot_config/Code/User/settings.json
-	$(call chezmoi,$@) -D $(call dest,$@) -S $(call src,$@) apply --keep-going || true
+	$(call chezmoi,$@) -D $(call dest,$@) -S $(call src,$@) apply || true
 
 root-install: remove-build-artifacts
-	$(call chezmoi,$@) -D $(call dest,$@) -S $(call src,$@) apply --keep-going || true
+	$(call chezmoi,$@) -D $(call dest,$@) -S $(call src,$@) apply || true
 
 install: home-install root-install
 
