@@ -31,7 +31,7 @@ workspace_layout default
 # font pango:DejaVu Sans Mono 8
 font pango:Source Code Pro 10
 
-default_border none
+default_border pixel
 
 default_floating_border none
 
@@ -650,15 +650,18 @@ bindsym $mod+a mode "alternative launcher"
 
 mode "alternative launcher" {
         bindsym y exec swaymsg "[con_mark=scratchpad_pyradio] scratchpad show" || $terminal_with_app_id scratchpad_pyradio -e pyradio; mode "default"
-        bindsym t exec swaymsg "[con_mark=scratchpad_htop] scratchpad show" || $terminal_with_app_id -e htop; mode "default"
+        bindsym t exec swaymsg "[con_mark=scratchpad_htop] scratchpad show" || $terminal_with_app_id scratchpad_htop -e htop; mode "default"
         bindsym m exec swaymsg "[con_mark=scratchpad_neomutt] scratchpad show" || $terminal_with_app_id scratchpad_neomutt -e neomutt; mode "default"
+        bindsym h exec swaymsg "[con_mark=scratchpad_nnn] scratchpad show" || $terminal_with_app_id scratchpad_nnn -e nnn; mode "default"
+        bindsym x exec swaymsg "[con_mark=scratchpad_sdcv] scratchpad show" || $terminal_with_app_id scratchpad_sdcv -e sdcv; mode "default"
         bindsym i workspace focus; exec orgCapture.sh i; mode "default"
         bindsym c workspace focus; exec orgCapture.sh c; mode "default"
         bindsym j workspace focus; exec orgCapture.sh j; mode "default"
         bindsym r exec readingNotes.py; mode "default"
         bindsym n exec $terminal_with_title 'floating fzf live notes files' -e noting.sh; mode "default"
         bindsym z exec $terminal_with_title 'floating fzf zotero files' -e 'fzfLauncher.sh zotero'; mode "default"
-        bindsym s exec $terminal_with_title 'floating sway tree' -e 'bash -c "nvim <(swaymsg -t get_tree | jq)"'; mode "default"
+        bindsym w exec $terminal_with_title 'floating sway tree' -e 'bash -c "nvim <(swaymsg -t get_tree | jq)"'; mode "default"
+        bindsym s exec swaymsg "[con_mark=scratchpad_smos] scratchpad show" || $terminal_with_app_id scratchpad_smos -e smos; mode "default"
         bindsym a exec $terminal_with_title 'floating fzf reading materials' -e 'fzfLauncher.sh reading'; mode "default"
         bindsym l exec $terminal_with_title 'floating fzf calibre library' -e 'fzfLauncher.sh calibre'; mode "default"
         bindsym f exec $terminal_with_title 'floating fzf zotero files' -e 'fzfLauncher.sh choosing'; mode "default"
