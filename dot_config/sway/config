@@ -2,9 +2,10 @@
 set $mod mod1+mod4
 set $altmod $mod+Control
 
-set $terminal termite
-set $terminal_with_app_id termite --name
-set $terminal_with_title termite --title
+# TODO: `footclient htop` does not worki
+set $terminal foot
+set $terminal_with_app_id $terminal -a
+set $terminal_with_title $terminal -T
 set $reload_command make -C ~/.local/share/chezmoi/ home-install && swaymsg reload
 set $browser_command env MOZ_ENABLE_WAYLAND=1 firefox
 set $scratchpad_terminal_name scratchpad_terminal
@@ -12,7 +13,7 @@ set $scratchpad_terminal_name scratchpad_terminal
 # https://i3wm.org/docs/userguide.html#_focus_wrapping
 focus_wrapping yes
 
-# turn on mouse following
+# turn on mouse fosfllowing
 focus_follows_mouse no
 
 # Use Mouse+$mod to drag floating windows to their wanted position
@@ -56,6 +57,8 @@ exec wlsunset -l 39.9 -L 116.4
 exec aw-server
 exec aw-watcher-afk
 exec aw-watcher-window
+exec_always systemctl --user import-environment WAYLAND_DISPLAY
+exec_always systemctl --user start foot || foot --server
 exec_always kdeconnect-indicator
 exec_always fcitx -d --replace
 exec_always copyq
@@ -100,11 +103,14 @@ for_window [title="scratchpad.*" app_id="termite"] floating enable, move scratch
 for_window [title="floating.*" class="^Xfce4-terminal$"] floating enable
 for_window [title="floating.*" class="^URxvt$"] floating enable
 for_window [title="floating.*" app_id="termite"] floating enable
+for_window [title="floating.*" app_id="foot"] floating enable
 
 for_window [window_role="pop-up"] floating enable
 # chrome extension popups
 # for_window [instance="^crx.*$" window_role="pop-up"]  floating enable
 # for_window [instance="^crx.*$" window_role="pop-up"]  sticky   enable
+
+for_window [shell=".*"] title_format "%title :: %shell"
 
 output "Lenovo Group Limited LEN S28u-10 VNA48A99" {
        scale 1.4
@@ -659,14 +665,14 @@ mode "alternative launcher" {
         bindsym j workspace focus; exec orgCapture.sh j; mode "default"
         bindsym r exec readingNotes.py; mode "default"
         bindsym n exec $terminal_with_title 'floating fzf live notes files' -e noting.sh; mode "default"
-        bindsym z exec $terminal_with_title 'floating fzf zotero files' -e 'fzfLauncher.sh zotero'; mode "default"
-        bindsym w exec $terminal_with_title 'floating sway tree' -e 'bash -c "nvim <(swaymsg -t get_tree | jq)"'; mode "default"
+        bindsym z exec $terminal_with_title 'floating fzf zotero files' -e fzfLauncher.sh zotero; mode "default"
+        bindsym w exec $terminal_with_title 'floating sway tree' -e bash -c 'nvim <(swaymsg -t get_tree | jq)'; mode "default"
         bindsym s exec swaymsg "[con_mark=scratchpad_smos] scratchpad show" || $terminal_with_app_id scratchpad_smos -e smos; mode "default"
-        bindsym a exec $terminal_with_title 'floating fzf reading materials' -e 'fzfLauncher.sh reading'; mode "default"
-        bindsym l exec $terminal_with_title 'floating fzf calibre library' -e 'fzfLauncher.sh calibre'; mode "default"
-        bindsym f exec $terminal_with_title 'floating fzf zotero files' -e 'fzfLauncher.sh choosing'; mode "default"
+        bindsym a exec $terminal_with_title 'floating fzf reading materials' -e fzfLauncher.sh reading; mode "default"
+        bindsym l exec $terminal_with_title 'floating fzf calibre library' -e fzfLauncher.sh calibre; mode "default"
+        bindsym f exec $terminal_with_title 'floating fzf zotero files' -e fzfLauncher.sh choosing; mode "default"
         # need shell to expand `~`
-        bindsym d exec $terminal_with_title 'floating fzf downloaded files' -e 'sh -c "fzfLauncher.sh ~/Downloads"'; mode "default"
+        bindsym d exec $terminal_with_title 'floating fzf downloaded files' -e sh -c "fzfLauncher.sh ~/Downloads"; mode "default"
         bindsym o exec $terminal_with_title 'floating fzf files' -e fzfLauncher.sh; mode "default"
         # bindsym z exec $terminal_with_title 'floating zotero files' -e zoteroOpen.sh; mode "default"
         bindsym e exec $terminal_with_title 'floating files' -e ranger; mode "default"
