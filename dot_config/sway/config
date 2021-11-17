@@ -57,7 +57,7 @@ exec wlsunset -l 39.9 -L 116.4
 exec aw-server
 exec aw-watcher-afk
 exec aw-watcher-window
-exec_always systemctl --user import-environment WAYLAND_DISPLAY
+exec_always systemctl --user import-environment DISPLAY WAYLAND_DISPLAY
 exec_always systemctl --user start foot || foot --server
 exec_always kdeconnect-indicator
 exec_always fcitx -d --replace
