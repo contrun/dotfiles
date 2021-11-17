@@ -217,3 +217,5 @@ cabal.project.local~
 
 *.qcow2
 /result*/
+
+chezmoistate.boltdb

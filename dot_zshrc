@@ -139,7 +139,7 @@ gi() {
 
 test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
 
-ccommand -v zoxide >/dev/null && eval "$(zoxide init zsh)"
+command -v zoxide >/dev/null && eval "$(zoxide init zsh)"
 
 [[ -f ~/.config/broot/launcher/bash/br ]] && . ~/.config/broot/launcher/bash/br
 
@@ -147,6 +147,7 @@ command -v direnv >/dev/null && eval "$(direnv hook zsh)"
 
 test -r ~/.opam/opam-init/init.sh && . ~/.opam/opam-init/init.sh > /dev/null 2>&1
 
+[[ -f ~/.ssh/wsl-agent.sh ]] && source ~/.ssh/wsl-agent.sh
 [[ -f ~/.zshrc.local ]] && source ~/.zshrc.local
 
 HISTFILE=~/.zsh_history
