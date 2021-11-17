@@ -15,6 +15,7 @@ NOPROXY_GROUP=noproxy
 CLASH_DNS_LISTENING_PORT=
 CLASH_REDIRECT_PORT=
 CLASH_TPROXY_PORT=
+DISABLE_UDP_PROXY=
 CLASH_MARK=0x4242
 CLASH_TABLE=100
 PID_FILE="/tmp/clash-redir.pid"
@@ -61,6 +62,7 @@ parse_config() {
     CLASH_DNS_LISTENING_PORT="$(awk -F: '{print $NF}' <<<"$(awk '/\s*dns\s*:/,0' "$CLASH_CONFIG" | awk '/^\s*listen\s*:/ {print $2}' | xargs)")"
     CLASH_REDIRECT_PORT="$(awk '/redir-port/ {print $2}' "$CLASH_CONFIG")"
     CLASH_TPROXY_PORT="$(awk '/tproxy-port/ {print $2}' "$CLASH_CONFIG")"
+    DISABLE_UDP_PROXY="$(sed -n '/disable-udp-proxy/p' "$CLASH_CONFIG")"
 }
 
 run_clash() {
@@ -147,8 +149,10 @@ do_setup_iptables_tproxy() {
     iptables -t mangle -A CLASH_LOCAL -d 255.255.255.255 -j RETURN
     iptables -t mangle -A CLASH_LOCAL -p tcp -j MARK --set-mark "$CLASH_MARK"
     iptables -t mangle -I OUTPUT -p tcp -j CLASH_LOCAL
-    # iptables -t mangle -I CLASH_LOCAL -p udp -j MARK --set-mark "$CLASH_MARK"
-    # iptables -t mangle -I OUTPUT -p udp -j CLASH_LOCAL
+    if [[ -z "$DISABLE_UDP_PROXY" ]]; then
+        iptables -t mangle -A CLASH_LOCAL -p udp -j MARK --set-mark "$CLASH_MARK"
+        iptables -t mangle -I OUTPUT -p udp -j CLASH_LOCAL
+    fi
 
     iptables -t mangle -N CLASH_EXTERNAL
     iptables -t mangle -A CLASH_EXTERNAL -d 0.0.0.0/8 -j RETURN
@@ -162,9 +166,11 @@ do_setup_iptables_tproxy() {
     iptables -t mangle -A CLASH_EXTERNAL -d 100.64.0.0/10 -j RETURN
     iptables -t mangle -A CLASH_EXTERNAL -d 255.255.255.255 -j RETURN
     iptables -t mangle -A CLASH_EXTERNAL -p tcp -j TPROXY --on-port "$CLASH_TPROXY_PORT" --on-ip 127.0.0.1 --tproxy-mark "$CLASH_MARK"
-    # iptables -t mangle -A CLASH_EXTERNAL -p udp -j TPROXY --on-port "$CLASH_TPROXY_PORT" --on-ip 127.0.0.1 --tproxy-mark "$CLASH_MARK"
     iptables -t mangle -I PREROUTING -p tcp -j CLASH_EXTERNAL
-    # iptables -t mangle -I PREROUTING -p udp -j CLASH_EXTERNAL
+    if [[ -z "$DISABLE_UDP_PROXY" ]]; then
+        iptables -t mangle -A CLASH_EXTERNAL -p udp -j TPROXY --on-port "$CLASH_TPROXY_PORT" --on-ip 127.0.0.1 --tproxy-mark "$CLASH_MARK"
+        iptables -t mangle -I PREROUTING -p udp -j CLASH_EXTERNAL
+    fi
 }
 
 do_setup_iptables_redirect() {
@@ -185,6 +191,10 @@ do_setup_iptables_redirect() {
     iptables -t nat -A CLASH_LOCAL -d 255.255.255.255 -j RETURN
     iptables -t nat -A CLASH_LOCAL -p tcp -j REDIRECT --to-ports "$CLASH_REDIRECT_PORT"
     iptables -t nat -I OUTPUT -p tcp -j CLASH_LOCAL
+    if [[ -z "$DISABLE_UDP_PROXY" ]]; then
+        iptables -t nat -A CLASH_LOCAL -p udp -j REDIRECT --to-ports "$CLASH_REDIRECT_PORT"
+        iptables -t nat -I OUTPUT -p udp -j CLASH_LOCAL
+    fi
 
     iptables -t nat -N CLASH_EXTERNAL
     iptables -t nat -A CLASH_EXTERNAL -d 0.0.0.0/8 -j RETURN
@@ -199,6 +209,10 @@ do_setup_iptables_redirect() {
     iptables -t nat -A CLASH_EXTERNAL -d 255.255.255.255 -j RETURN
     iptables -t nat -A CLASH_EXTERNAL -p tcp -j REDIRECT --to-ports "$CLASH_REDIRECT_PORT"
     iptables -t nat -I PREROUTING -p tcp -j CLASH_EXTERNAL
+    if [[ -z "$DISABLE_UDP_PROXY" ]]; then
+        iptables -t nat -A CLASH_EXTERNAL -p udp -j REDIRECT --to-ports "$CLASH_REDIRECT_PORT"
+        iptables -t nat -I PREROUTING -p udp -j CLASH_EXTERNAL
+    fi
 }
 
 stop() {
