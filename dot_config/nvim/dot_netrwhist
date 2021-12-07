@@ -1,0 +1,7 @@
+let g:netrw_dirhistmax  =10
+let g:netrw_dirhistcnt =5
+let g:netrw_dirhist_5='/home/e/Sync/docs/org-mode/org-wunderlist'
+let g:netrw_dirhist_4='/nix/store/1i5xy2757m9kacz5anl4kmn21z2phavx-vm-test-run-nebula'
+let g:netrw_dirhist_3='/home/e'
+let g:netrw_dirhist_2='/home/e/Workspace/kde/src/log/latest/kcoreaddons'
+let g:netrw_dirhist_1='/nix/store/v04j6isr9rqdv7cn0qmyl8lw255vlq12-qemu-host-cpu-only-for-vm-tests-5.1.0/bin'
