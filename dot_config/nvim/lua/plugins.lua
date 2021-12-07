@@ -1,5 +1,5 @@
 -- Plugin definition and loading
--- local execute = vim.api.nvim_command
+local execute = vim.api.nvim_command
 local fn = vim.fn
 local cmd = vim.cmd
 
@@ -79,6 +79,8 @@ return require('packer').startup(function(use)
         'hoob3rt/lualine.nvim',
         config = function() require('plugins.lualine') end
     })
+
+    use {'lambdalisue/suda.vim'}
 
     -- NvimTree
     use({

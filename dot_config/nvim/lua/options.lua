@@ -46,3 +46,9 @@ vim.diagnostic.config {
     underline = true, -- Keep error underline
     signs = true -- Keep gutter signs
 }
+
+if vim.fn.has('persistent_undo') == 1 then
+    vim.o.undofile = true
+    vim.o.undodir = vim.fn.stdpath('data') .. '/undo//'
+end
+

@@ -1,4 +1,5 @@
--- Keymap functions
+local env = vim.env
+
 local M = {}
 
 function M.map(mode, lhs, rhs)
