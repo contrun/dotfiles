@@ -30,7 +30,7 @@ return require('packer').startup(function(use)
     use {'wbthomason/packer.nvim', opt = true}
 
     -- Formatting
-    use 'tpope/vim-commentary'
+    use 'shoukoo/commentary.nvim'
     use 'junegunn/vim-easy-align'
     use 'sbdchd/neoformat'
 
@@ -96,6 +96,11 @@ return require('packer').startup(function(use)
         run = ':TSUpdate'
     })
 
+    use {
+        'nvim-orgmode/orgmode',
+        config = function() require('plugins.orgmode') end
+    }
+
     -- Telescope
     use({
         'nvim-telescope/telescope.nvim',
@@ -128,6 +133,10 @@ return require('packer').startup(function(use)
         requires = {'nvim-lua/plenary.nvim', 'sindrets/diffview.nvim'},
         config = function() require('plugins.neogit') end
     }
+
+    -- use {'conweller/findr.vim'}
+    -- Waiting for https://github.com/conweller/findr.vim/pull/29
+    use {'contrun/findr.vim'}
 
     use {
         'rmagatti/auto-session',

@@ -26,8 +26,8 @@ function M.common_on_attach(client, bufnr)
     bufnnoremap("gi", "<Cmd>lua vim.lsp.buf.implementation()<CR>")
 
     -- List symbol uses
-    bufnnoremap("gr", "<cmd>lua vim.lsp.buf.references()<CR>") -- Uses quickfix
-    -- bufnnoremap("gr", "<cmd>Telescope lsp_references<CR>")  -- Uses Telescope
+    -- bufnnoremap("gr", "<cmd>lua vim.lsp.buf.references()<CR>") -- Uses quickfix
+    bufnnoremap("gr", "<cmd>Telescope lsp_references<CR>") -- Uses Telescope
 
     -- Rename all references of symbol
     bufnnoremap("gR", "<Cmd>lua vim.lsp.buf.rename()<CR>")

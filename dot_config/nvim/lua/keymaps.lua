@@ -64,8 +64,10 @@ nnoremap("<leader>qc", "<Cmd>cclose<CR>")
 nnoremap("<leader>qn", "<Cmd>cnext<CR>")
 nnoremap("<leader>qp", "<Cmd>cprev<CR>")
 
--- Open file in default application
 nnoremap("<leader>xo", "<Cmd> !xdg-open %<CR><CR>")
+
+nnoremap("<leader>xs", "<Cmd>source $MYVIMRC<CR>")
+nnoremap("<leader>xp", "<Cmd>PackerSync<CR>")
 
 nnoremap("<leader>g", "<Cmd>Neogit<CR>")
 
@@ -86,7 +88,7 @@ nnoremap("<leader>b", "<Cmd>Telescope buffers<CR>")
 nnoremap("<leader>/", "<Cmd>Telescope live_grep<CR>")
 
 -- NvimTree
-nnoremap("<leader>e", "<Cmd>NvimTreeToggle<CR>")
+nnoremap("<leader>e", "<Cmd>FindrParentDir<CR>")
 
 nnoremap("<leader>=", "<Cmd>Neoformat<CR>")
 
