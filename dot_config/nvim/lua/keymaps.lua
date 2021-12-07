@@ -22,21 +22,14 @@ inoremap("<C-SPACE>", "<C-x><C-o>")
 nnoremap("<C-s>", ":w<CR>")
 
 -- Close buffer
-nnoremap("<C-c>", "<Cmd>q<CR>")
+nnoremap("<A-z>", "<Cmd>q<CR>")
 
--- Move around windows
-nnoremap("<C-h>", "<C-w>h")
-nnoremap("<C-j>", "<C-w>j")
-nnoremap("<C-k>", "<C-w>k")
-nnoremap("<C-l>", "<C-w>l")
-
--- Switch buffers (needs nvim-bufferline)
-nnoremap("<TAB>", ":BufferLineCycleNext<CR>")
-nnoremap("<S-TAB>", ":BufferLineCyclePrev<CR>")
+nnoremap("[b", "<Cmd>bprevious<CR>")
+nnoremap("]b", "<Cmd>bnext<CR>")
 
 -- Splits
-nnoremap("<leader>ws", "<Cmd>split<CR>")
-nnoremap("<leader>vs", "<Cmd>vsplit<CR>")
+nnoremap("<leader>sh", "<Cmd>split<CR>")
+nnoremap("<leader>sv", "<Cmd>vsplit<CR>")
 
 -- Delete buffer
 nnoremap("<A-w>", ":bd<CR>")

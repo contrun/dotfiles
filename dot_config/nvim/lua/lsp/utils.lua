@@ -17,26 +17,30 @@ function M.common_on_attach(client, bufnr)
         vim.api.nvim_buf_set_keymap(bufnr, 'n', lhs, rhs, opts)
     end
 
-    -- Keymaps: we need to define keymaps for each of the LSP functionalities manually
-    -- Go to definition and declaration (use leader to presever standard use of 'gd')
     bufnnoremap("gd", "<Cmd>lua vim.lsp.buf.definition()<CR>")
     bufnnoremap("gD", "<Cmd>lua vim.lsp.buf.declaration()<CR>")
-
-    -- Go to implementation
     bufnnoremap("gi", "<Cmd>lua vim.lsp.buf.implementation()<CR>")
 
     -- List symbol uses
     -- bufnnoremap("gr", "<cmd>lua vim.lsp.buf.references()<CR>") -- Uses quickfix
     bufnnoremap("gr", "<cmd>Telescope lsp_references<CR>") -- Uses Telescope
-
-    -- Rename all references of symbol
     bufnnoremap("gR", "<Cmd>lua vim.lsp.buf.rename()<CR>")
-
-    -- Inspect function
     bufnnoremap("K", "<Cmd>lua vim.lsp.buf.hover()<CR>")
-
-    -- Signature help
     bufnnoremap("<C-k>", "<Cmd>lua vim.lsp.buf.signature_help()<CR>")
+
+    bufnnoremap('<leader>lw', '<cmd>lua vim.lsp.buf.add_workspace_folder()<CR>')
+    bufnnoremap('<leader>lr',
+                '<cmd>lua vim.lsp.buf.remove_workspace_folder()<CR>')
+    bufnnoremap('<leader>lW',
+                '<cmd>lua print(vim.inspect(vim.lsp.buf.list_workspace_folders()))<CR>')
+    bufnnoremap('<leader>lt', '<cmd>lua vim.lsp.buf.type_definition()<CR>')
+    bufnnoremap('<leader>la', '<cmd>lua vim.lsp.buf.code_action()<CR>')
+    bufnnoremap('<leader>le', '<cmd>lua vim.diagnostic.open_float()<CR>')
+    bufnnoremap('[d', '<cmd>lua vim.diagnostic.goto_prev()<CR>')
+    bufnnoremap(']d', '<cmd>lua vim.diagnostic.goto_next()<CR>')
+    bufnnoremap('<leader>lq', '<cmd>lua vim.diagnostic.setloclist()<CR>')
+    bufnnoremap("<leader>ls", "<cmd>Telescope lsp_document_symbols<CR>")
+    bufnnoremap("<leader>l/", "<cmd>Telescope lsp_workspace_symbols<CR>")
 
     if client.resolved_capabilities.document_formatting then
         cmd("autocmd BufWritePre <buffer> lua vim.lsp.buf.formatting_sync()")
