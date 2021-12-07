@@ -67,11 +67,11 @@ nnoremap("<leader>qp", "<Cmd>cprev<CR>")
 -- Open file in default application
 nnoremap("<leader>xo", "<Cmd> !xdg-open %<CR><CR>")
 
--- Fugitive
-nnoremap("<leader>G", "<Cmd>G<CR>")
+nnoremap("<leader>g", "<Cmd>Neogit<CR>")
 
 -- Show line diagnostics
-nnoremap("<leader>d", '<Cmd>lua vim.diagnostic.open_float(0, {scope = "line"})<CR>')
+nnoremap("<leader>d",
+         '<Cmd>lua vim.diagnostic.open_float(0, {scope = "line"})<CR>')
 
 -- Open local diagnostics in local list
 nnoremap("<leader>D", "<Cmd>lua vim.diagnostic.setloclist()<CR>")
@@ -80,13 +80,16 @@ nnoremap("<leader>D", "<Cmd>lua vim.diagnostic.setloclist()<CR>")
 nnoremap("<leader><A-d>", "<Cmd>lua vim.diagnostic.setqflist()<CR>")
 
 -- Telescope
-nnoremap("<leader>ff", "<Cmd>Telescope find_files<CR>")
-nnoremap("<leader>fb", "<Cmd>Telescope buffers<CR>")
-nnoremap("<leader>fg", "<Cmd>Telescope live_grep<CR>")
+nnoremap("<leader>f", "<Cmd>Telescope find_files<CR>")
+nnoremap("<leader>o", "<Cmd>Telescope oldfiles<CR>")
+nnoremap("<leader>b", "<Cmd>Telescope buffers<CR>")
+nnoremap("<leader>/", "<Cmd>Telescope live_grep<CR>")
 
 -- NvimTree
 nnoremap("<leader>e", "<Cmd>NvimTreeToggle<CR>")
 
+nnoremap("<leader>=", "<Cmd>Neoformat<CR>")
+
 -- EasyAlign
--- xmap("ga", "<cmd>EasyAlign")
--- nmap("ga", "<cmd>EasyAlign")
+vnoremap("ga", "<Cmd>EasyAlign<CR>")
+nnoremap("ga", "<Cmd>EasyAlign<CR>")

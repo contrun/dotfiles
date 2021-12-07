@@ -20,24 +20,24 @@ function M.common_on_attach(client, bufnr)
 
   -- Keymaps: we need to define keymaps for each of the LSP functionalities manually
   -- Go to definition and declaration (use leader to presever standard use of 'gd')
-  bufnnoremap("<leader>gd", "<Cmd>lua vim.lsp.buf.definition()<CR>")
-  bufnnoremap("<leader>gD", "<Cmd>lua vim.lsp.buf.declaration()<CR>")
+  bufnnoremap("gd", "<Cmd>lua vim.lsp.buf.definition()<CR>")
+  bufnnoremap("gD", "<Cmd>lua vim.lsp.buf.declaration()<CR>")
 
   -- Go to implementation
-  bufnnoremap("<leader>gi", "<Cmd>lua vim.lsp.buf.implementation()<CR>")
+  bufnnoremap("gi", "<Cmd>lua vim.lsp.buf.implementation()<CR>")
 
   -- List symbol uses
-  -- bufnnoremap("<leader>gr", "<cmd>lua vim.lsp.buf.references()<CR>")  -- Uses quickfix
-  bufnnoremap("<leader>gr", "<cmd>Telescope lsp_references<CR>")  -- Uses Telescope
+  bufnnoremap("gr", "<cmd>lua vim.lsp.buf.references()<CR>")  -- Uses quickfix
+  -- bufnnoremap("gr", "<cmd>Telescope lsp_references<CR>")  -- Uses Telescope
+
+  -- Rename all references of symbol
+  bufnnoremap("gR", "<Cmd>lua vim.lsp.buf.rename()<CR>")
 
   -- Inspect function
   bufnnoremap("K", "<Cmd>lua vim.lsp.buf.hover()<CR>")
 
   -- Signature help
   bufnnoremap("<C-k>", "<Cmd>lua vim.lsp.buf.signature_help()<CR>")
-
-  -- Rename all references of symbol
-  bufnnoremap("<leader>R", "<Cmd>lua vim.lsp.buf.rename()<CR>")
 
   if client.resolved_capabilities.document_formatting then
     cmd("autocmd BufWritePre <buffer> lua vim.lsp.buf.formatting_sync()")
