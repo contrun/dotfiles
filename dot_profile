@@ -4,7 +4,7 @@
 
 pathadd() {
     newelement=${1%/}
-    if [ -d "$1" ] && ! echo $PATH | grep -E -q "(^|:)$newelement($|:)" ; then
+    if [ -d "$1" ] && ! echo "$PATH" | grep -E -q "(^|:)$newelement($|:)" ; then
         if [ "$2" = "after" ] ; then
             PATH="$PATH:$newelement"
         else
@@ -14,7 +14,7 @@ pathadd() {
 }
 
 pathrm() {
-    PATH="$(echo -n $PATH | sed -e "s;\(^\|:\)${1%/}\(:\|\$\);\1\2;g" -e 's;^:\|:$;;g' -e 's;::;:;g')"
+    PATH="$(echo -n "$PATH" | sed -e "s;\(^\|:\)${1%/}\(:\|\$\);\1\2;g" -e 's;^:\|:$;;g' -e 's;::;:;g')"
 }
 
 export MYPATH="${MYPATH:-$HOME/.bin}"
@@ -28,7 +28,9 @@ if which ruby >/dev/null && which gem >/dev/null; then
 fi
 
 declare -a PATH_TO_ADD=( "$RUBYREMPATH" "$NODE_PATH/node_modules/.bin" "$GOPATH/bin" "$CARGOPATH/bin" "$CABALPATH/bin" "$LOCALPATH" "$MYPATH" )
-for p in $PATH_TO_ADD; do
+for p in "${PATH_TO_ADD[@]}"; do
     pathadd "$p"
 done
 export PATH
+
+[[ -f ~/.ssh/wsl-agent.sh ]] && source ~/.ssh/wsl-agent.sh
