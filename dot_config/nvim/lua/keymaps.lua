@@ -19,7 +19,7 @@ inoremap("kj", "<Esc>")
 inoremap("<C-SPACE>", "<C-x><C-o>")
 
 -- Save with Ctrl + S
-nnoremap("<C-s>", ":w<CR>")
+nnoremap("<C-s>", "<Cmd>w<CR>")
 
 -- Close buffer
 nnoremap("<A-z>", "<Cmd>q<CR>")
@@ -27,12 +27,13 @@ nnoremap("<A-z>", "<Cmd>q<CR>")
 nnoremap("[b", "<Cmd>bprevious<CR>")
 nnoremap("]b", "<Cmd>bnext<CR>")
 
--- Splits
-nnoremap("<leader>sh", "<Cmd>split<CR>")
-nnoremap("<leader>sv", "<Cmd>vsplit<CR>")
+nnoremap("<C-[>", "<Cmd>bprevious<CR>")
+nnoremap("<C-]>", "<Cmd>bnext<CR>")
 
 -- Delete buffer
-nnoremap("<A-w>", ":bd<CR>")
+nnoremap("<A-w>", "<Cmd>bd<CR>")
+nnoremap("<C-w>d", "<Cmd>bd<CR>")
+nnoremap("<C-w><C-d>", "<Cmd>bd<CR>")
 
 -- Yank to end of line
 nnoremap("Y", "y$")
@@ -58,7 +59,6 @@ nnoremap("<leader>qn", "<Cmd>cnext<CR>")
 nnoremap("<leader>qp", "<Cmd>cprev<CR>")
 
 nnoremap("<leader>xo", "<Cmd> !xdg-open %<CR><CR>")
-
 nnoremap("<leader>xs", "<Cmd>source $MYVIMRC<CR>")
 nnoremap("<leader>xp", "<Cmd>PackerSync<CR>")
 
@@ -80,7 +80,6 @@ nnoremap("<leader>o", "<Cmd>Telescope oldfiles<CR>")
 nnoremap("<leader>b", "<Cmd>Telescope buffers<CR>")
 nnoremap("<leader>/", "<Cmd>Telescope live_grep<CR>")
 
--- NvimTree
 nnoremap("<leader>e", "<Cmd>FindrParentDir<CR>")
 
 nnoremap("<leader>=", "<Cmd>Neoformat<CR>")

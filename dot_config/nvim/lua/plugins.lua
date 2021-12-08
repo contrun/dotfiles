@@ -121,6 +121,29 @@ return require('packer').startup(function(use)
         end
     }
 
+    use({
+        "aserowy/tmux.nvim",
+        config = function()
+            require("tmux").setup({
+                -- overwrite default configuration
+                -- here, e.g. to enable default bindings
+                copy_sync = {
+                    -- enables copy sync and overwrites all register actions to
+                    -- sync registers *, +, unnamed, and 0 till 9 from tmux in advance
+                    enable = true
+                },
+                navigation = {
+                    -- enables default keybindings (C-hjkl) for normal mode
+                    enable_default_keybindings = true
+                },
+                resize = {
+                    -- enables default keybindings (A-hjkl) for normal mode
+                    enable_default_keybindings = true
+                }
+            })
+        end
+    })
+
     use {
         "blackCauldron7/surround.nvim",
         config = function()
@@ -142,9 +165,17 @@ return require('packer').startup(function(use)
         'rmagatti/auto-session',
         config = function()
             require('auto-session').setup {
-                log_level = 'info',
-                auto_session_suppress_dirs = {'~/'}
+                log_level = 'debug',
+                auto_session_suppress_dirs = {'~/', '~/Workspace/'}
             }
+        end
+    }
+
+    use {
+        'rmagatti/session-lens',
+        requires = {'rmagatti/auto-session', 'nvim-telescope/telescope.nvim'},
+        config = function()
+            require('session-lens').setup({ --[[your custom config--]] })
         end
     }
 
