@@ -51,5 +51,3 @@ if vim.fn.has('persistent_undo') == 1 then
     vim.o.undofile = true
     vim.o.undodir = vim.fn.stdpath('data') .. '/undo//'
 end
-
-vim.cmd('language en_US.utf8')

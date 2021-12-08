@@ -38,6 +38,8 @@ return require('packer').startup(function(use)
     use 'folke/tokyonight.nvim'
     use 'marko-cerovac/material.nvim'
 
+    use 'ryvnf/readline.vim'
+
     -- use 'airblade/vim-gitgutter'  -- The standard one I use
     -- Trying out gitsigns
     use({

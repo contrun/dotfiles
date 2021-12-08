@@ -8,3 +8,5 @@ vim.cmd("command! HelpTags Telescope help_tags")
 
 -- Create ctags
 vim.cmd('command! MakeCTags !ctags -R --exclude=@.ctagsignore .')
+
+vim.cmd('language en_US.utf8')
