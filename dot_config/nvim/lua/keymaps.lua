@@ -46,6 +46,17 @@ vnoremap("<leader>y", '"+y')
 nnoremap("<leader>p", '"+p')
 vnoremap("<leader>p", '"+p')
 
+-- tmux
+nnoremap("<C-SPACE>h", [[<Cmd>lua require("tmux").move_left()<CR>]])
+nnoremap("<C-SPACE>j", [[<Cmd>lua require("tmux").move_bottom()<CR>]])
+nnoremap("<C-SPACE>k", [[<Cmd>lua require("tmux").move_top()<CR>]])
+nnoremap("<C-SPACE>l", [[<Cmd>lua require("tmux").move_right()<CR>]])
+
+nnoremap("<C-SPACE>H", [[<Cmd>lua require("tmux").resize_left()<CR>]])
+nnoremap("<C-SPACE>J", [[<Cmd>lua require("tmux").resize_bottom()<CR>]])
+nnoremap("<C-SPACE>K", [[<Cmd>lua require("tmux").resize_top()<CR>]])
+nnoremap("<C-SPACE>L", [[<Cmd>lua require("tmux").resize_right()<CR>]])
+
 -- Local list
 nnoremap("<leader>ll", "<Cmd>lopen<CR>")
 nnoremap("<leader>lc", "<Cmd>lclose<CR>")

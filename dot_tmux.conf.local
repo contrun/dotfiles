@@ -303,24 +303,14 @@ set -g set-titles off          # set terminal title
 
 is_vim="ps -o state= -o comm= -t '#{pane_tty}' | grep -iqE '^[^TXZ ]+ +(\\S+\\/)?g?(view|n?vim?x?)(diff)?$'"
 
-bind-key -n 'C-h' if-shell "$is_vim" 'send-keys C-h' 'select-pane -L'
-bind-key -n 'C-j' if-shell "$is_vim" 'send-keys C-j' 'select-pane -D'
-bind-key -n 'C-k' if-shell "$is_vim" 'send-keys C-k' 'select-pane -U'
-bind-key -n 'C-l' if-shell "$is_vim" 'send-keys C-l' 'select-pane -R'
+bind-key -r h if-shell "$is_vim" 'send-prefix; send-keys h' 'select-pane -L'
+bind-key -r j if-shell "$is_vim" 'send-prefix; send-keys j' 'select-pane -D'
+bind-key -r k if-shell "$is_vim" 'send-prefix; send-keys k' 'select-pane -U'
+bind-key -r l if-shell "$is_vim" 'send-prefix; send-keys l' 'select-pane -R'
 
-bind-key -T copy-mode-vi 'C-h' select-pane -L
-bind-key -T copy-mode-vi 'C-j' select-pane -D
-bind-key -T copy-mode-vi 'C-k' select-pane -U
-bind-key -T copy-mode-vi 'C-l' select-pane -R
-
-bind -n 'M-h' if-shell "$is_vim" 'send-keys M-h' 'resize-pane -L 1'
-bind -n 'M-j' if-shell "$is_vim" 'send-keys M-j' 'resize-pane -D 1'
-bind -n 'M-k' if-shell "$is_vim" 'send-keys M-k' 'resize-pane -U 1'
-bind -n 'M-l' if-shell "$is_vim" 'send-keys M-l' 'resize-pane -R 1'
-
-bind-key -T copy-mode-vi M-h resize-pane -L 1
-bind-key -T copy-mode-vi M-j resize-pane -D 1
-bind-key -T copy-mode-vi M-k resize-pane -U 1
-bind-key -T copy-mode-vi M-l resize-pane -R 1
+bind -r H if-shell "$is_vim" 'send-prefix; send-keys H' 'resize-pane -L 1'
+bind -r J if-shell "$is_vim" 'send-prefix; send-keys J' 'resize-pane -D 1'
+bind -r K if-shell "$is_vim" 'send-prefix; send-keys K' 'resize-pane -U 1'
+bind -r L if-shell "$is_vim" 'send-prefix; send-keys L' 'resize-pane -R 1'
 
 unbind C-c
