@@ -145,6 +145,18 @@ return require('packer').startup(function(use)
     })
 
     use {
+        "folke/trouble.nvim",
+        requires = "kyazdani42/nvim-web-devicons",
+        config = function()
+            require("trouble").setup {
+                -- your configuration comes here
+                -- or leave it empty to use the default settings
+                -- refer to the configuration section below
+            }
+        end
+    }
+
+    use {
         "blackCauldron7/surround.nvim",
         config = function()
             require"surround".setup {mappings_style = "sandwich"}
