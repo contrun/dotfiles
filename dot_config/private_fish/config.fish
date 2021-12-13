@@ -3,5 +3,7 @@ if status is-interactive
 end
 
 function fish_greeting
-    fortune -a
+    if type -q fortune
+        fortune -a
+    end
 end
