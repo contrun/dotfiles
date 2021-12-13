@@ -180,7 +180,7 @@ return require('packer').startup(function(use)
         config = function()
             require('auto-session').setup {
                 log_level = 'debug',
-                auto_session_suppress_dirs = {'~/', '~/Workspace/'}
+                auto_session_suppress_dirs = {'~/', '~/Workspace/', '/tmp/'}
             }
         end
     }

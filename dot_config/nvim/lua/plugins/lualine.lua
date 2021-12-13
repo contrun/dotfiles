@@ -40,10 +40,9 @@ require('lualine').setup({
                 end,
                 color = {fg = '#ffffff', gui = 'bold'},
                 separator = ""
-            },
-            {
+            }, {
                 'diagnostics',
-                sources = {'nvim_lsp'},
+                sources = {'nvim_diagnostic'},
                 sections = {'error', 'warn', 'info'}
             }
         },
