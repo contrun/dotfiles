@@ -1482,22 +1482,18 @@ With arg N, insert N newlines."
 ;; TODO: link commits from vc-log to magit-show-commit
 ;; TODO: smerge-mode
 (use-package git-blamed)
-(use-package gitignore-mode)
-(use-package gitconfig-mode)
+(use-package gitignore-templates)
+(use-package gitconfig)
 (use-package git-timemachine)
-
 (use-package github-clone)
 (use-package magithub)
 (use-package magit-gh-pulls)
 (use-package git-link)
 (use-package browse-at-remote)
-(use-package gitignore-templates)
 (use-package github-review)
 (use-package org2issue)
 (use-package github-stars)
 (use-package git-timemachine)
-(use-package gitconfig-mode)
-(use-package gitignore-mode)
 (use-package orgit)
 (use-package yagist)
 
@@ -1599,9 +1595,6 @@ With arg N, insert N newlines."
   :init
   (defun my-prog-mode-hook ()
     (linum-mode 1)))
-
-
-(use-package helm-gitignore)
 
 (use-package clang-format
   :config
@@ -2693,7 +2686,7 @@ With arg N, insert N newlines."
      (gnuplot . t)
      (haskell . nil)
      (latex . t)
-     (ledger . t)
+     ;; (ledger . t)
      (ocaml . nil)
      (octave . t)
      ;; (plantuml . t)
