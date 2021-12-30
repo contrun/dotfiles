@@ -31,8 +31,11 @@ return require('packer').startup(function(use)
 
     -- Formatting
     use 'shoukoo/commentary.nvim'
-    use 'junegunn/vim-easy-align'
     use 'sbdchd/neoformat'
+
+    -- Easier navigation
+    use 'junegunn/vim-easy-align'
+    use 'andymass/vim-matchup'
 
     -- Themes
     use 'folke/tokyonight.nvim'

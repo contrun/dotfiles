@@ -536,6 +536,8 @@ pressing `<leader> m`. Set it to `nil` to disable it.")
 (use-package fd-dired
   :after dired)
 
+(use-package dirvish)
+
 (use-package fzf)
 
 (use-package sunrise-commander
