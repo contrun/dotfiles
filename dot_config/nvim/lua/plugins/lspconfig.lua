@@ -1,7 +1,8 @@
+local lsp_config = require('lspconfig')
 local lsp_installer = require("nvim-lsp-installer")
-local utils = require('lsp.utils')
+local lsp_utils = require('lsp.utils')
 
-local common_on_attach = utils.common_on_attach
+local common_on_attach = lsp_utils.common_on_attach
 -- add capabilities from nvim-cmp
 local capabilities = vim.lsp.protocol.make_client_capabilities()
 capabilities = require('cmp_nvim_lsp').update_capabilities(capabilities)
@@ -25,17 +26,28 @@ lsp_installer.on_server_ready(function(server)
     server:setup(server_options)
 end)
 
-local servers = {
+local lsp_installer_servers = {
     "bashls", "clangd", "pyright", "jsonls", "dockerls", "rust_analyzer", "hls",
     "tsserver", "elixirls", "jdtls", "zls", "metals", "gopls", "texlab",
     "sumneko_lua"
 }
 
-for _, name in pairs(servers) do
+for _, name in pairs(lsp_installer_servers) do
     local server_is_found, server = lsp_installer.get_server(name)
     if server_is_found then
         if not server:is_installed() then server:install() end
     end
+end
+
+local other_servers = {
+    "metals"
+}
+
+for _, server in ipairs(other_servers) do
+    lsp_config[server].setup({
+        on_attach = common_on_attach,
+        capabilities = capabilities
+    })
 end
 
 require('lsp.sumneko')

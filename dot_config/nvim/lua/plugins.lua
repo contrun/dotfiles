@@ -57,6 +57,10 @@ return require('packer').startup(function(use)
         config = function() require('plugins.lspconfig') end
     })
     use 'williamboman/nvim-lsp-installer' -- Helper for installing most language servers
+    -- use({'scalameta/nvim-metals', requires = { "nvim-lua/plenary.nvim" }})
+
+    use 'mfussenegger/nvim-dap'
+    use { "rcarriga/nvim-dap-ui", requires = {"mfussenegger/nvim-dap"} }
 
     -- Autocomplete
     use "L3MON4D3/LuaSnip" -- Snippet engine

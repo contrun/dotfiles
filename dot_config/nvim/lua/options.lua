@@ -11,6 +11,8 @@ vim.wo.relativenumber = true
 vim.wo.signcolumn = 'yes'
 vim.wo.cursorline = true
 
+vim.opt_global.shortmess:remove("F")
+
 -- Behaviour
 vim.o.whichwrap = 'b,s,h,l,<,>,[,]' --  wrap left/right key to previouse/next line
 vim.o.hlsearch = false
