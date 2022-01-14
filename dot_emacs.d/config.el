@@ -536,7 +536,7 @@ pressing `<leader> m`. Set it to `nil` to disable it.")
 (use-package fd-dired
   :after dired)
 
-(use-package dirvish)
+;; (use-package dirvish)
 
 (use-package fzf)
 
@@ -1879,10 +1879,7 @@ With arg N, insert N newlines."
   :custom
   (csv-separators '("," ";" "|" " ")))
 
-(use-package erlang
-  :init
-  (require 'erlang-start)
-  )
+(use-package erlang)
 
 (use-package json-mode)
 (use-package js2-mode)
