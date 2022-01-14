@@ -12,7 +12,7 @@ function M.common_on_attach(client, bufnr)
     vim.api.nvim_buf_set_option(bufnr, "omnifunc", "v:lua.vim.lsp.omnifunc")
 
     -- Helper function
-    local opts = {noremap = true, silent = true}
+    local opts = {noremap = false, silent = true}
     local function bufnnoremap(lhs, rhs)
         vim.api.nvim_buf_set_keymap(bufnr, 'n', lhs, rhs, opts)
     end
@@ -33,6 +33,7 @@ function M.common_on_attach(client, bufnr)
                 '<cmd>lua vim.lsp.buf.remove_workspace_folder()<CR>')
     bufnnoremap('<leader>lW',
                 '<cmd>lua print(vim.inspect(vim.lsp.buf.list_workspace_folders()))<CR>')
+    bufnnoremap('<leader>lv', '<cmd>Vista nvim_lsp<CR>')
     bufnnoremap('<leader>lt', '<cmd>lua vim.lsp.buf.type_definition()<CR>')
     bufnnoremap('<leader>la', '<cmd>lua vim.lsp.buf.code_action()<CR>')
     bufnnoremap('<leader>le', '<cmd>lua vim.diagnostic.open_float()<CR>')

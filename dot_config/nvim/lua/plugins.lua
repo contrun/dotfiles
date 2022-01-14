@@ -65,6 +65,8 @@ return require('packer').startup(function(use)
     -- Autocomplete
     use "L3MON4D3/LuaSnip" -- Snippet engine
 
+    use "liuchengxu/vista.vim"
+
     use({
         "hrsh7th/nvim-cmp",
         -- Sources for nvim-cmp

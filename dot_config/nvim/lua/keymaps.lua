@@ -75,6 +75,8 @@ nnoremap("<leader>qc", "<Cmd>cclose<CR>")
 nnoremap("<leader>qn", "<Cmd>cnext<CR>")
 nnoremap("<leader>qp", "<Cmd>cprev<CR>")
 
+nnoremap("<leader>lv", "<Cmd>Vista<CR>")
+
 nnoremap("<leader>xo", "<Cmd> !xdg-open %<CR><CR>")
 nnoremap("<leader>xs", "<Cmd>source $MYVIMRC<CR>")
 nnoremap("<leader>xp", "<Cmd>PackerSync<CR>")

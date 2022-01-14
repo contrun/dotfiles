@@ -40,7 +40,7 @@ for _, name in pairs(lsp_installer_servers) do
 end
 
 local other_servers = {
-    "metals"
+    "metals", "rnix", "gopls"
 }
 
 for _, server in ipairs(other_servers) do
