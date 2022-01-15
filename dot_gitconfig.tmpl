@@ -1,23 +1,44 @@
 [user]
-    email = uuuuuu@protonmail.com
-    name = YI
-; [http]
-;     proxy = http://127.0.0.1:8118
-; [https]
-;     proxy = http://127.0.0.1:8118
-[color]
-    ui = auto
-[pull]
-    rebase = true
-[github]
-    user = contrun
-[alias]
-    ignore = "!gi() { curl -sL https://www.gitignore.io/api/$@ ;}; gi"
-; [core]
-;     excludesFile = ~/.gitignore
-[rebase]
-    autoStash = true
-[init]
-    defaultBranch = main
+	email = uuuuuu@protonmail.com
+	name = YI
+
 [http]
-    cookiefile = ~/.gitcookies
+	cookiefile = ~/.gitcookies
+; 	proxy = http://127.0.0.1:8118
+
+; [https]
+; 	proxy = http://127.0.0.1:8118
+
+[color]
+	ui = auto
+
+[pull]
+	rebase = true
+
+[github]
+	user = contrun
+
+[alias]
+	ignore = "!gi() { curl -sL https://www.gitignore.io/api/$@ ;}; gi"
+
+[rebase]
+	autoStash = true
+
+[init]
+	defaultBranch = main
+
+[core]
+	pager = delta
+;	excludesFile = ~/.gitignore
+
+[interactive]
+	diffFilter = delta --color-only
+
+[delta]
+	navigate = true
+
+[merge]
+	conflictstyle = diff3
+
+[diff]
+	colorMoved = default
