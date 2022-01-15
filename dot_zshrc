@@ -155,3 +155,5 @@ SAVEHIST=$HISTSIZE
 setopt INC_APPEND_HISTORY
 setopt HIST_IGNORE_DUPS
 setopt EXTENDED_HISTORY
+
+[[ -f ~/.ssh/wsl-agent.sh ]] && source ~/.ssh/wsl-agent.sh
