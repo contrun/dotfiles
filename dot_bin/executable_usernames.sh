@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 set -e
-# suppress curl output
 name=unamed
 # placeholder will be replaced by actual username
 placeholder=ttestt
@@ -9,20 +8,25 @@ multiplyInstances=y
 # shortest username length, default value 1
 # max processes to run
 maxProcs=10
+# shortest username length, default value 20
 lowerBound=1
 # longest username length, default value 20
 upperBound=20
-# failure pattern
+# If this pattern matches output, the username is deemed unavailable
 failurePattern=
-# success pattern
+# If this pattern matches output, the username is deemed available
 successPattern=
-# success file
-successFile=useravi
-# failure file
-failureFile=useruna
-# error file
-errorFile=usererr
-# curl command to replace
+# raw file to save all outputs
+rawFile=usernames.raw
+# file to save available usernames
+successFile=usernames.available
+# file to save unavailable usernames
+failureFile=usernames.unavailable
+# file to save usernames whose availbility is inconclusive
+inconlusiveFile=usernames.inconclusive
+# file to save command with exit code non-zero results
+errorFile=usernames.error
+# web request command to replace
 cmd=()
 
 while getopts ":n:p:P:m:l:u:s:f:S:F:E:" opt; do
@@ -73,42 +77,33 @@ if [[ "0" -eq "${#cmd}" ]]; then
         echo "command not provided" >&2
         exit 1
 fi
-if [[ -z "$successPattern" ]]; then
-        echo "success pattern not provided" >&2
-        exit 1
-fi
-if [[ -z "$failurePattern" ]]; then
-        echo "failure pattern not provided" >&2
-        exit 1
-fi
 
-curl() {
-        command curl -sS "$@"
-}
-
-export cmd placeholder failureFile failurePattern successFile successPattern errorFile name
+export cmd placeholder rawFile inconlusiveFile failureFile failurePattern successFile successPattern errorFile name
 checkUserName() {
         username="$0"
         newcmd=("${@/$placeholder/$username}")
-        result="$("${newcmd[@]}")"
+        result="$("${newcmd[@]}" 2>&1)"
         if [[ $? == 0 ]]; then
-                if grep -q -E "$failurePattern" <<<"$result"; then
+                if [[ -n "$failurePattern" ]] && grep -q -E "$failurePattern" <<<"$result"; then
                         tee -a "${failureFile}" <<<"$name username unavailable: $username"
-                elif grep -q -E "$successPattern" <<<"$result"; then
+                elif [[ -n "$successPattern" ]] && grep -q -E "$successPattern" <<<"$result"; then
                         tee -a "${successFile}" <<<"$name username available: $username"
-                else
-                        echo "result: $result"
-                        tee -a "${errorFile}" <<<"$name username error: $username"
+                elif [[ -n "$successPattern" ]] || [[ -n "$failurePattern" ]]; then
+                        tee -a "${inconlusiveFile}" <<<"$name username inconclusive: $username"
                 fi
         else
-                echo "result: $result"
                 tee -a ${errorFile:-usererr} <<<"$name username error: $username"
         fi
+        cat <<- EOF | tee -a "$rawFile"
+$name username: $username
+result:
+$result
+-------------------------
+EOF
 }
 
 repl() { printf "$1"'%.s' $(seq 1 $2); }
 
-export -f curl
 export -f checkUserName
 
 echoUsernames() {
@@ -119,4 +114,4 @@ echoUsernames() {
         done
 }
 
-echoUsernames | xargs -I _REPLACE_ME_PLZ_ -P "$maxProcs" bash -c 'checkUserName "$@"' _REPLACE_ME_PLZ_ "${cmd[@]}"
+echoUsernames | xargs -I _REPLACE_ME_PLZ_ -t -r -P "$maxProcs" bash -c 'checkUserName "$@"' _REPLACE_ME_PLZ_ "${cmd[@]}"
