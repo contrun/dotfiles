@@ -1,12 +1,128 @@
-##### note this file has mixed git syncthing and rsync grammar.
-##### but I do not thing you will have a file named like this.
+// ╔══════════════════════════════════╗
+// ║ CHECK IT AGAIN BEFORE YOU USE IT! ║
+// ╚═══════════════════════════════════╝
+// .stglobalignore
 
 
-.DS_Store
+// ╔══════════════════════════════════╗
+// ║ Operating system generated files ║
+// ╚══════════════════════════════════╝
+// ┌─────────────┐
+// │ Apple macOS │
+// └─────────────┘
+(?d).DS_Store
+(?d).Spotlight-*
+(?d).localized
+(?d)._*
+(?d).Icon*
+(?d).fseventsd
+(?d).DocumentRevisions-V[0-9]+
+(?d).TemporaryItems
+(?d).Trashes
+(?d).Trash-1000
+(?d).iCloud
+
+// ┌──────────────────┐
+// │ GNU/Linux & UN*X │
+// └──────────────────┘
+(?d).directory
+(?d).Trash-*
+
+// ┌───────────────────┐
+// │ Microsoft Windows │
+// └───────────────────┘
+(?d)desktop.ini
+(?d)ehthumbs.db
+(?d)Thumbs.db
+(?d)$RECYCLE.BIN
+(?d)System Volume Information
+
+// ┌──────────┐
+// │ QNAP QTS │
+// └──────────┘
+(?d).AppleDB
+(?d).@_thumb
+(?d).@__thumb
+
+// ┌──────────────┐
+// │ Synology DSM │
+// └──────────────┘
+(?d)@eaDir
+
+
+// ╔═════════════════════════════╗
+// ║ Application generated files ║
+// ╚═════════════════════════════╝
+// ┌─────────────────┐
+// │ Adobe Lightroom │
+// └─────────────────┘
+*Previews.lrdata root-pixels.db
+
+// ┌─────────┐
+// │ Dropbox │
+// └─────────┘
+.dropbox
+.dropbox.attr
+
+// ┌────────────────────────┐
+// │ Firefox & Chrom(ium│e) │
+// └────────────────────────┘
+*.part
+*.crdownload
+
+// ┌──────────────────┐
+// │ Microsoft Office │
+// └──────────────────┘
+~*
+
+// ┌───────────────────────────┐
+// │ Parallels Desktop for Mac │
+// └───────────────────────────┘
+.parallels-vm-directory
+
+// ┌──────────────┐
+// │ Resilio Sync │
+// └──────────────┘
+.sync
+*.bts
+*.!Sync
+.SyncID
+.SyncIgnore
+.SyncArchive
+*.SyncPart
+*.SyncTemp
+*.SyncOld
+
+// ┌────────────────────────────┐
+// │ Temporary and backup files │
+// └────────────────────────────┘
+*.temporary
+*.tmp
+*._mp
+*.old
+*.syd
+*.dir
+*.gid
+*.chk
+*.dmp
+*.nch
+.*.swp
+*~
+
+// ┌─────┐
+// │ Vim │
+// └─────┘
+*.*.sw[a-p]
+
+// org-mode
+(?d)ltximg
+
+// python
 __pycache__/
 *.py[cod]
 *$py.class
-//# Core latex/pdflatex auxiliary files:
+
+// Core latex/pdflatex auxiliary files:
 *.aux
 *.lof
 *.log
@@ -26,7 +142,6 @@ __pycache__/
 // these rules might exclude image files for figures etc.
 // *.ps
 // *.eps
-// *.pdf
 //# Generated if empty string is given at "Please type another file name for output:"
 //# Bibliography auxiliary files (bibtex/biblatex/biber):
 *.bbl
