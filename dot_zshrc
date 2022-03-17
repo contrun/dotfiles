@@ -151,9 +151,10 @@ test -r ~/.opam/opam-init/init.sh && . ~/.opam/opam-init/init.sh > /dev/null 2>&
 HISTFILE=~/.zsh_history
 HISTSIZE=999999999
 SAVEHIST=$HISTSIZE
-#history file
-setopt INC_APPEND_HISTORY
-setopt HIST_IGNORE_DUPS
+setopt APPEND_HISTORY
 setopt EXTENDED_HISTORY
+setopt HIST_IGNORE_SPACE
+setopt INC_APPEND_HISTORY_TIME
+setopt INTERACTIVE_COMMENTS
 
 [[ -f ~/.ssh/wsl-agent.sh ]] && source ~/.ssh/wsl-agent.sh
