@@ -1715,6 +1715,8 @@ With arg N, insert N newlines."
    ;; header-line is obsoleted by lsp-mode
    dhall-use-header-line nil))
 
+(use-package csharp-mode)
+
 (use-package lsp-mode
   :commands lsp
   :hook
@@ -1722,6 +1724,7 @@ With arg N, insert N newlines."
   (c-mode . lsp)
   (cuda-mode . lsp)
   (c++-mode . lsp)
+  (csharp-mode . lsp)
   (objc-mode . lsp)
   (dhall-mode . lsp)
   (nix-mode . lsp)
@@ -1744,6 +1747,11 @@ With arg N, insert N newlines."
   (when (executable-find "python-language-server")
     (setq lsp-python-ms-executable "python-language-server")
     (require 'lsp-python-ms))
+  ;; It seems full path to omnisharp is required
+  (let ((omnisharp-bin (executable-find "omnisharp")))
+    (when omnisharp-bin
+      (setq lsp-csharp-server-path omnisharp-bin)))
+  (setq lsp-csharp-server-path "omnisharp")
   :config
   (lsp-register-client
    (make-lsp-client :new-connection (lsp-tramp-connection "rust-analyzer")

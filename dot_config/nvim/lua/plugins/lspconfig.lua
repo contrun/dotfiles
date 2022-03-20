@@ -7,23 +7,32 @@ local common_on_attach = lsp_utils.common_on_attach
 local capabilities = vim.lsp.protocol.make_client_capabilities()
 capabilities = require('cmp_nvim_lsp').update_capabilities(capabilities)
 
+local get_option_for_server = function(server)
+    local default = {on_attach = common_on_attach, capabilities = capabilities}
+
+    -- Now we'll create a server_default table where we'll specify our custom LSP server configuration
+    local overrides = {
+        -- Provide settings that should only apply to the "eslintls" server
+        ["eslintls"] = function()
+            default.settings = {format = {enable = true}}
+            return default
+        end,
+        ["omnisharp"] = function()
+            local pid = vim.fn.getpid()
+            local omnisharp_bin = "omnisharp"
+            default.cmd = {
+                omnisharp_bin, "--languageserver", "--hostPID", tostring(pid)
+            }
+            return default
+        end
+    }
+    return overrides[server] and overrides[server]() or default
+end
+
 -- Register a handler that will be called for all installed servers.
 -- Alternatively, you may also register handlers on specific server instances instead (see example below).
 lsp_installer.on_server_ready(function(server)
-    local opts = {on_attach = common_on_attach, capabilities = capabilities}
-
-    -- Now we'll create a server_opts table where we'll specify our custom LSP server configuration
-    local server_opts = {
-        -- Provide settings that should only apply to the "eslintls" server
-        ["eslintls"] = function()
-            opts.settings = {format = {enable = true}}
-        end
-    }
-
-    -- Use the server's custom settings, if they exist, otherwise default to the default options
-    local server_options = server_opts[server.name] and
-                               server_opts[server.name]() or opts
-    server:setup(server_options)
+    server:setup(get_option_for_server(server.name))
 end)
 
 local lsp_installer_servers = {
@@ -39,15 +48,10 @@ for _, name in pairs(lsp_installer_servers) do
     end
 end
 
-local other_servers = {
-    "metals", "rnix", "gopls"
-}
+local other_servers = {"metals", "rnix", "gopls", "omnisharp"}
 
 for _, server in ipairs(other_servers) do
-    lsp_config[server].setup({
-        on_attach = common_on_attach,
-        capabilities = capabilities
-    })
+    lsp_config[server].setup(get_option_for_server(server))
 end
 
 require('lsp.sumneko')
