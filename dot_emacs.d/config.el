@@ -3775,6 +3775,21 @@ With arg N, insert N newlines."
             (default-value 'mode-line-format)) )
   (redraw-display))
 
+(use-package calibredb
+  :config
+  (setq calibredb-root-dir "~/Storage/Calibre")
+  (setq calibredb-db-dir (expand-file-name "metadata.db" calibredb-root-dir))
+  (setq calibredb-library-alist '(("~/Storage/Calibre"))))
+
+(use-package org-logseq
+  :straight (org-logseq :type git :host github :repo "llcc/org-logseq")
+  :custom (org-logseq-dir "~/Sync/docs/logseq"))
+
+(use-package zotero
+  :commands (zotero-browser zotero-sync))
+
+(use-package zotxt)
+
 (use-package pdf-tools
   :magic ("%PDF" . pdf-view-mode)
   :custom
