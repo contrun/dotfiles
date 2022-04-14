@@ -51,6 +51,8 @@ export ZSH=~/.oh-my-zsh
 ZSH_THEME="random"
 DISABLE_AUTO_UPDATE="true"
 
+command -v atuin >/dev/null && eval "$(atuin init zsh)"
+
 # pyenv
 # web-search
 # wd

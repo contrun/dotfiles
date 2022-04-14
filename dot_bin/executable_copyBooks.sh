@@ -22,7 +22,7 @@ copyFile() {
     rsync --progress -h -av -e "ssh -p $port" "$file" "$server:$baseDir/$(basename "$dir")/"
 }
 
-declare -a fzfDirs=(calibre zotero)
+declare -a fzfDirs=(zotero)
 for dir in "${fzfDirs[@]}"; do
     declare -a FILES
     IFS=$'\n' FILES=($(fzfFiles.sh "$dir" -f ''))
