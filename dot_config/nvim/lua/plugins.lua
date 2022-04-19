@@ -59,8 +59,23 @@ return require('packer').startup(function(use)
     use 'williamboman/nvim-lsp-installer' -- Helper for installing most language servers
     -- use({'scalameta/nvim-metals', requires = { "nvim-lua/plenary.nvim" }})
 
-    use 'mfussenegger/nvim-dap'
-    use { "rcarriga/nvim-dap-ui", requires = {"mfussenegger/nvim-dap"} }
+    use {
+        'mfussenegger/nvim-dap',
+        requires = {
+            "Pocco81/dap-buddy.nvim", "theHamsta/nvim-dap-virtual-text",
+            "rcarriga/nvim-dap-ui", "mfussenegger/nvim-dap-python",
+            "mfussenegger/nvim-jdtls", "nvim-telescope/telescope-dap.nvim",
+            {"leoluz/nvim-dap-go"}, {"jbyuki/one-small-step-for-vimkind"}
+        },
+        config = function() require('plugins.dapconfig') end
+    }
+
+    use {"rcarriga/nvim-dap-ui", requires = {"mfussenegger/nvim-dap"}}
+
+    use {
+        "theHamsta/nvim-dap-virtual-text",
+        requires = {"mfussenegger/nvim-dap"}
+    }
 
     -- Autocomplete
     use "L3MON4D3/LuaSnip" -- Snippet engine
@@ -79,7 +94,7 @@ return require('packer').startup(function(use)
 
     -- bufferline
     use({
-        'akinsho/nvim-bufferline.lua',
+        'akinsho/bufferline.nvim',
         requires = 'kyazdani42/nvim-web-devicons',
         config = function() require('plugins.bufferline') end,
         event = 'BufWinEnter'
@@ -109,7 +124,7 @@ return require('packer').startup(function(use)
 
     use {
         'nvim-orgmode/orgmode',
-        config = function() require('plugins.orgmode') end
+        config = function() require('orgmode').setup_ts_grammar() end
     }
 
     -- Telescope
@@ -167,8 +182,9 @@ return require('packer').startup(function(use)
         end
     }
 
+    -- https://github.com/rockerBOO/awesome-neovim/issues/315
     use {
-        "blackCauldron7/surround.nvim",
+        "ur4ltz/surround.nvim",
         config = function()
             require"surround".setup {mappings_style = "sandwich"}
         end
