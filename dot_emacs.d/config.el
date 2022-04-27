@@ -540,6 +540,10 @@ pressing `<leader> m`. Set it to `nil` to disable it.")
 
 (use-package fzf)
 
+(use-package wakatime-mode
+  :hook
+  (after-init . global-wakatime-mode))
+
 (use-package sunrise-commander
   :straight (sunrise-commander :type git :host github :repo "escherdragon/sunrise-commander"))
 

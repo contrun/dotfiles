@@ -69,6 +69,8 @@ add_plugins_on_full docker-compose
 add_plugins_on_full kubectl
 add_plugins_on_full helm
 add_plugins_on_full emacs
+[[ -d ~/.oh-my-zsh/custom/plugins/wakatime ]] || git clone https://github.com/sobolevn/wakatime-zsh-plugin.git ~/.oh-my-zsh/custom/plugins/wakatime
+add_plugins_on_full wakatime
 add_plugins fzf
 add_plugins_on_full gitignore
 add_plugins_on_full golang

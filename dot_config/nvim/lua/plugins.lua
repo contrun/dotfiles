@@ -115,6 +115,10 @@ return require('packer').startup(function(use)
         config = function() require('plugins.nvimtree') end -- Must add this manually
     })
 
+    use {
+      'wakatime/vim-wakatime'
+    }
+
     -- Treesitter
     use({
         'nvim-treesitter/nvim-treesitter',
