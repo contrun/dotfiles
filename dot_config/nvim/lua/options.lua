@@ -53,3 +53,7 @@ if vim.fn.has('persistent_undo') == 1 then
     vim.o.undofile = true
     vim.o.undodir = vim.fn.stdpath('data') .. '/undo//'
 end
+
+vim.diagnostic.config({
+  virtual_text = true,
+})

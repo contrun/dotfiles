@@ -200,9 +200,7 @@ return require('packer').startup(function(use)
         config = function() require('plugins.neogit') end
     }
 
-    -- use {'conweller/findr.vim'}
-    -- Waiting for https://github.com/conweller/findr.vim/pull/29
-    use {'contrun/findr.vim'}
+    use {'conweller/findr.vim'}
 
     use {
         'rmagatti/auto-session',

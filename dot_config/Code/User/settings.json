@@ -1,71 +1,70 @@
 {
-    "window.menuBarVisibility": "toggle",
-    "editor.fontSize": 13,
-    "window.zoomLevel": 1,
-    "java.project.importOnFirstTimeStartup": "automatic",
-    "files.exclude": {
-        "**/.classpath": true,
-        "**/.project": true,
-        "**/.settings": true,
-        "**/.factorypath": true
-    },
-    "editor.suggestSelection": "first",
-    "workbench.activityBar.visible": false,
-    "workbench.editor.enablePreview": false,
-    "workbench.editor.highlightModifiedTabs": true,
-    "vsintellicode.modify.editor.suggestSelection": "automaticallyOverrodeDefaultValue",
-    "workbench.statusBar.visible": true,
-    "workbench.colorTheme": "Solarized Dark",
-    "remote.SSH.remotePlatform": {
-        "uzq": "linux",
-        "cef1": "linux",
-        "cef2": "linux",
-        "cef3": "linux",
-        "node1": "linux",
-        "node2": "linux",
-        "node3": "linux",
-        "cef4": "linux",
-        "default": "linux",
-        "karl": "linux",
-        "cros": "linux",
-        "bzr": "linux",
-        "lizj": "linux"
-    },
-    "editor.multiCursorModifier": "alt",
-    "editor.wordWrap": "on",
-    "editor.minimap.enabled": false,
-    "remote.SSH.showLoginTerminal": true,
-    "remote.SSH.remoteServerListenOnSocket": true,
-    "workbench.editor.showTabs": false,
-    "[rust]": {
-        "editor.defaultFormatter": "matklad.rust-analyzer"
-    },
-    "terminal.integrated.scrollback": 100000,
-    "terminal.integrated.commandsToSkipShell": [
-        "language-julia.interrupt"
-    ],
-    "clangd.path": "/home/e/.config/Code/User/globalStorage/llvm-vs-code-extensions.vscode-clangd/install/11.0.0/clangd_11.0.0/bin/clangd",
-    "cmake.configureOnOpen": true,
-    "clangd.onConfigChanged": "restart",
-    "[cpp]": {
-        "editor.defaultFormatter": "llvm-vs-code-extensions.vscode-clangd"
-    },
-    "files.watcherExclude": {
-        "**/.bloop": true,
-        "**/.metals": true,
-        "**/.ammonite": true
-    },
-    "python.languageServer": "Pylance",
-    "lldb.verboseLogging": true,
-    "C_Cpp.updateChannel": "Insiders",
-    "workbench.editorAssociations": {
-        "*.ipynb": "jupyter.notebook.ipynb"
-    },
-    "java.imports.gradle.wrapper.checksums": [
-      {
-        "sha256": "ee3739525a995bcb5601621a6e2daec1f183bbefc375743acc235cec33547e04",
-        "allowed": true
-      }
-    ],
-    "window.zoomLevel": 1
+  "window.menuBarVisibility": "toggle",
+  "editor.fontSize": 13,
+  "java.project.importOnFirstTimeStartup": "automatic",
+  "files.exclude": {
+    "**/.classpath": true,
+    "**/.project": true,
+    "**/.settings": true,
+    "**/.factorypath": true
+  },
+  "editor.suggestSelection": "first",
+  "workbench.activityBar.visible": false,
+  "workbench.editor.enablePreview": false,
+  "workbench.editor.highlightModifiedTabs": true,
+  "vsintellicode.modify.editor.suggestSelection": "automaticallyOverrodeDefaultValue",
+  "workbench.statusBar.visible": true,
+  "workbench.colorTheme": "Solarized Dark",
+  "remote.SSH.remotePlatform": {
+    "uzq": "linux",
+    "cef1": "linux",
+    "cef2": "linux",
+    "cef3": "linux",
+    "node1": "linux",
+    "node2": "linux",
+    "node3": "linux",
+    "cef4": "linux",
+    "default": "linux",
+    "karl": "linux",
+    "cros": "linux",
+    "bzr": "linux",
+    "lizj": "linux"
+  },
+  "editor.multiCursorModifier": "alt",
+  "editor.wordWrap": "on",
+  "editor.minimap.enabled": false,
+  "remote.SSH.showLoginTerminal": true,
+  "remote.SSH.remoteServerListenOnSocket": true,
+  "workbench.editor.showTabs": false,
+  "[rust]": {
+    "editor.defaultFormatter": "matklad.rust-analyzer"
+  },
+  "terminal.integrated.scrollback": 100000,
+  "terminal.integrated.commandsToSkipShell": [
+    "language-julia.interrupt"
+  ],
+  "clangd.path": "/home/e/.config/Code/User/globalStorage/llvm-vs-code-extensions.vscode-clangd/install/11.0.0/clangd_11.0.0/bin/clangd",
+  "cmake.configureOnOpen": true,
+  "clangd.onConfigChanged": "restart",
+  "[cpp]": {
+    "editor.defaultFormatter": "llvm-vs-code-extensions.vscode-clangd"
+  },
+  "files.watcherExclude": {
+    "**/.bloop": true,
+    "**/.metals": true,
+    "**/.ammonite": true
+  },
+  "python.languageServer": "Pylance",
+  "lldb.verboseLogging": true,
+  "C_Cpp.updateChannel": "Insiders",
+  "workbench.editorAssociations": {
+    "*.ipynb": "jupyter.notebook.ipynb"
+  },
+  "java.imports.gradle.wrapper.checksums": [
+    {
+      "sha256": "ee3739525a995bcb5601621a6e2daec1f183bbefc375743acc235cec33547e04",
+      "allowed": true
+    }
+  ],
+  "window.zoomLevel": 1
 }

@@ -99,7 +99,7 @@ nnoremap("<leader>o", "<Cmd>Telescope oldfiles<CR>")
 nnoremap("<leader>b", "<Cmd>Telescope buffers<CR>")
 nnoremap("<leader>/", "<Cmd>Telescope live_grep<CR>")
 
-nnoremap("<leader>e", "<Cmd>FindrParentDir<CR>")
+nnoremap("<leader>e", "<Cmd>:Findr %:p:h<CR>")
 
 nnoremap("<leader>=", "<Cmd>Neoformat<CR>")
 
