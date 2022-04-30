@@ -115,9 +115,7 @@ return require('packer').startup(function(use)
         config = function() require('plugins.nvimtree') end -- Must add this manually
     })
 
-    use {
-      'wakatime/vim-wakatime'
-    }
+    use {'wakatime/vim-wakatime'}
 
     -- Treesitter
     use({
@@ -125,6 +123,136 @@ return require('packer').startup(function(use)
         config = function() require('plugins.treesitter') end,
         run = ':TSUpdate'
     })
+
+    use {
+        "nvim-treesitter/nvim-treesitter-textobjects",
+        requires = 'nvim-treesitter/nvim-treesitter',
+        config = function()
+            require'nvim-treesitter.configs'.setup {
+                textobjects = {
+                    select = {
+                        enable = true,
+                        -- Automatically jump forward to textobj, similar to targets.vim
+                        lookahead = true,
+                        keymaps = {
+                            -- You can use the capture groups defined in textobjects.scm
+                            ["af"] = "@function.outer",
+                            ["if"] = "@function.inner",
+                            ["ac"] = "@class.outer",
+                            ["ic"] = "@class.inner"
+                        }
+                    },
+                    swap = {
+                        enable = true,
+                        swap_next = {["<leader>sa"] = "@parameter.inner"},
+                        swap_previous = {["<leader>sA"] = "@parameter.inner"}
+                    },
+                    move = {
+                        enable = true,
+                        set_jumps = true, -- whether to set jumps in the jumplist
+                        goto_next_start = {
+                            ["]m"] = "@function.outer",
+                            ["]]"] = "@class.outer"
+                        },
+                        goto_next_end = {
+                            ["]M"] = "@function.outer",
+                            ["]["] = "@class.outer"
+                        },
+                        goto_previous_start = {
+                            ["[m"] = "@function.outer",
+                            ["[["] = "@class.outer"
+                        },
+                        goto_previous_end = {
+                            ["[M"] = "@function.outer",
+                            ["[]"] = "@class.outer"
+                        }
+                    },
+                    lsp_interop = {
+                        enable = true,
+                        border = 'none',
+                        peek_definition_code = {
+                            ["<leader>lf"] = "@function.outer",
+                            ["<leader>lF"] = "@class.outer"
+                        }
+                    }
+                }
+            }
+        end
+    }
+
+    -- TODO: fix
+    -- packer.nvim: Error running config for nvim-treesitter-textobjects: ...ed-0.6.1/share/nvim/runtime/lua/vim/treesitter/query.lua:161: query: invalid node type at position 13
+    use {
+        "mizlan/iswap.nvim",
+        requires = 'nvim-treesitter/nvim-treesitter',
+        config = function()
+            require('iswap').setup {
+                -- The keys that will be used as a selection, in order
+                -- ('asdfghjklqwertyuiopzxcvbnm' by default)
+                keys = 'qwertyuiop',
+
+                -- Grey out the rest of the text when making a selection
+                -- (enabled by default)
+                grey = 'disable',
+
+                -- Highlight group for the sniping value (asdf etc.)
+                -- default 'Search'
+                hl_snipe = 'ErrorMsg',
+
+                -- Highlight group for the visual selection of terms
+                -- default 'Visual'
+                hl_selection = 'WarningMsg',
+
+                -- Highlight group for the greyed background
+                -- default 'Comment'
+                hl_grey = 'LineNr',
+
+                -- Automatically swap with only two arguments
+                -- default nil
+                autoswap = true,
+
+                -- Other default options you probably should not change:
+                debug = nil,
+                hl_grey_priority = '1000'
+            }
+        end
+    }
+
+    -- TODO: fix
+    -- Failed to get context: ...ed-0.6.1/share/nvim/runtime/lua/vim/treesitter/query.lua:161: query: invalid field at position 18
+    -- use {
+    --     "romgrk/nvim-treesitter-context",
+    --     config = function()
+    --         require'treesitter-context'.setup {
+    --             enable = true, -- Enable this plugin (Can be enabled/disabled later via commands)
+    --             throttle = true, -- Throttles plugin updates (may improve performance)
+    --             max_lines = 0, -- How many lines the window should span. Values <= 0 mean no limit.
+    --             patterns = { -- Match patterns for TS nodes. These get wrapped to match at word boundaries.
+    --                 -- For all filetypes
+    --                 -- Note that setting an entry here replaces all other patterns for this entry.
+    --                 -- By setting the 'default' entry below, you can control which nodes you want to
+    --                 -- appear in the context window.
+    --                 default = {
+    --                     'class', 'function', 'method'
+    --                     -- 'for', -- These won't appear in the context
+    --                     -- 'while',
+    --                     -- 'if',
+    --                     -- 'switch',
+    --                     -- 'case',
+    --                 },
+    --                 -- Example for a specific filetype.
+    --                 -- If a pattern is missing, *open a PR* so everyone can benefit.
+    --                 rust = {'impl_item'}
+    --             },
+    --             exact_patterns = {
+    --                 -- Example for a specific filetype with Lua patterns
+    --                 -- Treat patterns.rust as a Lua pattern (i.e "^impl_item$" will
+    --                 -- exactly match "impl_item" only)
+    --                 -- rust = true,
+    --             }
+    --         }
+    --     end
+    -- }
 
     use {
         'nvim-orgmode/orgmode',

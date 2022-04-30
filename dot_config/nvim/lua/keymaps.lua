@@ -107,6 +107,8 @@ nnoremap("<leader>=", "<Cmd>Neoformat<CR>")
 vnoremap("ga", "<Cmd>EasyAlign<CR>")
 nnoremap("ga", "<Cmd>EasyAlign<CR>")
 
+nnoremap("<leader>ss", "<Cmd>ISwap<CR>")
+
 -- dap
 nnoremap("<leader>dd", "<Cmd>lua require('dapui').toggle()<CR>")
 nnoremap("<leader>dv", "<Cmd>DapVirtualTextToggle<CR>")
