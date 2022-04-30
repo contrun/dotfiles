@@ -48,6 +48,7 @@ fi
 set -o ignoreeof
 
 export ZSH=~/.oh-my-zsh
+ZSH_CUSTOM="${ZSH}/custom"
 ZSH_THEME="random"
 DISABLE_AUTO_UPDATE="true"
 
@@ -69,8 +70,11 @@ add_plugins_on_full docker-compose
 add_plugins_on_full kubectl
 add_plugins_on_full helm
 add_plugins_on_full emacs
-[[ -d ~/.oh-my-zsh/custom/plugins/wakatime ]] || git clone https://github.com/sobolevn/wakatime-zsh-plugin.git ~/.oh-my-zsh/custom/plugins/wakatime
+if [[ -d "$ZSH" ]] && ! [[ -d "$ZSH_CUSTOM/plugins/wakatime" ]]; then
+    git clone https://github.com/sobolevn/wakatime-zsh-plugin.git "$ZSH_CUSTOM/plugins/wakatime"
+fi
 add_plugins_on_full wakatime
+command -v wakatime-cli >/dev/null && export ZSH_WAKATIME_BIN=wakatime-cli
 add_plugins fzf
 add_plugins_on_full gitignore
 add_plugins_on_full golang

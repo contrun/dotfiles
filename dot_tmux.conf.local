@@ -303,6 +303,9 @@ set -g set-titles off          # set terminal title
 
 is_vim="ps -o state= -o comm= -t '#{pane_tty}' | grep -iqE '^[^TXZ ]+ +(\\S+\\/)?g?(view|n?vim?x?)(diff)?$'"
 
+bind -r C-n 'last-window'
+bind -r n 'last-pane'
+
 bind-key -r h if-shell "$is_vim" 'send-prefix; send-keys h' 'select-pane -L'
 bind-key -r j if-shell "$is_vim" 'send-prefix; send-keys j' 'select-pane -D'
 bind-key -r k if-shell "$is_vim" 'send-prefix; send-keys k' 'select-pane -U'
