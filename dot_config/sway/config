@@ -59,7 +59,7 @@ exec aw-watcher-afk
 exec aw-watcher-window
 exec_always systemctl --user import-environment DISPLAY WAYLAND_DISPLAY
 exec_always systemctl --user start foot || foot --server
-exec_always kdeconnect-indicator
+exec_always "$(dirname "$(dirname "$(realpath $(which kdeconnect-cli))")")/libexec/kdeconnectd"
 exec_always fcitx -d --replace
 exec_always copyq
 exec_always swaybg -m fill -i "$(shuf -n1 -e ~/Storage/wallpapers/*)"
@@ -95,15 +95,18 @@ for_window [class="copyq"] floating enable
 for_window [title=".*mpsyt$" class="^Xfce4-terminal$"] move --no-auto-back-and-forth to workspace v
 for_window [title=".*mpsyt$" class="^Xfce4-terminal$"] focus
 for_window [title="scratchpad.*" class="^Xfce4-terminal$"] floating enable, move scratchpad
+
+for_window [title="scratchpad.*" class="^Xfce4-terminal$"] move scratchpad, scratchpad show
 for_window [title="scratchpad.*" class="^URxvt$"] floating enable, move scratchpad
-#for_window [title="scratchpad.*" class="^Xfce4-terminal$"] move scratchpad, scratchpad show
-#for_window [title="scratchpad.*" class="^Xfce4-terminal$"] mark "scratchpadTerminal", floating enable, move scratchpad
 for_window [title="scratchpad.*" app_id="termite"] floating enable, move scratchpad
-#for_window [title="scratchpad.*" app_id="^Termite"] mark "scratchpadTerminal", floating enable, move scratchpad
+for_window [title="scratchpad.*" app_id="foot"] floating enable, move scratchpad
+for_window [title="scratchpad.*" app_id="Alacritty"] floating enable, move scratchpad
+
 for_window [title="floating.*" class="^Xfce4-terminal$"] floating enable
 for_window [title="floating.*" class="^URxvt$"] floating enable
 for_window [title="floating.*" app_id="termite"] floating enable
 for_window [title="floating.*" app_id="foot"] floating enable
+for_window [title="floating.*" app_id="Alacritty"] floating enable
 
 for_window [window_role="pop-up"] floating enable
 # chrome extension popups

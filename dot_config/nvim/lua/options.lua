@@ -44,16 +44,14 @@ vim.o.updatetime = 300 -- Delay until write to Swap and HoldCommand event
 
 -- Disable inline error messages
 vim.diagnostic.config {
-    virtual_text = false,
-    underline = true, -- Keep error underline
-    signs = true -- Keep gutter signs
+  virtual_text = true,
+  underline = true, -- Keep error underline
+  signs = true -- Keep gutter signs
 }
 
 if vim.fn.has('persistent_undo') == 1 then
-    vim.o.undofile = true
-    vim.o.undodir = vim.fn.stdpath('data') .. '/undo//'
+  vim.o.undofile = true
+  vim.o.undodir = vim.fn.stdpath('data') .. '/undo//'
 end
 
-vim.diagnostic.config({
-  virtual_text = true,
-})
+vim.o.clipboard = vim.o.clipboard .. 'unnamedplus'
