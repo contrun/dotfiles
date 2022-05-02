@@ -6,11 +6,9 @@ function(opts) return string.format('%s.', opts.ordinal) end
 
 require('bufferline').setup({
   options = {
-    always_show_bufferline = true,
+    always_show_bufferline = false,
     numbers = tabname_format,
     show_buffer_icons = true,
-    show_buffer_close_icons = false,
-    show_close_icon = false,
     separator_style = 'slant',
     -- Don't show bufferline over vertical, unmodifiable buffers
     offsets = {

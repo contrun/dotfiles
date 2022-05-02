@@ -55,6 +55,8 @@ return require('packer').startup(function(use)
     config = function() require('gitsigns').setup() end
   }
 
+  use 'kassio/neoterm'
+
   -- LSP server
   use {
     'neovim/nvim-lspconfig',
@@ -106,14 +108,6 @@ return require('packer').startup(function(use)
     config = function() require('plugins.cmp') end
   }
 
-  -- bufferline
-  use {
-    'akinsho/bufferline.nvim',
-    requires = 'kyazdani42/nvim-web-devicons',
-    config = function() require('plugins.bufferline') end,
-    event = 'BufWinEnter'
-  }
-
   -- statusline
   use {
     'hoob3rt/lualine.nvim',
@@ -122,14 +116,9 @@ return require('packer').startup(function(use)
 
   use { 'lambdalisue/suda.vim' }
 
-  -- NvimTree
-  use {
-    'kyazdani42/nvim-tree.lua',
-    requires = 'kyazdani42/nvim-web-devicons',
-    config = function() require('plugins.nvimtree') end -- Must add this manually
-  }
-
   use { 'wakatime/vim-wakatime' }
+
+  use { 'dstein64/vim-startuptime' }
 
   -- Treesitter
   use {
@@ -285,7 +274,7 @@ return require('packer').startup(function(use)
   use {
     "AckslD/nvim-neoclip.lua",
     config = function()
-      require('neoclip').setup({
+      require('neoclip').setup {
         history = 1000,
         enable_persistent_history = false,
         length_limit = 1048576,
@@ -325,7 +314,7 @@ return require('packer').startup(function(use)
             custom = {}
           }
         }
-      })
+      }
     end
   }
   use {
@@ -342,7 +331,7 @@ return require('packer').startup(function(use)
   use {
     "aserowy/tmux.nvim",
     config = function()
-      require("tmux").setup({
+      require("tmux").setup {
         -- overwrite default configuration
         -- here, e.g. to enable default bindings
         copy_sync = {
@@ -358,7 +347,7 @@ return require('packer').startup(function(use)
           -- enables default keybindings (A-hjkl) for normal mode
           enable_default_keybindings = false
         }
-      })
+      }
     end
   }
 
@@ -404,7 +393,7 @@ return require('packer').startup(function(use)
     'rmagatti/session-lens',
     requires = { 'rmagatti/auto-session', 'nvim-telescope/telescope.nvim' },
     config = function()
-      require('session-lens').setup({ --[[your custom config--]] })
+      require('session-lens').setup { --[[your custom config--]] }
     end
   }
 

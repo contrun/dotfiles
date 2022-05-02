@@ -1,15 +1,15 @@
 -- Visual
-vim.o.conceallevel = 0 -- Don't hide quotes in markdown
-vim.o.cmdheight = 1
-vim.o.pumheight = 10
-vim.o.showmode = false
--- vim.o.showtabline        = 0                             -- Never show tabline
-vim.o.title = true
-vim.o.termguicolors = true -- Use true colors, required for some plugins
-vim.wo.number = true
+vim.o.conceallevel    = 0 -- Don't hide quotes in markdown
+vim.o.cmdheight       = 1
+vim.o.pumheight       = 10
+vim.o.showmode        = false
+vim.o.showtabline     = 0 -- Never show tabline
+vim.o.title           = true
+vim.o.termguicolors   = true -- Use true colors, required for some plugins
+vim.wo.number         = true
 vim.wo.relativenumber = true
-vim.wo.signcolumn = 'yes'
-vim.wo.cursorline = true
+vim.wo.signcolumn     = 'yes'
+vim.wo.cursorline     = true
 
 vim.opt_global.shortmess:remove("F")
 
