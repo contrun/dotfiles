@@ -85,7 +85,7 @@ nnoremap("<leader>g", "<Cmd>Neogit<CR>")
 
 -- Show line diagnostics
 nnoremap("<leader>d",
-         '<Cmd>lua vim.diagnostic.open_float(0, {scope = "line"})<CR>')
+  '<Cmd>lua vim.diagnostic.open_float(0, {scope = "line"})<CR>')
 
 -- Open local diagnostics in local list
 nnoremap("<leader>D", "<Cmd>lua vim.diagnostic.setloclist()<CR>")
@@ -114,16 +114,16 @@ nnoremap("<leader>dd", "<Cmd>lua require('dapui').toggle()<CR>")
 nnoremap("<leader>dv", "<Cmd>DapVirtualTextToggle<CR>")
 vnoremap("<leader>de", "<Cmd>lua require('dapui').eval()<CR>")
 nnoremap("<leader>de",
-         "<Cmd>lua require('dapui').eval(vim.fn.input '[Expression] > ')<CR>")
+  "<Cmd>lua require('dapui').eval(vim.fn.input '[Expression] > ')<CR>")
 nnoremap("<leader>dc", "<Cmd>lua require'dap'.continue()<CR>")
 nnoremap("<leader>dso", "<Cmd>lua require'dap'.step_over()<CR>")
 nnoremap("<leader>dsi", "<Cmd>lua require'dap'.step_into()<CR>")
 nnoremap("<leader>dst", "<Cmd>lua require'dap'.step_out()<CR>")
 nnoremap("<leader>db", "<Cmd>lua require'dap'.toggle_breakpoint()<CR>")
 nnoremap("<leader>dB",
-         "<Cmd>lua require'dap'.toggle_breakpoint(vim.fn.input('Breakpoint condition: '))<CR>")
+  "<Cmd>lua require'dap'.toggle_breakpoint(vim.fn.input('Breakpoint condition: '))<CR>")
 nnoremap("<leader>dl",
-         "<Cmd>lua require'dap'.set_breakpoint(nil, nil, vim.fn.input('Log point message: '))<CR>")
+  "<Cmd>lua require'dap'.set_breakpoint(nil, nil, vim.fn.input('Log point message: '))<CR>")
 nnoremap("<leader>dr", "<Cmd>lua require'dap'.repl.toggle()<CR>")
 nnoremap("<leader>dR", "<Cmd>lua require'dap'.run_last()<CR>")
 nnoremap("<leader>dt", "<Cmd>lua require'dap'.terminate()<CR>")

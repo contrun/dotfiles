@@ -1,1 +1,1 @@
-require("neogit").setup {integrations = {}}
+require("neogit").setup { integrations = {} }

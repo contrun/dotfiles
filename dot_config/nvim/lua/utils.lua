@@ -3,16 +3,16 @@ local env = vim.env
 local M = {}
 
 function M.map(mode, lhs, rhs)
-    vim.api.nvim_set_keymap(mode, lhs, rhs, {silent = true})
+  vim.api.nvim_set_keymap(mode, lhs, rhs, { silent = true })
 end
 
 function M.noremap(mode, lhs, rhs)
-    vim.api.nvim_set_keymap(mode, lhs, rhs, {noremap = true, silent = true})
+  vim.api.nvim_set_keymap(mode, lhs, rhs, { noremap = true, silent = true })
 end
 
 function M.exprnoremap(mode, lhs, rhs)
-    vim.api.nvim_set_keymap(mode, lhs, rhs,
-                            {noremap = true, silent = true, expr = true})
+  vim.api.nvim_set_keymap(mode, lhs, rhs,
+    { noremap = true, silent = true, expr = true })
 end
 
 -- Useful mode-specific shortcuts
