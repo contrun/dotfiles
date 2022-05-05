@@ -29,6 +29,8 @@ return require('packer').startup(function(use)
   -- Let Packer manage itself
   use { 'wbthomason/packer.nvim', opt = true }
 
+  use "nvim-lua/plenary.nvim"
+
   -- Formatting
   use 'shoukoo/commentary.nvim'
   use 'sbdchd/neoformat'
@@ -265,7 +267,7 @@ return require('packer').startup(function(use)
   -- Telescope
   use {
     'nvim-telescope/telescope.nvim',
-    requires = { { 'nvim-lua/plenary.nvim' } },
+    requires = { 'nvim-lua/plenary.nvim' },
     config = function() require('plugins.telescope') end
   }
 
