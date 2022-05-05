@@ -8,3 +8,4 @@ chezmoi.toml
 /.github
 /result*/
 *.qcow2
+action.yml
