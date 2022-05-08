@@ -17,9 +17,6 @@ plsbrightness=-70
 favorites = {}
 -- END OF CONFIGURABLE VARIABLES
 
--- put your settings in (SCRIPTS DIR)/_iptvconf.lua
-pcall(require, "_iptvconf")
-
 local timer
 --local plscount
 local pattern=""
@@ -240,10 +237,6 @@ local playlister = {
 
     if not self.plsfiltered then
       return
-    end
-    if not self.plspos then
-      self.plspos=mp.get_property_native("playlist-pos-1")
-      --plscount=mp.get_property_native("playlist-count")
     end
     if not self.wndstart or not self.cursor then
       self.wndstart=1
@@ -496,10 +489,15 @@ function on_start_file()
   end
 end
 
+--~ function on_shutdown()
+  --~ fader:off()
+--~ end
+
 if mp.get_opt("iptv") then
   mp.set_property_bool("idle", true)
   mp.set_property_bool("force-window", true)
   mp.register_event("start-file", on_start_file)
+  --~ mp.register_event("end-file", on_shutdown)
   keybinder.add("activate", activate)
 end
 
