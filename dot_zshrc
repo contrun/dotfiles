@@ -61,7 +61,7 @@ command -v atuin >/dev/null && eval "$(atuin init zsh)"
 add_plugins_on_full git pass pip
 add_plugins_on_full cp
 add_plugins_on_full cabal
-add_plugins_on_full cargo
+add_plugins_on_full rust
 add_plugins_on_full mvn
 add_plugins_on_full aws
 add_plugins_on_full adb

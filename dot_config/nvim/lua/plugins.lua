@@ -25,9 +25,9 @@ cmd([[
 cmd [[packadd packer.nvim]]
 
 -- Initialize pluggins
-return require('packer').startup(function(use)
+return require('packer').startup({ function(use)
   -- Let Packer manage itself
-  use { 'wbthomason/packer.nvim', opt = true }
+  use { 'wbthomason/packer.nvim' }
 
   use "nvim-lua/plenary.nvim"
 
@@ -54,7 +54,47 @@ return require('packer').startup(function(use)
   use {
     'lewis6991/gitsigns.nvim',
     requires = { 'nvim-lua/plenary.nvim' },
-    config = function() require('gitsigns').setup() end
+    config = function() require('gitsigns').setup {
+        on_attach = function(bufnr)
+          local gs = package.loaded.gitsigns
+
+          local function map(mode, l, r, opts)
+            opts = opts or {}
+            opts.buffer = bufnr
+            vim.keymap.set(mode, l, r, opts)
+          end
+
+          -- Navigation
+          map('n', ']c', function()
+            if vim.wo.diff then return ']c' end
+            vim.schedule(function() gs.next_hunk() end)
+            return '<Ignore>'
+          end, { expr = true })
+
+          map('n', '[c', function()
+            if vim.wo.diff then return '[c' end
+            vim.schedule(function() gs.prev_hunk() end)
+            return '<Ignore>'
+          end, { expr = true })
+
+          -- Actions
+          map({ 'n', 'v' }, '<leader>gs', ':Gitsigns stage_hunk<CR>')
+          map({ 'n', 'v' }, '<leader>gr', ':Gitsigns reset_hunk<CR>')
+          map('n', '<leader>gS', gs.stage_buffer)
+          map('n', '<leader>gu', gs.undo_stage_hunk)
+          map('n', '<leader>gR', gs.reset_buffer)
+          map('n', '<leader>gp', gs.preview_hunk)
+          map('n', '<leader>gb', function() gs.blame_line { full = true } end)
+          map('n', '<leader>gd', gs.diffthis)
+          map('n', '<leader>gD', function() gs.diffthis('~') end)
+          map('n', '<leader>gtd', gs.toggle_deleted)
+          map('n', '<leader>gtb', gs.toggle_current_line_blame)
+
+          -- Text object
+          map({ 'o', 'x' }, 'ih', ':<C-U>Gitsigns select_hunk<CR>')
+        end
+      }
+    end
   }
 
   use 'kassio/neoterm'
@@ -83,7 +123,7 @@ return require('packer').startup(function(use)
       "Pocco81/dap-buddy.nvim", "theHamsta/nvim-dap-virtual-text",
       "rcarriga/nvim-dap-ui", "mfussenegger/nvim-dap-python",
       "mfussenegger/nvim-jdtls", "nvim-telescope/telescope-dap.nvim",
-      { "leoluz/nvim-dap-go" }, { "jbyuki/one-small-step-for-vimkind" }
+      "leoluz/nvim-dap-go", "jbyuki/one-small-step-for-vimkind",
     },
     config = function() require('plugins.dapconfig') end
   }
@@ -221,6 +261,34 @@ return require('packer').startup(function(use)
         hl_grey_priority = '1000'
       }
     end
+  }
+
+  use {
+    "glacambre/firenvim",
+    disable = false,
+    run = function()
+      vim.fn["firenvim#install"](0)
+    end,
+    config = function()
+      if vim.g.started_by_firenvim == true then
+        vim.cmd [[
+          let g:firenvim_config = { "globalSettings": { "alt": "all", }, "localSettings": { ".*": { "cmdline": "neovim", "content": "text", "priority": 0, "selector": "textarea", "takeover": "always", }, } }
+          let fc = g:firenvim_config["localSettings"]'
+          let fc["https?://projects.cdk.com/"] = { "takeover": "never", "priority": 1 }
+          let fc["https?://stash.cdk.com/"] = { "takeover": "never", "priority": 1 }
+          let fc["https?://sonar.cdk.com/"] = { "takeover": "never", "priority": 1 }
+
+          au BufEnter github.com_*.txt set filetype=markdown
+          au BufEnter reddit.com_*.txt set filetype=markdown
+          set laststatus=0
+          set textwidth=0
+          set guifont=Fira_Code:h18
+          nnoremap <Esc><Esc> :call firenvim#focus_page()<CR>
+          au TextChanged * ++nested write
+          au TextChangedI * ++nested write
+        ]]
+      end
+    end,
   }
 
   -- TODO: fix
@@ -373,10 +441,22 @@ return require('packer').startup(function(use)
     end
   }
 
+  use { 'sindrets/diffview.nvim', requires = 'nvim-lua/plenary.nvim' }
+
   use {
     'TimUntersberger/neogit',
     requires = { 'nvim-lua/plenary.nvim', 'sindrets/diffview.nvim' },
-    config = function() require('plugins.neogit') end
+    config = function()
+      local neogit = require("neogit")
+      neogit.setup {
+        use_magit_keybindings = true,
+        integrations = {
+          diffview = true,
+        },
+      }
+    end,
+    opt = true,
+    cmd = { 'Neogit' },
   }
 
   use { 'conweller/findr.vim' }
@@ -386,7 +466,7 @@ return require('packer').startup(function(use)
     config = function()
       require('auto-session').setup {
         log_level = 'debug',
-        auto_session_suppress_dirs = { '~/', '~/Workspace/', '/tmp/' }
+        auto_session_suppress_dirs = { '~/', '~/Workspace/', '/tmp/', '/run/user/1000/firenvim/' }
       }
     end
   }
@@ -400,4 +480,10 @@ return require('packer').startup(function(use)
   }
 
   if packer_bootstrap then require('packer').sync() end
-end)
+end,
+config = {
+  profile = {
+    enable = true,
+    threshold = 1 -- the amount in ms that a plugins load time must be over for it to be included in the profile
+  }
+} })

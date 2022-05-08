@@ -79,9 +79,11 @@ nnoremap("<leader>lv", "<Cmd>Vista<CR>")
 
 nnoremap("<leader>xo", "<Cmd> !xdg-open %<CR><CR>")
 nnoremap("<leader>xs", "<Cmd>source $MYVIMRC<CR>")
-nnoremap("<leader>xp", "<Cmd>PackerSync<CR>")
+nnoremap("<leader>xc", "<Cmd>silent !make -C ~/.local/share/chezmoi home-install<CR>")
+nnoremap("<leader>xp", "<Cmd>silent !make -C ~/.local/share/chezmoi home-install<CR><Cmd>PackerSync<CR>")
+nnoremap("<leader>xP", "<Cmd>PackerSync<CR>")
 
-nnoremap("<leader>g", "<Cmd>Neogit<CR>")
+nnoremap("<leader>gg", "<Cmd>Neogit<CR>")
 
 -- Show line diagnostics
 nnoremap("<leader>d",
