@@ -273,16 +273,20 @@ return require('packer').startup({ function(use)
       if vim.g.started_by_firenvim == true then
         vim.cmd [[
           let g:firenvim_config = { "globalSettings": { "alt": "all", }, "localSettings": { ".*": { "cmdline": "neovim", "content": "text", "priority": 0, "selector": "textarea", "takeover": "always", }, } }
-          let fc = g:firenvim_config["localSettings"]'
+          let fc = g:firenvim_config["localSettings"]
           let fc["https?://projects.cdk.com/"] = { "takeover": "never", "priority": 1 }
           let fc["https?://stash.cdk.com/"] = { "takeover": "never", "priority": 1 }
           let fc["https?://sonar.cdk.com/"] = { "takeover": "never", "priority": 1 }
 
           au BufEnter github.com_*.txt set filetype=markdown
           au BufEnter reddit.com_*.txt set filetype=markdown
+          au BufEnter go.dev_*.txt set filetype=go
+          au BufEnter play.rust-lang.org_*.txt set filetype=rust
+          au BufEnter rust-lang.org_*.txt set filetype=rust
+
           set laststatus=0
           set textwidth=0
-          set guifont=Fira_Code:h18
+          set guifont=Fira_Code:h18,Monaco:h18
           nnoremap <Esc><Esc> :call firenvim#focus_page()<CR>
           au TextChanged * ++nested write
           au TextChangedI * ++nested write
