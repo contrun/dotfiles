@@ -131,6 +131,10 @@ output "Unknown 0x8544 0x00000000" {
        scale 1.2
 }
 
+output "Unknown 0xC199 0x00000000" {
+       scale 1.4
+}
+
 output "Technical Concepts Ltd TCL Smart TV 0x00000001" {
        scale 3.5
        mode 4096x2160@24Hz

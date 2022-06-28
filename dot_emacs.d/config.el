@@ -541,6 +541,10 @@ pressing `<leader> m`. Set it to `nil` to disable it.")
 (use-package fzf)
 
 (use-package wakatime-mode
+  :config
+  (let ((api-key (shell-command-to-string "sed -En '/api_key\s*=\s*/ s/api_key\s*=\s*//p' ~/.wakatime.cfg")))
+    (when api-key
+      (custom-set-variables '(wakatime-api-key api-key))))
   :hook
   (after-init . global-wakatime-mode))
 
