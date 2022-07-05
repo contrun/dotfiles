@@ -463,6 +463,16 @@ return require('packer').startup({ function(use)
     cmd = { 'Neogit' },
   }
 
+  use {
+    'ruifm/gitlinker.nvim',
+    requires = 'nvim-lua/plenary.nvim',
+    config = function()
+      require "gitlinker".setup({
+        mappings = "<leader>gy"
+      })
+    end,
+  }
+
   use { 'conweller/findr.vim' }
 
   use {
@@ -476,6 +486,10 @@ return require('packer').startup({ function(use)
   }
 
   use {
+    'gennaro-tedesco/nvim-jqx'
+  }
+
+  use {
     'rmagatti/session-lens',
     requires = { 'rmagatti/auto-session', 'nvim-telescope/telescope.nvim' },
     config = function()
@@ -485,9 +499,9 @@ return require('packer').startup({ function(use)
 
   if packer_bootstrap then require('packer').sync() end
 end,
-config = {
-  profile = {
-    enable = true,
-    threshold = 1 -- the amount in ms that a plugins load time must be over for it to be included in the profile
-  }
-} })
+  config = {
+    profile = {
+      enable = true,
+      threshold = 1 -- the amount in ms that a plugins load time must be over for it to be included in the profile
+    }
+  } })
