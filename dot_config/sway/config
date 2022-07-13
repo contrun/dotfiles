@@ -135,6 +135,10 @@ output "Unknown 0xC199 0x00000000" {
        scale 1.4
 }
 
+output "AU Optronics 0xC199 Unknown" {
+       scale 1.4
+}
+
 output "Technical Concepts Ltd TCL Smart TV 0x00000001" {
        scale 3.5
        mode 4096x2160@24Hz
@@ -490,7 +494,7 @@ mode "mouse" {
 # this serves as the exhaustive collection of things one can do with workspaces
 mode "workspace" {
         bindsym Left   workspace prev_on_output
-        bindsym Right  workspace next_on_ouput
+        bindsym Right  workspace next_on_output
         bindsym Down   workspace prev
         bindsym Up     workspace next
 
