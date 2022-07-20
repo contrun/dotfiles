@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-set -xe
+set -euo pipefail
+
 old() {
         radioStations="$(
                 cat <<EOF
@@ -96,19 +97,33 @@ EOF
         done
 }
 
+download_tag() {
+        tag="$1"
+        filename="$2"
+        if [[ -f "$filename" ]] && [[ $(find "$filename" -mtime -7 -print) ]]; then
+                return 0
+        fi
+        local -a mirrors=("https://de1.api.radio-browser.info" "https://fr1.api.radio-browser.info")
+        for mirror in "${mirrors[@]}"; do
+                url="${mirror}/json/stations/bytagexact/$tag"
+                if ! curl -s -L --create-dirs -o "$filename" "$url"; then
+                        echo "Downloading $url to $filename failed"
+                else
+                        return 0
+                fi
+        done
+        return 1
+}
+
 download_radio_browser_data() {
         dir="$HOME/.customized/radio_stations"
         pyradio_file="$HOME/.config/pyradio/stations.csv"
         declare -a tags=("classical")
+
         for tag in "${tags[@]}"; do
-                url="https://fr1.api.radio-browser.info/json/stations/bytagexact/$tag"
-                filename="$dir/$tag.json"
-                if [[ ! -f "$filename" ]] || [[ $(find "$filename" -mtime +7 -print) ]]; then
-                        if ! curl -s -L --create-dirs -o "$filename" "$url"; then
-                                echo "Downloading $url to $filename failed"
-                        fi
-                fi
+                download_tag "$tag" "$dir/$tag.json"
         done
+
         jq -s 'add' "$dir"/* | jq -r 'unique | sort_by(.votes | tonumber) | reverse | .[] | [.name, .url] | @csv' >"$pyradio_file"
 }
 

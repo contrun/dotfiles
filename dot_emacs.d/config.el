@@ -544,7 +544,7 @@ pressing `<leader> m`. Set it to `nil` to disable it.")
   :config
   (let ((api-key (shell-command-to-string "sed -En '/api_key\s*=\s*/ s/api_key\s*=\s*//p' ~/.wakatime.cfg")))
     (when api-key
-      (custom-set-variables '(wakatime-api-key api-key))))
+      (customize-set-variable 'wakatime-api-key (substring api-key 0 -1))))
   :hook
   (after-init . global-wakatime-mode))
 

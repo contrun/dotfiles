@@ -5,8 +5,8 @@ icons = "awesome"
 block = "focused_window"
 autohide = true
 [block.format]
-full = "$title.rot-str(50)|"
-short = "$title.rot-str(15)|"
+full = "$title.rot-str(75)|"
+short = "$title.rot-str(20)|"
 
 [[block]]
 block = "disk_space"
