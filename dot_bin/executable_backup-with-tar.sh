@@ -1,9 +1,5 @@
 #!/usr/bin/env bash
-set -o nounset # Treat unset variables as an error
-set -o errexit # To proceed, some commands must succeed
-set -o xtrace  # make script easy to debug
-
-# example usage:
+set -euo pipefail
 
 usage() {
   cat <<-EOF
@@ -18,10 +14,11 @@ EOF
 
 backup_directory="$PWD"
 backup_file="backup.tar.zstd"
+encrypted_backup_file=
 excluding_size=
 declare -a excludes=()
 
-while getopts "f:d:s:e:" opt; do
+while getopts "f:d:s:e:c:" opt; do
     case $opt in
     f)
         backup_file="$OPTARG"
@@ -34,6 +31,9 @@ while getopts "f:d:s:e:" opt; do
         ;;
     e)
         excludes+=("$OPTARG")
+        ;;
+    c)
+        encrypted_backup_file="$OPTARG"
         ;;
     \?)
         echo "Invalid option: -$OPTARG" >&2
@@ -49,4 +49,18 @@ backup_file="$(realpath "$backup_file")"
 excludes=("${excludes[@]/#/--exclude=}")
 
 # `-C "$backup_directory"` make sure relative path in `excludes` works.
-tar -C "$backup_directory" -cvpaf "$backup_file" --one-file-system --exclude-vcs-ignores --exclude-backups --exclude-caches-all --exclude-from <(if [[ -n "$excluding_size" ]]; then find "$backup_directory" -type f -and -size "$excluding_size"; fi) --exclude="$backup_file" "${excludes[@]}" "$@" "$backup_directory"
+if [[ -n "$encrypted_backup_file" ]]; then
+  # Otherwise tar: : file changed as we read it
+  touch "$encrypted_backup_file"
+  tar -C "$backup_directory" -cpaf - --one-file-system --exclude-vcs-ignores --exclude-backups --exclude-caches-all --exclude-from <(if [[ -n "$excluding_size" ]]; then find "$backup_directory" -type f -and -size "$excluding_size"; fi) --exclude="$encrypted_backup_file" "${excludes[@]}" "$@" "$backup_directory" | gpg --yes --pinentry-mode loopback --symmetric --cipher-algo aes256 -o "$encrypted_backup_file"
+  gpgtar -vt "$encrypted_backup_file"
+  echo
+  echo "Tarball created. Unpack it with"
+  printf "%s %q" "gpgtar -v --extract" "$encrypted_backup_file"
+else
+  tar -C "$backup_directory" -cpaf "$backup_file" --one-file-system --exclude-vcs-ignores --exclude-backups --exclude-caches-all --exclude-from <(if [[ -n "$excluding_size" ]]; then find "$backup_directory" -type f -and -size "$excluding_size"; fi) --exclude="$backup_file" "${excludes[@]}" "$@" "$backup_directory"
+  tar -tvaf "$backup_file"
+  echo
+  echo "Tarball created. Unpack it with"
+  printf "%s %q\n" "tar -xvaf" "$backup_file"
+fi
