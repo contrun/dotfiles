@@ -52,7 +52,7 @@ excludes=("${excludes[@]/#/--exclude=}")
 if [[ -n "$encrypted_backup_file" ]]; then
   # Otherwise tar: : file changed as we read it
   touch "$encrypted_backup_file"
-  tar -C "$backup_directory" -cpaf - --one-file-system --exclude-vcs-ignores --exclude-backups --exclude-caches-all --exclude-from <(if [[ -n "$excluding_size" ]]; then find "$backup_directory" -type f -and -size "$excluding_size"; fi) --exclude="$encrypted_backup_file" "${excludes[@]}" "$@" "$backup_directory" | gpg --yes --pinentry-mode loopback --symmetric --cipher-algo aes256 -o "$encrypted_backup_file"
+  tar -C "$backup_directory" --zstd -cpf - --one-file-system --exclude-vcs-ignores --exclude-backups --exclude-caches-all --exclude-from <(if [[ -n "$excluding_size" ]]; then find "$backup_directory" -type f -and -size "$excluding_size"; fi) --exclude="$encrypted_backup_file" "${excludes[@]}" "$@" "$backup_directory" | gpg --yes --pinentry-mode loopback --symmetric --cipher-algo aes256 -o "$encrypted_backup_file"
   gpgtar -vt "$encrypted_backup_file"
   echo
   echo "Tarball created. Unpack it with"
