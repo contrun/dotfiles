@@ -9,6 +9,8 @@ set $terminal_with_title $terminal -T
 set $reload_command make -C ~/.local/share/chezmoi/ home-install && swaymsg reload
 set $browser_command env MOZ_ENABLE_WAYLAND=1 firefox
 set $scratchpad_terminal_name scratchpad_terminal
+set $switch_output_command swaymsg -r -t get_workspaces | jq -r 'map(select(.visible == true) | select(.focused == false))[0].output' | xargs -n 1 -t -r swaymsg focus output
+set $laptop_output eDP-1
 
 # https://i3wm.org/docs/userguide.html#_focus_wrapping
 focus_wrapping yes
@@ -137,6 +139,10 @@ output "Unknown 0xC199 0x00000000" {
 
 output "AU Optronics 0xC199 Unknown" {
        scale 1.4
+}
+
+output "XMI Mi 27 NU 3613700006199" {
+       scale 1.2
 }
 
 output "Technical Concepts Ltd TCL Smart TV 0x00000001" {
@@ -289,8 +295,13 @@ bindsym $altmod+v    move container to workspace v
 bindsym $altmod+F1    move container to workspace prev
 bindsym $altmod+F2    move container to workspace next
 
-bindsym $altmod+Shift+d output eDP-1 toggle
+bindsym $altmod+Shift+d output $laptop_output toggle
 bindsym $altmod+Shift+c exec $reload_command
+
+bindsym $mod+o exec $switch_output_command
+
+bindswitch --reload --locked lid:on output $laptop_output disable
+bindswitch --reload --locked lid:off output $laptop_output enable
 
 set $mode_system (l)ock, r(e)start sway, log(o)ut, reload (c)onfig, (s)uspend, (h)ibernate, (r)eboot, (p)oweroff
 mode "$mode_system" {
@@ -697,9 +708,6 @@ mode "alternative launcher" {
         bindsym Escape mode "default"
         bindsym Return mode "default"
 }
-
-# opener mode, less frequently used applications
-bindsym $mod+o mode "opener"
 
 mode "opener" {
         bindsym f exec $browse_command; mode "default"

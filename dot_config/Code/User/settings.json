@@ -66,5 +66,26 @@
       "allowed": true
     }
   ],
-  "window.zoomLevel": 1
+  "window.zoomLevel": 1,
+  "settingsSync.ignoredSettings": [
+    "configurationSync.store"
+  ],
+  "configurationSync.store": {
+    "url": "https://gitpod.io/code-sync",
+    "stableUrl": "https://gitpod.io/code-sync",
+    "insidersUrl": "https://gitpod.io/code-sync",
+    "canSwitch": false,
+    "authenticationProviders": {
+      "gitpod": {
+        "scopes": [
+          "function:accessCodeSyncStorage",
+          "function:getLoggedInUser",
+          "resource:default"
+        ]
+      }
+    }
+  },
+  "remote.SSH.defaultExtensions": [
+    "gitpod.gitpod-remote-ssh"
+  ]
 }

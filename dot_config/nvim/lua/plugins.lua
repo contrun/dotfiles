@@ -274,6 +274,8 @@ return require('packer').startup({ function(use)
         vim.cmd [[
           let g:firenvim_config = { "globalSettings": { "alt": "all", }, "localSettings": { ".*": { "cmdline": "neovim", "content": "text", "priority": 0, "selector": "textarea", "takeover": "always", }, } }
           let fc = g:firenvim_config["localSettings"]
+          let fc["https?://meet.google.com/"] = { "takeover": "never", "priority": 1 }
+          let fc["https?://www.notion.so/"] = { "takeover": "never", "priority": 1 }
           let fc["https?://projects.cdk.com/"] = { "takeover": "never", "priority": 1 }
           let fc["https?://stash.cdk.com/"] = { "takeover": "never", "priority": 1 }
           let fc["https?://sonar.cdk.com/"] = { "takeover": "never", "priority": 1 }
