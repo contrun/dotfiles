@@ -10,7 +10,7 @@ DESTROOTDIR ?= /
 VERBOSE ?=
 # The chezmoi state directory is stored in the same directory as the config file,
 # which may not be writable.
-CHEZMOIFLAGS ?= $(strip $(if $(VERBOSE),-v) --keep-going $(if $(findstring /nix/store/,$(DIR)),,-c $(IGNOREDDIR)/chezmoi.toml))
+CHEZMOIFLAGS ?= $(strip $(if $(VERBOSE),-v) --keep-going)
 
 CHEZMOI.home = chezmoi
 CHEZMOI.root = sudo chezmoi
