@@ -1,8 +1,18 @@
+{{ $passphrase := promptStringOnce . "passphrase" "gpg encryption passphrase" -}}
+{{ $domain := promptStringOnce . "domain" "domain to use" -}}
+
+encryption = "gpg"
+
+[data]
+    passphrase = {{ $passphrase | quote }}
+    domain = {{ $domain | quote }}
+
+[gpg]
+    symmetric = true
+    args = ["--batch", "--passphrase", {{ $passphrase | quote }}, "--no-symkey-cache"]
+
 [genericSecret]
 command = "secretTool.py"
 
 [secret]
 command = "secretTool.py"
-
-[gpg]
-recipient = "backup@localhost.lan"
