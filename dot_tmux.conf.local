@@ -317,3 +317,5 @@ bind -r K if-shell "$is_vim" 'send-prefix; send-keys K' 'resize-pane -U 1'
 bind -r L if-shell "$is_vim" 'send-prefix; send-keys L' 'resize-pane -R 1'
 
 unbind C-c
+
+set -g @plugin 'tmux-plugins/tmux-logging'
