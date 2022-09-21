@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+dir="$HOME/.cache/bin"
+bin=
+while getopts "d:b:" opt; do
+	case $opt in
+	d)
+		dir="$OPTARG"
+		;;
+	b)
+		bin="$OPTARG"
+		;;
+	\?)
+		echo "Invalid option: -$OPTARG" >&2
+		exit
+		;;
+	esac
+done
+
+bin="${bin:-"$dir/$(basename "$0")"}"
+
+declare -a NIX_ALIEN=(nix run "github:thiagokokada/nix-alien#nix-alien")
+if command="$(command -v nix-alien)"; then
+	NIX_ALIEN=("$command")
+fi
+"${NIX_ALIEN[@]}" -- "$bin" "$@"
