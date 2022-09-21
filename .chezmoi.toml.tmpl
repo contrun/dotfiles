@@ -9,10 +9,9 @@ encryption = "gpg"
 
 [gpg]
     symmetric = true
-    args = ["--batch", "--passphrase", {{ $passphrase | quote }}, "--no-symkey-cache"]
+    args = ["--quiet", "--batch", "--passphrase", {{ $passphrase | quote }}, "--no-symkey-cache"]
 
-[genericSecret]
-command = "secretTool.py"
-
-[secret]
-command = "secretTool.py"
+[keepassxc]
+# It is too tedious to enter keepass word everytime when I try to apply changes.
+# Comment out keepassxc database to skip querying keepassxc
+#     database = {{ joinPath .chezmoi.homeDir "Sync/private/keepass/kdbx.kdbx" | quote }}

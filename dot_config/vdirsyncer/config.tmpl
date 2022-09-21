@@ -1,3 +1,8 @@
+{{ $entry := "keyring/etesync-dav" -}}
+{{ $username := (keepassxc $entry).UserName -}}
+{{ $password := (keepassxc $entry).Password -}}
+{{ $url := (keepassxc $entry).URL -}}
+
 # An example configuration for vdirsyncer.
 #
 # Move it to ~/.vdirsyncer/config or ~/.config/vdirsyncer/config and edit it.
@@ -43,9 +48,9 @@ fileext = ".vcf"
 
 [storage contacts_remote]
 type = "carddav"
-username = "{{ secret "etesync-dav" "username" }}"
-password = "{{ secret "etesync-dav" "password" }}"
-url = "{{ secret "etesync-dav" "url" }}"
+username = "{{ $username }}"
+password = "{{ $password }}"
+url = "{{ $url }}"
 
 # CALDAV
 [pair calendars]
@@ -63,6 +68,6 @@ fileext = ".ics"
 
 [storage calendars_remote]
 type = "caldav"
-username = "{{ secret "etesync-dav" "username" }}"
-password = "{{ secret "etesync-dav" "password" }}"
-url = "{{ secret "etesync-dav" "url" }}"
+username = "{{ $username }}"
+password = "{{ $password }}"
+url = "{{ $url }}"

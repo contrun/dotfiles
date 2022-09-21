@@ -1,3 +1,33 @@
+{{ $unified_entry := "keyring/unified" -}}
+{{ $unified_username := (keepassxc $unified_entry).UserName -}}
+{{ $unified_password := (keepassxc $unified_entry).Password -}}
+{{ $unified_imap_server := keepassxcAttribute $unified_entry "ImapServer" -}}
+{{ $unified_imap_port := keepassxcAttribute $unified_entry "ImapPort" -}}
+
+{{ $sudo_entry := "keyring/sudo" -}}
+{{ $sudo_username := (keepassxc $sudo_entry).UserName -}}
+{{ $sudo_password := (keepassxc $sudo_entry).Password -}}
+{{ $sudo_imap_server := keepassxcAttribute $sudo_entry "ImapServer" -}}
+{{ $sudo_imap_port := keepassxcAttribute $sudo_entry "ImapPort" -}}
+
+{{ $push_entry := "keyring/push" -}}
+{{ $push_username := (keepassxc $push_entry).UserName -}}
+{{ $push_password := (keepassxc $push_entry).Password -}}
+{{ $push_imap_server := keepassxcAttribute $push_entry "ImapServer" -}}
+{{ $push_imap_port := keepassxcAttribute $push_entry "ImapPort" -}}
+
+{{ $icloud_entry := "keyring/icloud" -}}
+{{ $icloud_username := (keepassxc $icloud_entry).UserName -}}
+{{ $icloud_password := (keepassxc $icloud_entry).Password -}}
+{{ $icloud_imap_server := keepassxcAttribute $icloud_entry "ImapServer" -}}
+{{ $icloud_imap_port := keepassxcAttribute $icloud_entry "ImapPort" -}}
+
+{{ $work_entry := "keyring/work" -}}
+{{ $work_username := (keepassxc $work_entry).UserName -}}
+{{ $work_password := (keepassxc $work_entry).Password -}}
+{{ $work_imap_server := keepassxcAttribute $work_entry "ImapServer" -}}
+{{ $work_imap_port := keepassxcAttribute $work_entry "ImapPort" -}}
+
 [general]
 # This lists the accounts that I will be configuring.
 accounts = unified, push, sudo
@@ -20,10 +50,10 @@ type = Maildir
 localfolders = ~/.mail/unified
 [Repository unified-remote]
 type = IMAP
-remotehost = {{ secret "unified" "imapServer" }}
-remoteport = {{ secret "unified" "imapPort" }}
-remoteusereval = "{{ secret "unified" "username" }}"
-remotepasseval = "{{ secret "unified" "password" }}"
+remotehost = {{ $unified_imap_server }}
+remoteport = {{ $unified_imap_port }}
+remoteusereval = "{{ $unified_username }}"
+remotepasseval = "{{ $unified_password }}"
 sslcacertfile = /etc/ssl/certs/ca-certificates.crt
 realdelete = no
 folderfilter = lambda foldername: foldername in ['Inbox', 'Sent', 'Drafts', 'Trash', 'Junk', 'Archive']
@@ -40,10 +70,10 @@ type = Maildir
 localfolders = ~/.mail/sudo
 [Repository sudo-remote]
 type = IMAP
-remotehost = {{ secret "sudo" "imapServer" }}
-remoteport = {{ secret "sudo" "imapPort" }}
-remoteusereval = "{{ secret "sudo" "username" }}"
-remotepasseval = "{{ secret "sudo" "password" }}"
+remotehost = {{ $sudo_imap_server }}
+remoteport = {{ $sudo_imap_port }}
+remoteusereval = "{{ $sudo_username }}"
+remotepasseval = "{{ $sudo_password }}"
 sslcacertfile = /etc/ssl/certs/ca-certificates.crt
 realdelete = no
 folderfilter = lambda foldername: foldername in ['INBOX', 'Sent', 'Archive', 'Drafts', 'Trash', 'Spam']
@@ -60,10 +90,10 @@ type = Maildir
 localfolders = ~/.mail/push
 [Repository push-remote]
 type = IMAP
-remotehost = {{ secret "push" "imapServer" }}
-remoteport = {{ secret "push" "imapPort" }}
-remoteusereval = "{{ secret "push" "username" }}"
-remotepasseval = "{{ secret "push" "password" }}"
+remotehost = {{ $push_imap_server }}
+remoteport = {{ $push_imap_port }}
+remoteusereval = "{{ $push_username }}"
+remotepasseval = "{{ $push_password }}"
 sslcacertfile = /etc/ssl/certs/ca-certificates.crt
 realdelete = no
 folderfilter = lambda foldername: foldername in ['Inbox', 'Sent', 'Drafts', 'Archive', 'Trash', 'Junk', 'Archive']
@@ -80,10 +110,10 @@ type = Maildir
 localfolders = ~/.mail/icloud
 [Repository icloud-remote]
 type = IMAP
-remotehost = imap.mail.me.com
-remoteport = 993
-remoteusereval = "{{ secret "icloud" "username" }}"
-remotepasseval = "{{ secret "icloud" "password" }}"
+remotehost = {{ $icloud_imap_server }}
+remoteport = {{ $icloud_imap_port }}
+remoteusereval = "{{ $icloud_username }}"
+remotepasseval = "{{ $icloud_password }}"
 sslcacertfile = /etc/ssl/certs/ca-certificates.crt
 realdelete = no
 folderfilter = lambda foldername: foldername in ['Inbox', 'Sent']
@@ -100,10 +130,10 @@ type = Maildir
 localfolders = ~/.mail/work
 [Repository work-remote]
 type = Gmail
-remotehost = {{ secret "work" "imapServer" }}
-remoteport = {{ secret "work" "imapPort" }}
-remoteusereval = "{{ secret "work" "username" }}"
-remotepasseval = "{{ secret "work" "password" }}"
+remotehost = {{ $work_imap_server }}
+remoteport = {{ $work_imap_port }}
+remoteusereval = "{{ $work_username }}"
+remotepasseval = "{{ $work_password }}"
 sslcacertfile = /etc/ssl/certs/ca-certificates.crt
 realdelete = no
 # folderfilter = lambda foldername: foldername in ['INBOX', 'Archive', 'Sent Messages', 'Drafts', 'Deleted Messages']
