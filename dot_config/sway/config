@@ -755,6 +755,7 @@ mode "launcher" {
         bindsym v exec copyq show; mode "default"
         bindsym t exec $terminal; mode "default"
         bindsym o exec okular; mode  "default"
+        bindsym b exec wezterm connect box; mode  "default"
         bindsym r exec okular; mode  "default"
         bindsym p exec zathura; mode  "default"
         bindsym m exec telegram-desktop; mode "default"
