@@ -28,7 +28,8 @@
     "karl": "linux",
     "cros": "linux",
     "bzr": "linux",
-    "lizj": "linux"
+    "lizj": "linux",
+    "contrun.gowired.draft---inspiring-hooks.csb": "linux"
   },
   "editor.multiCursorModifier": "alt",
   "editor.wordWrap": "on",

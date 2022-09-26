@@ -44,8 +44,6 @@ upload: pull push
 update: pull update-upstreams deps-install install
 
 home-install:
-	[[ -f $(DESTDIR)/.config/Code/User/settings.json ]] || install -DT $(DIR)/dot_config/Code/User/settings.json $(DESTDIR)/.config/Code/User/settings.json
-	diff $(DESTDIR)/.config/Code/User/settings.json $(DIR)/dot_config/Code/User/settings.json || nvim -d $(DESTDIR)/.config/Code/User/settings.json $(DIR)/dot_config/Code/User/settings.json
 	$(call chezmoi,$@) -D $(call dest,$@) -S $(call src,$@) apply || true
 
 root-install:
