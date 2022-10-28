@@ -5,7 +5,6 @@ icons = "awesome"
 
 [[block]]
 block = "focused_window"
-autohide = true
 [block.format]
 full = "$title.rot-str(75)|"
 short = "$title.rot-str(20)|"
@@ -31,8 +30,8 @@ block = "sound"
 
 [[block]]
 block = "battery"
-hide_missing = true
-hide_full = true
+missing_format = ""
+full_format = ""
 
 [[block]]
 block = "pomodoro"
