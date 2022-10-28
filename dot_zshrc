@@ -115,8 +115,6 @@ alias push="pc.sh -q neomutt -F ~/.mutt/gmxrc"
 alias p="pc.sh -q pushmessage.sh"
 alias n="pc.sh -q notify.py"
 alias ct='cd "$(mktemp -d)"'
-# https://unix.stackexchange.com/questions/67537/prevent-ssh-client-passing-term-environment-variable-to-server/509165
-alias ssh='TERM=xterm-256color ssh'
 
 # export VIRTUALENVWRAPPER_PYTHON=$(which python3)
 export WORKON_HOME=$HOME/.virtualenvs

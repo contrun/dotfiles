@@ -88,5 +88,6 @@
   },
   "remote.SSH.defaultExtensions": [
     "gitpod.gitpod-remote-ssh"
-  ]
+  ],
+  "agdaMode.connection.agdaLanguageServer": true
 }
