@@ -15,9 +15,8 @@ alert_unit = "GB"
 
 [[block]]
 block = "memory"
-display_type = "memory"
-format_mem = "$mem_free.eng(3,B,M)"
-format_swap = "$swap_free.eng(3,B,M)"
+format = " $icon $mem_used_percents.eng(1) "
+format_alt = " $icon_swap $swap_free.eng(3,B,M)/$swap_total.eng(3,B,M)($swap_used_percents.eng(2)) "
 
 [[block]]
 block = "cpu"

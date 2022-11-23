@@ -137,6 +137,10 @@ output "Unknown 0xC199 0x00000000" {
        scale 1.4
 }
 
+output "Unknown 0xC199 Unknown" {
+       scale 1.4
+}
+
 output "AU Optronics 0xC199 Unknown" {
        scale 1.4
 }
