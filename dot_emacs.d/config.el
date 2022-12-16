@@ -2833,6 +2833,16 @@ With arg N, insert N newlines."
   (add-to-list 'completion-ignored-extensions ".ibc")
   )
 
+(when (executable-find "agda-mode")
+  (use-package agda2
+    :ensure nil
+    :straight nil
+    :load-path (lambda ()
+                 (let ((coding-system-for-read 'utf-8))
+                   (file-name-directory (shell-command-to-string "agda-mode locate"))))
+    :mode ("\\.l?agda\\'" . agda2-mode)
+    :interpreter ("agda -I" . agda2-mode)))
+
 (use-package elm-mode
   :init
   (setq-default elm-format-on-save t)
