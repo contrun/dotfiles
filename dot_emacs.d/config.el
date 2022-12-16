@@ -1559,8 +1559,6 @@ With arg N, insert N newlines."
 
 (use-package kubernetes-helm)
 
-(use-package kubernetes-tramp)
-
 (use-package tramp
   :ensure nil
   :straight nil
@@ -1606,7 +1604,7 @@ With arg N, insert N newlines."
   :hook (prog-mode . my-prog-mode-hook)
   :init
   (defun my-prog-mode-hook ()
-    (linum-mode 1)))
+    (display-line-numbers-mode 1)))
 
 (use-package clang-format
   :config
@@ -1924,7 +1922,7 @@ With arg N, insert N newlines."
 
   (define-minor-mode inferior-js-keys-mode
     "Bindings for communicating with an inferior js interpreter."
-    nil " InfJS" inferior-js-minor-mode-map)
+    :init-value nil :lighter " InfJS" :keymap inferior-js-minor-mode-map)
 
   (dolist (hook '(js2-mode-hook js-mode-hook))
     (add-hook hook 'inferior-js-keys-mode))
@@ -2347,7 +2345,9 @@ With arg N, insert N newlines."
   This enables or modifies a number of settings so that the
   experience of editing prose is a little more like that of a
   typical word processor."
-  nil " Prose" nil
+  :init-value nil
+  :lighter " Prose"
+  :keymap nil
   (if prose-mode
       (progn
         (when (fboundp 'writeroom-mode)
@@ -3108,8 +3108,6 @@ With arg N, insert N newlines."
 (use-package docker-api)
 
 (use-package docker-compose-mode)
-
-(use-package docker-tramp)
 
 (use-package vagrant-tramp)
 
