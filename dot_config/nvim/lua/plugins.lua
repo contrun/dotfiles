@@ -97,7 +97,18 @@ return require('packer').startup({ function(use)
     end
   }
 
+  use 'rhysd/git-messenger.vim'
+
   use 'kassio/neoterm'
+
+  use {
+    'folke/neodev.nvim',
+    config = function()
+      require("neodev").setup({
+        library = { plugins = { "neotest" }, types = true },
+      })
+    end
+  }
 
   -- LSP server
   use {
@@ -133,6 +144,47 @@ return require('packer').startup({ function(use)
   use {
     "theHamsta/nvim-dap-virtual-text",
     requires = { "mfussenegger/nvim-dap" }
+  }
+
+  use {
+    "nvim-neotest/neotest",
+    requires = {
+      "nvim-lua/plenary.nvim",
+      "nvim-treesitter/nvim-treesitter",
+      "antoinemadec/FixCursorHold.nvim",
+      "nvim-neotest/neotest-vim-test",
+      "nvim-neotest/neotest-plenary",
+      "rouge8/neotest-rust",
+      "nvim-neotest/neotest-python",
+      "nvim-neotest/neotest-go",
+      "stevanmilic/neotest-scala",
+      "mrcjkb/neotest-haskell",
+      "jfpedroza/neotest-elixir",
+    },
+    config = function()
+      require("neotest").setup({
+        adapters = {
+          require("neotest-python")({
+            dap = { justMyCode = false} ,
+          }),
+          require("neotest-plenary"),
+          require("neotest-scala"),
+          require("neotest-rust") {
+            args = { "--no-capture" },
+          },
+          require("neotest-haskell"),
+          require("neotest-go"),
+          require("neotest-vim-test")({
+            ignore_file_types = { "python", "vim", "lua", "haskell", "elixir", "scala", "rust", "go" },
+          }),
+        },
+      })
+      -- Suggested keymaps
+      local opts = { noremap = true, }
+      vim.keymap.set('n', '<leader>tt', function() require('neotest').run.run() end, opts)
+      vim.keymap.set('n', '<leader>to', function() require('neotest').output.open() end, opts)
+      vim.keymap.set('n', '<leader>ts', function() require('neotest').summary.toggle() end, opts)
+    end
   }
 
   -- Autocomplete

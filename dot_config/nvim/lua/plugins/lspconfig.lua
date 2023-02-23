@@ -6,6 +6,7 @@ local common_on_attach = lsp_utils.common_on_attach
 -- add capabilities from nvim-cmp
 local capabilities = vim.lsp.protocol.make_client_capabilities()
 capabilities = require('cmp_nvim_lsp').update_capabilities(capabilities)
+-- local capabilities = require('cmp_nvim_lsp').default_capabilities()
 
 local get_option_for_server = function(server)
   local default = { on_attach = common_on_attach, capabilities = capabilities }
