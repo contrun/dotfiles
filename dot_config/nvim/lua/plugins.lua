@@ -199,6 +199,16 @@ return require('packer').startup({
                                function()
                     require('neotest').output.open()
                 end, opts)
+                vim.keymap.set('n', '<leader>ta',
+                               function()
+                    require("neotest").run.attach()
+                end, opts)
+                vim.keymap.set('n', '<leader>td', function()
+                    require("neotest").run.run({strategy = "dap"})
+                end, opts)
+                vim.keymap.set('n', '<leader>tf', function()
+                    require("neotest").run.run(vim.fn.expand("%"))
+                end, opts)
                 vim.keymap.set('n', '<leader>ts', function()
                     require('neotest').summary.toggle()
                 end, opts)
@@ -210,7 +220,23 @@ return require('packer').startup({
             requires = {
                 'nvim-lua/popup.nvim', 'nvim-lua/plenary.nvim',
                 'nvim-telescope/telescope.nvim'
-            }
+            },
+            config = function()
+                -- Suggested keymaps
+                local opts = {noremap = true}
+                vim.keymap.set('n', '<leader>ta', function()
+                    require("telescope").extensions.vstask.tasks()
+                end, opts)
+                vim.keymap.set('n', '<leader>ti', function()
+                    require("telescope").extensions.vstask.inputs()
+                end, opts)
+                vim.keymap.set('n', '<leader>th', function()
+                    require("telescope").extensions.vstask.history()
+                end, opts)
+                vim.keymap.set('n', '<leader>tl', function()
+                    require('telescope').extensions.vstask.launch()
+                end, opts)
+            end
         }
 
         -- Autocomplete
