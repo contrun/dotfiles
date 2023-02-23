@@ -16,7 +16,7 @@ local runtime_path = vim.split(package.path, ';')
 table.insert(runtime_path, "lua/?.lua")
 table.insert(runtime_path, "lua/?/init.lua")
 
-require 'lspconfig'.sumneko_lua.setup {
+require 'lspconfig'.lua_ls.setup {
   settings = {
     Lua = {
       runtime = { version = 'LuaJIT', path = runtime_path },
@@ -25,5 +25,5 @@ require 'lspconfig'.sumneko_lua.setup {
       telemetry = { enable = false }
     }
   },
-  on_attach = common_on_attach
+  on_attach = common_on_attach,
 }

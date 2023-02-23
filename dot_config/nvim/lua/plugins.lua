@@ -115,7 +115,10 @@ return require('packer').startup({ function(use)
     'neovim/nvim-lspconfig',
     config = function() require('plugins.lspconfig') end
   }
-  use 'williamboman/nvim-lsp-installer' -- Helper for installing most language servers
+
+  use { "williamboman/mason.nvim" }
+  use { "williamboman/mason-lspconfig.nvim" }
+
   -- use({'scalameta/nvim-metals', requires = { "nvim-lua/plenary.nvim" }})
 
   use {

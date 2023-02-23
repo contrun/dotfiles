@@ -1,58 +1,79 @@
+local get_servers_to_install = function()
+  local servers_to_install = {
+    "clangd", "pyright", "jsonls", "dockerls", "rust_analyzer",
+    "elixirls", "jdtls", "zls", "gopls", "texlab", "rnix", "omnisharp",
+  }
+  return servers_to_install
+end
+
+local get_no_installing_servers = function()
+  local servers_unable_to_install = {
+    "bashls", "hls", "tsserver", "jsonls",
+  }
+  return servers_unable_to_install
+end
+
+require("mason").setup()
+require("mason-lspconfig").setup {
+  -- A list of servers to automatically install if they're not already installed. Example: { "rust_analyzer@nightly", "lua_ls" }
+  -- This setting has no relation with the `automatic_installation` setting.
+  ensure_installed = get_servers_to_install(),
+
+  -- Whether servers that are set up (via lspconfig) should be automatically installed if they're not already installed.
+  -- This setting has no relation with the `ensure_installed` setting.
+  -- Can either be:
+  --   - false: Servers are not automatically installed.
+  --   - true: All servers set up via lspconfig are automatically installed.
+  --   - { exclude: string[] }: All servers set up via lspconfig, except the ones provided in the list, are automatically installed.
+  --       Example: automatic_installation = { exclude = { "rust_analyzer", "solargraph" } }
+  automatic_installation = {
+    exclude = get_no_installing_servers(),
+  },
+}
+
 local lsp_config = require('lspconfig')
-local lsp_installer = require("nvim-lsp-installer")
 local lsp_utils = require('lsp.utils')
 
 local common_on_attach = lsp_utils.common_on_attach
--- add capabilities from nvim-cmp
-local capabilities = vim.lsp.protocol.make_client_capabilities()
-capabilities = require('cmp_nvim_lsp').update_capabilities(capabilities)
--- local capabilities = require('cmp_nvim_lsp').default_capabilities()
+local capabilities = require('cmp_nvim_lsp').default_capabilities()
 
-local get_option_for_server = function(server)
-  local default = { on_attach = common_on_attach, capabilities = capabilities }
+local setup_servers = function()
+  local setup_server = function(server)
+    local default_options = { on_attach = common_on_attach, capabilities = capabilities }
 
-  -- Now we'll create a server_default table where we'll specify our custom LSP server configuration
-  local overrides = {
-    -- Provide settings that should only apply to the "eslintls" server
-    ["eslintls"] = function()
-      default.settings = { format = { enable = true } }
-      return default
-    end,
-    ["omnisharp"] = function()
-      local pid = vim.fn.getpid()
-      local omnisharp_bin = "omnisharp"
-      default.cmd = {
-        omnisharp_bin, "--languageserver", "--hostPID", tostring(pid)
-      }
-      return default
+    -- Now we'll create a server_default table where we'll specify our custom LSP server configuration
+    local server_specific_options = {
+      -- Provide settings that should only apply to the "eslintls" server
+      ["eslintls"] = function(options)
+        options.settings = { format = { enable = true } }
+        return options
+      end,
+      ["omnisharp"] = function(options)
+        local pid = vim.fn.getpid()
+        local omnisharp_bin = "omnisharp"
+        options.cmd = {
+          omnisharp_bin, "--languageserver", "--hostPID", tostring(pid)
+        }
+        return options
+      end
+    }
+
+    local options = server_specific_options[server] and server_specific_options[server](default_options) or
+        default_options
+
+    if lsp_config[server] then
+      lsp_config[server].setup(options)
     end
-  }
-  return overrides[server] and overrides[server]() or default
-end
+  end
 
--- Register a handler that will be called for all installed servers.
--- Alternatively, you may also register handlers on specific server instances instead (see example below).
-lsp_installer.on_server_ready(function(server)
-  server:setup(get_option_for_server(server.name))
-end)
+  for _, server in ipairs(get_servers_to_install()) do
+    setup_server(server)
+  end
 
-local lsp_installer_servers = {
-  "bashls", "clangd", "pyright", "jsonls", "dockerls", "rust_analyzer",
-  "tsserver", "elixirls", "jdtls", "zls", "metals", "gopls", "texlab",
-  "sumneko_lua"
-}
-
-for _, name in pairs(lsp_installer_servers) do
-  local server_is_found, server = lsp_installer.get_server(name)
-  if server_is_found then
-    if not server:is_installed() then server:install() end
+  for _, server in ipairs(get_no_installing_servers()) do
+    setup_server(server)
   end
 end
 
-local other_servers = { "metals", "rnix", "gopls", "omnisharp", "hls" }
-
-for _, server in ipairs(other_servers) do
-  lsp_config[server].setup(get_option_for_server(server))
-end
-
+setup_servers()
 require('lsp.sumneko')
