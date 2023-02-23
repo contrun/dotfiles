@@ -1,7 +1,6 @@
 ----------------------------------------------------------------------------------------
 -- luakit configuration file, more information at http://luakit.org/ --
 ----------------------------------------------------------------------------------------
-
 require "lfs"
 
 if unique then
@@ -46,7 +45,7 @@ local webview = require "webview"
 -- Add luakit;//log/ chrome page
 local log_chrome = require "log_chrome"
 
-window.add_signal("build", function (w)
+window.add_signal("build", function(w)
     local widgets, l, r = require "lousy.widget", w.sbar.l, w.sbar.r
 
     -- Left-aligned status bar widgets
@@ -109,7 +108,7 @@ local downloads_chrome = require "downloads_chrome"
 local viewpdf = require "viewpdf"
 
 -- Example using xdg-open for opening downloads / showing download folders
-downloads.add_signal("open-file", function (file)
+downloads.add_signal("open-file", function(file)
     luakit.spawn(string.format("xdg-open %q", file))
     return true
 end)
@@ -144,7 +143,7 @@ local open_editor = require "open_editor"
 -- `,ts` to toggle scripts, `,tp` to toggle plugins, `,tr` to reset.
 -- Remove all "enable_scripts" & "enable_plugins" lines from your
 -- domain_props table (in config/globals.lua) as this module will conflict.
---require "noscript"
+-- require "noscript"
 
 local follow_selected = require "follow_selected"
 local go_input = require "go_input"
@@ -184,9 +183,7 @@ local view_source = require "view_source"
 -- Restore last saved session
 local w = (not luakit.nounique) and (session and session.restore())
 if w then
-    for i, uri in ipairs(uris) do
-        w:new_tab(uri, { switch = i == 1 })
-    end
+    for i, uri in ipairs(uris) do w:new_tab(uri, {switch = i == 1}) end
 else
     -- Or open new window
     window.new(uris)
@@ -197,13 +194,13 @@ end
 -------------------------------------------
 
 if unique then
-    unique.add_signal("message", function (msg, screen)
+    unique.add_signal("message", function(msg, screen)
         local cmd, arg = string.match(msg, "^(%S+)%s*(.*)")
         local ww = lousy.util.table.values(window.bywidget)[1]
         if cmd == "tabopen" then
             ww:new_tab(arg)
         elseif cmd == "winopen" then
-            ww = window.new((arg ~= "") and { arg } or {})
+            ww = window.new((arg ~= "") and {arg} or {})
         end
         ww.win.screen = screen
         ww.win.urgency_hint = true

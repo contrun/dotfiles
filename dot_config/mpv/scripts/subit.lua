@@ -1,5 +1,4 @@
 -- input.conf: d    script-binding subit
-
 --[[
 Requirements:
 - Python 2/3, installed or embedded
@@ -9,19 +8,16 @@ Requirements:
 
 Non-local files are ignored because mpv's --sub-path doesn't work
 for those.
-]]
-
-
-local msg = require 'mp.msg'
+]] local msg = require 'mp.msg'
 local utils = require 'mp.utils'
 local options = require 'mp.options'
 
 o = {
     key = "d",
-    path = "subliminal",    -- absolute path to subliminal if not on PATH
+    path = "subliminal", -- absolute path to subliminal if not on PATH
     languages = "en,pt-PT", -- list of IETF languages to search
-    forceutf8 = true,       -- Force subtitles to be saved as utf-8
-    forcedownload = false,  -- Force download of all languages requested
+    forceutf8 = true, -- Force subtitles to be saved as utf-8
+    forcedownload = false, -- Force download of all languages requested
 
     -- Some providers need credentials to be used.
     -- This isn't necessary unless you want these providers.
@@ -29,7 +25,7 @@ o = {
     -- user/pass can't contain these
     addic7ed = "",
     legendastv = "",
-    opensubtitles = "",
+    opensubtitles = ""
 }
 options.read_options(o)
 
@@ -50,8 +46,8 @@ function parse_subliminal(txt)
         mp.osd_message("No subtitles found")
         msg.warn("No subtitles found")
     else
-        mp.osd_message(string.format("Found %d subtitle%s",
-            subs_found, (subs_found == 1) and '' or 's'))
+        mp.osd_message(string.format("Found %d subtitle%s", subs_found,
+                                     (subs_found == 1) and '' or 's'))
         mp.commandv("rescan_external_files", "reselect")
     end
 end
@@ -63,13 +59,12 @@ function main()
     local t = {}
     t.args = {o.path}
 
-    for _, i in ipairs({"addic7ed", "legendastv",
-        "opensubtitles", "subscenter"}) do
+    for _, i in
+        ipairs({"addic7ed", "legendastv", "opensubtitles", "subscenter"}) do
         if o[i] and o[i] ~= "" then
-            local user, pass =
-                string.match(o[i], "([^ :,|]+)[:,| ]([^ :,|]+)")
+            local user, pass = string.match(o[i], "([^ :,|]+)[:,| ]([^ :,|]+)")
             if user ~= nil and pass ~= nil then
-                table.insert(t.args, "--"..i)
+                table.insert(t.args, "--" .. i)
                 table.insert(t.args, user)
                 table.insert(t.args, pass)
             end
@@ -105,7 +100,7 @@ function main()
     end
 
     table.insert(t.args, path)
-    msg.debug(string.format("Running: \"%s\"", table.concat(t.args,'" "')))
+    msg.debug(string.format("Running: \"%s\"", table.concat(t.args, '" "')))
     local res = utils.subprocess(t)
     local es, txt = res.status, res.stdout
 

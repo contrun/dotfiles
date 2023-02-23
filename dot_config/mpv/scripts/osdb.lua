@@ -1,6 +1,4 @@
-if mp == nil then
-    print('Must be run inside MPV')
-end
+if mp == nil then print('Must be run inside MPV') end
 
 local rpc = require 'xmlrpc.http'
 local os = require 'os'
@@ -29,7 +27,6 @@ local options = {
 }
 read_options(options, 'osdb')
 
-
 -- This is for performing RPC calls to OpenSubtitles
 local osdb = {}
 
@@ -39,9 +36,7 @@ osdb.USERAGENT = 'osdb-mpv v1'
 function osdb.rpc(...)
     local args = {...}
 
-    for i, item in pairs(args) do
-        args[i] = osdb.xml_escape(item)
-    end
+    for i, item in pairs(args) do args[i] = osdb.xml_escape(item) end
 
     local ok, res = rpc.call(osdb.API, table.unpack(args))
 
@@ -69,9 +64,7 @@ function osdb.query(search_query, nsubtitles)
     local limit = {limit = nsubtitles}
 
     local res = osdb.rpc('SearchSubtitles', osdb.token, search_query, limit)
-    if res.data == false then
-        error('No subtitles found in OSDb')
-    end
+    if res.data == false then error('No subtitles found in OSDb') end
     return res.data
 end
 
@@ -86,9 +79,7 @@ function osdb.xml_escape(val)
         return val:gsub('%&', '&amp;'):gsub('%<', '&lt;'):gsub('%>', '&gt;')
     elseif type(val) == 'table' then
         local conv = {}
-        for k, v in pairs(val) do
-            conv[k] = osdb.xml_escape(v)
-        end
+        for k, v in pairs(val) do conv[k] = osdb.xml_escape(v) end
         return conv
     else
         return val
@@ -98,48 +89,40 @@ end
 -- Movie hash function for OSDB, courtesy of
 -- http://trac.opensubtitles.org/projects/opensubtitles/wiki/HashSourceCodes
 function movieHash(fileName)
-        local fil = io.open(fileName, "rb")
-        if fil == nil then
-            error("Can't open file")
+    local fil = io.open(fileName, "rb")
+    if fil == nil then error("Can't open file") end
+    local lo, hi = 0, 0
+    for i = 1, 8192 do
+        local a, b, c, d = fil:read(4):byte(1, 4)
+        lo = lo + a + b * 256 + c * 65536 + d * 16777216
+        a, b, c, d = fil:read(4):byte(1, 4)
+        hi = hi + a + b * 256 + c * 65536 + d * 16777216
+        while lo >= 4294967296 do
+            lo = lo - 4294967296
+            hi = hi + 1
         end
-        local lo,hi=0,0
-        for i=1,8192 do
-                local a,b,c,d = fil:read(4):byte(1,4)
-                lo = lo + a + b*256 + c*65536 + d*16777216
-                a,b,c,d = fil:read(4):byte(1,4)
-                hi = hi + a + b*256 + c*65536 + d*16777216
-                while lo>=4294967296 do
-                        lo = lo-4294967296
-                        hi = hi+1
-                end
-                while hi>=4294967296 do
-                        hi = hi-4294967296
-                end
+        while hi >= 4294967296 do hi = hi - 4294967296 end
+    end
+    local size = fil:seek("end", -65536) + 65536
+    for i = 1, 8192 do
+        local a, b, c, d = fil:read(4):byte(1, 4)
+        lo = lo + a + b * 256 + c * 65536 + d * 16777216
+        a, b, c, d = fil:read(4):byte(1, 4)
+        hi = hi + a + b * 256 + c * 65536 + d * 16777216
+        while lo >= 4294967296 do
+            lo = lo - 4294967296
+            hi = hi + 1
         end
-        local size = fil:seek("end", -65536) + 65536
-        for i=1,8192 do
-                local a,b,c,d = fil:read(4):byte(1,4)
-                lo = lo + a + b*256 + c*65536 + d*16777216
-                a,b,c,d = fil:read(4):byte(1,4)
-                hi = hi + a + b*256 + c*65536 + d*16777216
-                while lo>=4294967296 do
-                        lo = lo-4294967296
-                        hi = hi+1
-                end
-                while hi>=4294967296 do
-                        hi = hi-4294967296
-                end
-        end
-        lo = lo + size
-                while lo>=4294967296 do
-                        lo = lo-4294967296
-                        hi = hi+1
-                end
-                while hi>=4294967296 do
-                        hi = hi-4294967296
-                end
-        fil:close()
-        return string.format("%08x%08x", hi,lo), size
+        while hi >= 4294967296 do hi = hi - 4294967296 end
+    end
+    lo = lo + size
+    while lo >= 4294967296 do
+        lo = lo - 4294967296
+        hi = hi + 1
+    end
+    while hi >= 4294967296 do hi = hi - 4294967296 end
+    fil:close()
+    return string.format("%08x%08x", hi, lo), size
 end
 
 function download(subtitle)
@@ -154,13 +137,12 @@ function download(subtitle)
         end
     end
 
-    local subfile = string.format(options.tempFolder..'/%s', subtitle.SubFileName)
+    local subfile = string.format(options.tempFolder .. '/%s',
+                                  subtitle.SubFileName)
     http.request {
         url = subtitle.SubDownloadLink,
-        sink = ltn12.sink.chain(
-            decompress,
-            ltn12.sink.file(io.open(subfile, 'wb'))
-        )
+        sink = ltn12.sink.chain(decompress,
+                                ltn12.sink.file(io.open(subfile, 'wb')))
     }
     return subfile
 end
@@ -174,9 +156,7 @@ function subtitles.set(self, list)
     self.current = nil
     self.idx = nil
 
-    for _, sub in pairs(list) do
-	sub.download = download
-    end
+    for _, sub in pairs(list) do sub.download = download end
 end
 
 function subtitles.next(self)
@@ -185,38 +165,34 @@ function subtitles.next(self)
 end
 
 function fetch_list()
-        local srcfile = mp.get_property('path')
-        assert(srcfile ~= nil)
-        mp.osd_message("Searching for subtitles...", options.osdDelayLong)
-        local searchQuery = {}
-        if options.useHashSearch then
-            local ok, mhash, fsize = pcall(movieHash, srcfile)
-            if ok then
-                table.insert(searchQuery,
-                {
-                    moviehash = mhash,
-                    moviebytesize = fsize,
-                    sublanguageid = options.language
-                })
-            else
-                msg.warn("Movie hash couldn't be computed")
-            end
-        end
-        if options.useFilenameSearch then
-            local _, basename = utils.split_path(srcfile)
-            table.insert(searchQuery,
-            {
-                query = basename,
+    local srcfile = mp.get_property('path')
+    assert(srcfile ~= nil)
+    mp.osd_message("Searching for subtitles...", options.osdDelayLong)
+    local searchQuery = {}
+    if options.useHashSearch then
+        local ok, mhash, fsize = pcall(movieHash, srcfile)
+        if ok then
+            table.insert(searchQuery, {
+                moviehash = mhash,
+                moviebytesize = fsize,
                 sublanguageid = options.language
             })
+        else
+            msg.warn("Movie hash couldn't be computed")
         end
-        osdb.login(options.user, options.password)
-        subtitles:set(osdb.query(searchQuery, options.numSubtitles))
+    end
+    if options.useFilenameSearch then
+        local _, basename = utils.split_path(srcfile)
+        table.insert(searchQuery,
+                     {query = basename, sublanguageid = options.language})
+    end
+    osdb.login(options.user, options.password)
+    subtitles:set(osdb.query(searchQuery, options.numSubtitles))
 
-        if subtitles.count == 0 then
-            mp.osd_message("No subtitles found", options.osdDelayShort)
-        end
-        osdb.logout()
+    if subtitles.count == 0 then
+        mp.osd_message("No subtitles found", options.osdDelayShort)
+    end
+    osdb.logout()
 end
 
 function rotate_subtitles()
@@ -228,31 +204,27 @@ function rotate_subtitles()
     -- Remove previous subtitle track, if possible
     if subtitles.current ~= nil and subtitles.current._sid ~= nil then
         mp.commandv('sub_remove', subtitles.current._sid)
-        if options.autoFlagSubtitles then
-            flag_subtitle()
-        end
+        if options.autoFlagSubtitles then flag_subtitle() end
     end
 
     -- Move to the next subtitle
     subtitles:next()
 
     -- If at the end of the list (or no subtitles found), don't do anything
-    if subtitles.current == nil then
-        return
-    end
+    if subtitles.current == nil then return end
 
     -- Load current subtitle
-    mp.osd_message(string.format(
-        "[%d/%d] Downloading subtitle…\n%s",
-        subtitles.idx, subtitles.count, subtitles.current.SubFileName
-    ), options.osdDelayLong)
+    mp.osd_message(string.format("[%d/%d] Downloading subtitle…\n%s",
+                                 subtitles.idx, subtitles.count,
+                                 subtitles.current.SubFileName),
+                   options.osdDelayLong)
     local filename = subtitles.current:download()
     mp.commandv('sub_add', filename)
-    mp.osd_message(string.format(
-        "[%d/%d] Using subtitle (matched by %s)\n%s",
-        subtitles.idx, subtitles.count,
-        subtitles.current.MatchedBy, subtitles.current.SubFileName
-    ), options.osdDelayShort)
+    mp.osd_message(string.format("[%d/%d] Using subtitle (matched by %s)\n%s",
+                                 subtitles.idx, subtitles.count,
+                                 subtitles.current.MatchedBy,
+                                 subtitles.current.SubFileName),
+                   options.osdDelayShort)
     -- Remember which track it is
     subtitles.current._sid = mp.get_property('sid')
 end
@@ -268,24 +240,19 @@ function flag_subtitle()
 end
 
 function catch(callback, ...)
-    xpcall(
-        callback,
-        function(err)
-            msg.warn(debug.traceback())
-            msg.fatal(err)
-            mp.osd_message("Error: " .. err, options.osdDelayShort)
-        end,
-        ...
-    )
+    xpcall(callback, function(err)
+        msg.warn(debug.traceback())
+        msg.fatal(err)
+        mp.osd_message("Error: " .. err, options.osdDelayShort)
+    end, ...)
 end
 
 mp.add_key_binding('Ctrl+r', 'osdb_report', function() catch(flag_subtitle) end)
-mp.add_key_binding('Ctrl+f', 'osdb_find_subtitles', function() catch(rotate_subtitles) end)
-mp.register_event('file-loaded', function (event)
-                                     -- Reset the cache
-                                     subtitles:set({})
-                                     if options.autoLoadSubtitles then
-                                        catch(rotate_subtitles)
-                                     end
-                                 end)
+mp.add_key_binding('Ctrl+f', 'osdb_find_subtitles',
+                   function() catch(rotate_subtitles) end)
+mp.register_event('file-loaded', function(event)
+    -- Reset the cache
+    subtitles:set({})
+    if options.autoLoadSubtitles then catch(rotate_subtitles) end
+end)
 

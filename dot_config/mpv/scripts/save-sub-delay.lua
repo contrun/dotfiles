@@ -6,10 +6,10 @@
 --     `mpv --sub-delay=0.1 example.mkv`
 -- this delay value won't be applied to the same file you open by
 -- double-clicking it.
-
 local mputils = require "mp.utils"
 
-local JSON = (os.getenv('APPDATA') or os.getenv('HOME')..'/.config')..'/mpv/mpv_sub-delay.json'
+local JSON = (os.getenv('APPDATA') or os.getenv('HOME') .. '/.config') ..
+                 '/mpv/mpv_sub-delay.json'
 local jsonFile = io.open(JSON, 'a+')
 local sub_delay_table = mputils.parse_json(jsonFile:read("*all"))
 jsonFile:close()
@@ -17,9 +17,7 @@ jsonFile:close()
 function read_sub_delay()
     local sub_delay = mp.get_property_native("sub-delay")
     local path = mp.get_property_native("path")
-    if sub_delay_table == nil then
-        sub_delay_table = {}
-    end
+    if sub_delay_table == nil then sub_delay_table = {} end
     if sub_delay == 0 then
         if sub_delay_table[path] ~= nil then
             sub_delay = sub_delay_table[path]
@@ -38,9 +36,7 @@ function write_sub_delay()
     local path = mp.get_property_native("path")
     sub_delay_table[path] = mp.get_property_native("sub-delay")
     local jsonContent, ret = mputils.format_json(sub_delay_table)
-    if ret ~= error and jsonContent ~= nil then
-        jsonFile:write(jsonContent)
-    end
+    if ret ~= error and jsonContent ~= nil then jsonFile:write(jsonContent) end
     jsonFile:close()
 end
 

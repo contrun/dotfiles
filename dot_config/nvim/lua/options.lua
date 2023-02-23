@@ -1,15 +1,15 @@
 -- Visual
-vim.o.conceallevel    = 0 -- Don't hide quotes in markdown
-vim.o.cmdheight       = 1
-vim.o.pumheight       = 10
-vim.o.showmode        = false
-vim.o.showtabline     = 0 -- Never show tabline
-vim.o.title           = true
-vim.o.termguicolors   = true -- Use true colors, required for some plugins
-vim.wo.number         = true
+vim.o.conceallevel = 0 -- Don't hide quotes in markdown
+vim.o.cmdheight = 1
+vim.o.pumheight = 10
+vim.o.showmode = false
+vim.o.showtabline = 0 -- Never show tabline
+vim.o.title = true
+vim.o.termguicolors = true -- Use true colors, required for some plugins
+vim.wo.number = true
 vim.wo.relativenumber = true
-vim.wo.signcolumn     = 'yes'
-vim.wo.cursorline     = true
+vim.wo.signcolumn = 'yes'
+vim.wo.cursorline = true
 
 vim.opt_global.shortmess:remove("F")
 
@@ -44,14 +44,14 @@ vim.o.updatetime = 300 -- Delay until write to Swap and HoldCommand event
 
 -- Disable inline error messages
 vim.diagnostic.config {
-  virtual_text = true,
-  underline = true, -- Keep error underline
-  signs = true -- Keep gutter signs
+    virtual_text = true,
+    underline = true, -- Keep error underline
+    signs = true -- Keep gutter signs
 }
 
 if vim.fn.has('persistent_undo') == 1 then
-  vim.o.undofile = true
-  vim.o.undodir = vim.fn.stdpath('data') .. '/undo//'
+    vim.o.undofile = true
+    vim.o.undodir = vim.fn.stdpath('data') .. '/undo//'
 end
 
 vim.o.clipboard = vim.o.clipboard .. 'unnamedplus'

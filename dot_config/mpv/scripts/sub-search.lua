@@ -19,9 +19,7 @@ Script Status:
 Credits:
     James Ross-Gowan for repl.lua (https://github.com/rossy/mpv-repl).
     Its complete code with some minor changes had been included in this script.
---]] 
-
-local auto_hide_console = true
+--]] local auto_hide_console = true
 local srt_file_extensions = {".srt", ".en.srt", ".eng.srt"}
 
 ------------- repl.lua -------------
@@ -47,7 +45,7 @@ local opts = {
     font = 'monospace',
     -- Set the font size used for the REPL and the console. This will be
     -- multiplied by "scale."
-    ['font-size'] = 16,
+    ['font-size'] = 16
 }
 
 function detect_platform()
@@ -75,7 +73,7 @@ options.read_options(opts)
 -- Build a list of commands, properties and options for tab-completion
 local option_info = {
     'name', 'type', 'set-from-commandline', 'set-locally', 'default-value',
-    'min', 'max', 'choices',
+    'min', 'max', 'choices'
 }
 local cmd_list = {
     'ignore', 'seek', 'revert-seek', 'quit', 'quit-watch-later', 'stop',
@@ -90,7 +88,7 @@ local cmd_list = {
     'script-binding', 'script-message', 'script-message-to', 'overlay-add',
     'overlay-remove', 'write-watch-later-config', 'hook-add', 'hook-ack',
     'mouse', 'keypress', 'keydown', 'keyup', 'audio-add', 'audio-remove',
-    'audio-reload', 'rescan-external-file', 'apply-profile', 'load-script',
+    'audio-reload', 'rescan-external-file', 'apply-profile', 'load-script'
 }
 local prop_list = mp.get_property_native('property-list')
 for _, opt in ipairs(mp.get_property_native('options')) do
@@ -112,10 +110,8 @@ local log_ring = {}
 
 -- Add a line to the log buffer (which is limited to 100 lines)
 function log_add(style, text)
-    log_ring[#log_ring + 1] = { style = style, text = text }
-    if #log_ring > 100 then
-        table.remove(log_ring, 1)
-    end
+    log_ring[#log_ring + 1] = {style = style, text = text}
+    if #log_ring > 100 then table.remove(log_ring, 1) end
 end
 
 -- Escape a string for verbatim display on the OSD
@@ -145,23 +141,21 @@ function update()
     end
 
     local ass = assdraw.ass_new()
-    local style = '{\\r' ..
-                   '\\1a&H00&\\3a&H00&\\4a&H99&' ..
-                   '\\1c&Heeeeee&\\3c&H111111&\\4c&H000000&' ..
-                   '\\fn' .. opts.font .. '\\fs' .. opts['font-size'] ..
-                   '\\bord2\\xshad0\\yshad1\\fsp0\\q1}'
+    local style = '{\\r' .. '\\1a&H00&\\3a&H00&\\4a&H99&' ..
+                      '\\1c&Heeeeee&\\3c&H111111&\\4c&H000000&' .. '\\fn' ..
+                      opts.font .. '\\fs' .. opts['font-size'] ..
+                      '\\bord2\\xshad0\\yshad1\\fsp0\\q1}'
     -- Create the cursor glyph as an ASS drawing. ASS will draw the cursor
     -- inline with the surrounding text, but it sets the advance to the width
     -- of the drawing. So the cursor doesn't affect layout too much, make it as
     -- thin as possible and make it appear to be 1px wide by giving it 0.5px
     -- horizontal borders.
     local cheight = opts['font-size'] * 8
-    local cglyph = '{\\r' ..
-                    '\\1a&H44&\\3a&H44&\\4a&H99&' ..
-                    '\\1c&Heeeeee&\\3c&Heeeeee&\\4c&H000000&' ..
-                    '\\xbord0.5\\ybord0\\xshad0\\yshad1\\p4\\pbo24}' ..
-                   'm 0 0 l 1 0 l 1 ' .. cheight .. ' l 0 ' .. cheight ..
-                   '{\\p0}'
+    local cglyph = '{\\r' .. '\\1a&H44&\\3a&H44&\\4a&H99&' ..
+                       '\\1c&Heeeeee&\\3c&Heeeeee&\\4c&H000000&' ..
+                       '\\xbord0.5\\ybord0\\xshad0\\yshad1\\p4\\pbo24}' ..
+                       'm 0 0 l 1 0 l 1 ' .. cheight .. ' l 0 ' .. cheight ..
+                       '{\\p0}'
     local before_cur = ass_escape(line:sub(1, cursor - 1))
     local after_cur = ass_escape(line:sub(cursor))
 
@@ -170,11 +164,10 @@ function update()
     local log_ass = ''
     local log_messages = #log_ring
     local log_max_lines = math.ceil(screeny / opts['font-size'])
-    if log_max_lines < log_messages then
-        log_messages = log_max_lines
-    end
+    if log_max_lines < log_messages then log_messages = log_max_lines end
     for i = #log_ring - log_messages + 1, #log_ring do
-        log_ass = log_ass .. style .. log_ring[i].style .. ass_escape(log_ring[i].text)
+        log_ass = log_ass .. style .. log_ring[i].style ..
+                      ass_escape(log_ring[i].text)
     end
 
     ass:new_event()
@@ -203,7 +196,8 @@ function set_active(active)
     if active then
         repl_active = true
         insert_mode = false
-        mp.enable_key_bindings('repl-input', 'allow-hide-cursor+allow-vo-dragging')
+        mp.enable_key_bindings('repl-input',
+                               'allow-hide-cursor+allow-vo-dragging')
     else
         repl_active = false
         mp.disable_key_bindings('repl-input')
@@ -236,18 +230,16 @@ end
 -- by skipping continuation bytes. Assumes 'str' contains valid UTF-8.
 function next_utf8(str, pos)
     if pos > str:len() then return pos end
-    repeat
-        pos = pos + 1
-    until pos > str:len() or str:byte(pos) < 0x80 or str:byte(pos) > 0xbf
+    repeat pos = pos + 1 until pos > str:len() or str:byte(pos) < 0x80 or
+        str:byte(pos) > 0xbf
     return pos
 end
 
 -- As above, but finds the previous UTF-8 charcter in 'str' before 'pos'
 function prev_utf8(str, pos)
     if pos <= 1 then return pos end
-    repeat
-        pos = pos - 1
-    until pos <= 1 or str:byte(pos) < 0x80 or str:byte(pos) > 0xbf
+    repeat pos = pos - 1 until pos <= 1 or str:byte(pos) < 0x80 or str:byte(pos) >
+        0xbf
     return pos
 end
 
@@ -279,9 +271,7 @@ function handle_del()
 end
 
 -- Toggle insert mode (Ins)
-function handle_ins()
-    insert_mode = not insert_mode
-end
+function handle_ins() insert_mode = not insert_mode end
 
 -- Move the cursor to the next character (Right)
 function next_char(amount)
@@ -305,27 +295,17 @@ function clear()
 end
 
 -- Close the REPL if the current line is empty, otherwise do nothing (Ctrl+D)
-function maybe_exit()
-    if line == '' then
-        set_active(false)
-    end
-end
+function maybe_exit() if line == '' then set_active(false) end end
 
 -- Run the current command and clear the line (Enter)
 function handle_enter()
-    if line == '' then
-        return
-    end
-    if history[#history] ~= line then
-        history[#history + 1] = line
-    end
+    if line == '' then return end
+    if history[#history] ~= line then history[#history + 1] = line end
 
     clear_log_buffer()
     search(line)
     clear()
-    if auto_hide_console then
-        set_active(false)
-    end
+    if auto_hide_console then set_active(false) end
 end
 
 -- Go to the specified position in the command history
@@ -341,9 +321,7 @@ function go_history(new_pos)
     end
 
     -- Do nothing if the history position didn't actually change
-    if history_pos == old_pos then
-        return
-    end
+    if history_pos == old_pos then return end
 
     -- If the user was editing a non-history line, save it as the last history
     -- entry. This makes it much less frustrating to accidentally hit Up/Down
@@ -364,19 +342,13 @@ function go_history(new_pos)
 end
 
 -- Go to the specified relative position in the command history (Up, Down)
-function move_history(amount)
-    go_history(history_pos + amount)
-end
+function move_history(amount) go_history(history_pos + amount) end
 
 -- Go to the first command in the command history (PgUp)
-function handle_pgup()
-    go_history(1)
-end
+function handle_pgup() go_history(1) end
 
 -- Stop browsing history and start editing a blank line (PgDown)
-function handle_pgdown()
-    go_history(#history + 1)
-end
+function handle_pgdown() go_history(#history + 1) end
 
 -- Move to the start of the current word, or if already at the start, the start
 -- of the previous word. (Ctrl+Left)
@@ -384,7 +356,9 @@ function prev_word()
     -- This is basically the same as next_word() but backwards, so reverse the
     -- string in order to do a "backwards" find. This wouldn't be as annoying
     -- to do if Lua didn't insist on 1-based indexing.
-    cursor = line:len() - select(2, line:reverse():find('%s*[^%s]*', line:len() - cursor + 2)) + 1
+    cursor = line:len() -
+                 select(2, line:reverse()
+                            :find('%s*[^%s]*', line:len() - cursor + 2)) + 1
     update()
 end
 
@@ -404,16 +378,16 @@ end
 --           completion. It is only appended if 'list' contains exactly one
 --           match.
 local completers = {
-    { pattern = '^%s*()[%w_-]+()$', list = cmd_list, append = ' ' },
-    { pattern = '^%s*set%s+()[%w_/-]+()$', list = prop_list, append = ' ' },
-    { pattern = '^%s*set%s+"()[%w_/-]+()$', list = prop_list, append = '" ' },
-    { pattern = '^%s*add%s+()[%w_/-]+()$', list = prop_list, append = ' ' },
-    { pattern = '^%s*add%s+"()[%w_/-]+()$', list = prop_list, append = '" ' },
-    { pattern = '^%s*cycle%s+()[%w_/-]+()$', list = prop_list, append = ' ' },
-    { pattern = '^%s*cycle%s+"()[%w_/-]+()$', list = prop_list, append = '" ' },
-    { pattern = '^%s*multiply%s+()[%w_/-]+()$', list = prop_list, append = ' ' },
-    { pattern = '^%s*multiply%s+"()[%w_/-]+()$', list = prop_list, append = '" ' },
-    { pattern = '${()[%w_/-]+()$', list = prop_list, append = '}' },
+    {pattern = '^%s*()[%w_-]+()$', list = cmd_list, append = ' '},
+    {pattern = '^%s*set%s+()[%w_/-]+()$', list = prop_list, append = ' '},
+    {pattern = '^%s*set%s+"()[%w_/-]+()$', list = prop_list, append = '" '},
+    {pattern = '^%s*add%s+()[%w_/-]+()$', list = prop_list, append = ' '},
+    {pattern = '^%s*add%s+"()[%w_/-]+()$', list = prop_list, append = '" '},
+    {pattern = '^%s*cycle%s+()[%w_/-]+()$', list = prop_list, append = ' '},
+    {pattern = '^%s*cycle%s+"()[%w_/-]+()$', list = prop_list, append = '" '},
+    {pattern = '^%s*multiply%s+()[%w_/-]+()$', list = prop_list, append = ' '},
+    {pattern = '^%s*multiply%s+"()[%w_/-]+()$', list = prop_list, append = '" '},
+    {pattern = '${()[%w_/-]+()$', list = prop_list, append = '}'}
 }
 
 -- Use 'list' to find possible tab-completions for 'part.' Returns the longest
@@ -427,8 +401,8 @@ function complete_match(part, list)
         if candidate:sub(1, part:len()) == part then
             if completion and completion ~= candidate then
                 local prefix_len = part:len()
-                while completion:sub(1, prefix_len + 1)
-                       == candidate:sub(1, prefix_len + 1) do
+                while completion:sub(1, prefix_len + 1) ==
+                    candidate:sub(1, prefix_len + 1) do
                     prefix_len = prefix_len + 1
                 end
                 completion = candidate:sub(1, prefix_len)
@@ -529,15 +503,16 @@ end
 -- Returns a string of UTF-8 text from the clipboard (or the primary selection)
 function get_clipboard(clip)
     if platform == 'linux' then
-        local res = utils.subprocess({ args = {
-            'xclip', '-selection', clip and 'clipboard' or 'primary', '-out'
-        } })
-        if not res.error then
-            return res.stdout
-        end
+        local res = utils.subprocess({
+            args = {
+                'xclip', '-selection', clip and 'clipboard' or 'primary', '-out'
+            }
+        })
+        if not res.error then return res.stdout end
     elseif platform == 'windows' then
-        local res = utils.subprocess({ args = {
-            'powershell', '-NoProfile', '-Command', [[& {
+        local res = utils.subprocess({
+            args = {
+                'powershell', '-NoProfile', '-Command', [[& {
                 Trap {
                     Write-Error -ErrorRecord $_
                     Exit 1
@@ -555,15 +530,12 @@ function get_clipboard(clip)
                 $u8clip = [System.Text.Encoding]::UTF8.GetBytes($clip)
                 [Console]::OpenStandardOutput().Write($u8clip, 0, $u8clip.Length)
             }]]
-        } })
-        if not res.error then
-            return res.stdout
-        end
+            }
+        })
+        if not res.error then return res.stdout end
     elseif platform == 'macos' then
-        local res = utils.subprocess({ args = { 'pbpaste' } })
-        if not res.error then
-            return res.stdout
-        end
+        local res = utils.subprocess({args = {'pbpaste'}})
+        if not res.error then return res.stdout end
     end
     return ''
 end
@@ -591,56 +563,39 @@ function add_repl_bindings(bindings)
         local fn = binding[2]
         local name = '__repl_binding_' .. i
         mp.add_key_binding(nil, name, fn, 'repeatable')
-        cfg = cfg .. key .. ' script-binding ' .. mp.script_name .. '/' ..
-              name .. '\n'
+        cfg =
+            cfg .. key .. ' script-binding ' .. mp.script_name .. '/' .. name ..
+                '\n'
     end
     mp.commandv('define-section', 'repl-input', cfg, 'force')
 end
 
 -- Mapping from characters to mpv key names
-local binding_name_map = {
-    [' '] = 'SPACE',
-    ['#'] = 'SHARP',
-}
+local binding_name_map = {[' '] = 'SPACE', ['#'] = 'SHARP'}
 
 -- List of input bindings. This is a weird mashup between common GUI text-input
 -- bindings and readline bindings.
 local bindings = {
-    { 'esc',         function() set_active(false) end       },
-    { 'enter',       handle_enter                           },
-    { 'shift+enter', function() handle_char_input('\n') end },
-    { 'bs',          handle_backspace                       },
-    { 'shift+bs',    handle_backspace                       },
-    { 'del',         handle_del                             },
-    { 'shift+del',   handle_del                             },
-    { 'ins',         handle_ins                             },
-    { 'shift+ins',   function() paste(false) end            },
-    { 'mouse_btn1',  function() paste(false) end            },
-    { 'left',        function() prev_char() end             },
-    { 'right',       function() next_char() end             },
-    { 'up',          function() move_history(-1) end        },
-    { 'axis_up',     function() move_history(-1) end        },
-    { 'mouse_btn3',  function() move_history(-1) end        },
-    { 'down',        function() move_history(1) end         },
-    { 'axis_down',   function() move_history(1) end         },
-    { 'mouse_btn4',  function() move_history(1) end         },
-    { 'axis_left',   function() end                         },
-    { 'axis_right',  function() end                         },
-    { 'ctrl+left',   prev_word                              },
-    { 'ctrl+right',  next_word                              },
-    { 'tab',         complete                               },
-    { 'home',        go_home                                },
-    { 'end',         go_end                                 },
-    { 'pgup',        handle_pgup                            },
-    { 'pgdwn',       handle_pgdown                          },
-    { 'ctrl+c',      clear                                  },
-    { 'ctrl+d',      maybe_exit                             },
-    { 'ctrl+k',      del_to_eol                             },
-    { 'ctrl+l',      clear_log_buffer                       },
-    { 'ctrl+u',      del_to_start                           },
-    { 'ctrl+v',      function() paste(true) end             },
-    { 'meta+v',      function() paste(true) end             },
-    { 'ctrl+w',      del_word                               },
+    {'esc', function() set_active(false) end}, {'enter', handle_enter},
+    {'shift+enter', function() handle_char_input('\n') end},
+    {'bs', handle_backspace}, {'shift+bs', handle_backspace},
+    {'del', handle_del}, {'shift+del', handle_del}, {'ins', handle_ins},
+    {'shift+ins', function() paste(false) end},
+    {'mouse_btn1', function() paste(false) end},
+    {'left', function() prev_char() end}, {'right', function() next_char() end},
+    {'up', function() move_history(-1) end},
+    {'axis_up', function() move_history(-1) end},
+    {'mouse_btn3', function() move_history(-1) end},
+    {'down', function() move_history(1) end},
+    {'axis_down', function() move_history(1) end},
+    {'mouse_btn4', function() move_history(1) end},
+    {'axis_left', function() end}, {'axis_right', function() end},
+    {'ctrl+left', prev_word}, {'ctrl+right', next_word}, {'tab', complete},
+    {'home', go_home}, {'end', go_end}, {'pgup', handle_pgup},
+    {'pgdwn', handle_pgdown}, {'ctrl+c', clear}, {'ctrl+d', maybe_exit},
+    {'ctrl+k', del_to_eol}, {'ctrl+l', clear_log_buffer},
+    {'ctrl+u', del_to_start}, {'ctrl+v', function() paste(true) end},
+    {'meta+v', function() paste(true) end}, {'ctrl+w', del_word}
 }
 -- Add bindings for all the printable US-ASCII characters from ' ' to '~'
 -- inclusive. Note, this is a pretty hacky way to do text input. mpv's input
@@ -651,7 +606,9 @@ for b = (' '):byte(), ('~'):byte() do
     local c = string.char(b)
     local binding = binding_name_map[c] or c
     if c ~= '/' then
-        bindings[#bindings + 1] = {binding, function() handle_char_input(c) end}
+        bindings[#bindings + 1] = {binding, function()
+            handle_char_input(c)
+        end}
     end
 end
 add_repl_bindings(bindings)
@@ -664,9 +621,7 @@ mp.add_key_binding('ctrl+f', 'repl-enable', function()
 end)
 
 -- Add a script-message to show the REPL and fill it with the provided text
-mp.register_script_message('type', function(text)
-    show_and_type(text)
-end)
+mp.register_script_message('type', function(text) show_and_type(text) end)
 
 -- Redraw the REPL when the OSD size changes. This is needed because the
 -- PlayRes of the OSD will need to be adjusted.
@@ -704,14 +659,13 @@ end
 
 function open_subtitles_file()
     local video_path = mp.get_property("path")
-    local srt_filename = video_path:gsub('\\','/'):match("^(.+)/.+$") .. "/" .. mp.get_property("filename/no-ext")
-    
+    local srt_filename = video_path:gsub('\\', '/'):match("^(.+)/.+$") .. "/" ..
+                             mp.get_property("filename/no-ext")
+
     for i, ext in ipairs(srt_file_extensions) do
         local f, err = io.open(srt_filename .. ext, "r")
-        
-        if f then
-            return f
-        end
+
+        if f then return f end
     end
 
     return false
@@ -720,9 +674,7 @@ end
 function load_subtitles_file()
     local f = open_subtitles_file()
 
-    if not f then
-        return false
-    end
+    if not f then return false end
 
     data = f:read("*all")
     data = string.gsub(data, "\r\n", "\n")
@@ -741,9 +693,9 @@ end
 
 -- https://www.lua.org/pil/20.4.html
 function nocase(s)
-    s = string.gsub(s, "%a", function (c)
+    s = string.gsub(s, "%a", function(c)
         return string.format("[%s%s]", string.lower(c), string.upper(c))
-      end)
+    end)
     return s
 end
 -- ---------------------------------
@@ -763,19 +715,20 @@ function search(phrase, step)
             search_idx = (search_idx % #search_results) + 1
         else
             search_idx = search_idx - 1
-            if search_idx == 0 then
-                search_idx = #search_results
-            end
+            if search_idx == 0 then search_idx = #search_results end
         end
     else
         idx = 0
         search_idx = 0
         search_results = {}
         prev_phrase = phrase
-        for start_time, end_time, text in string.gmatch(data, "(%d%d:%d%d:%d%d,%d%d%d) %-%-> (%d%d:%d%d:%d%d,%d%d%d) ([^%z]-" .. nocase(phrase) .. "[^%z]-)") do
+        for start_time, end_time, text in string.gmatch(data,
+                                                        "(%d%d:%d%d:%d%d,%d%d%d) %-%-> (%d%d:%d%d:%d%d,%d%d%d) ([^%z]-" ..
+                                                            nocase(phrase) ..
+                                                            "[^%z]-)") do
             idx = idx + 1
-            
-            start_time = srt_time_to_seconds(start_time)            
+
+            start_time = srt_time_to_seconds(start_time)
             if start_time >= time_pos and search_idx == 0 then
                 search_idx = idx
             end
@@ -783,22 +736,22 @@ function search(phrase, step)
             table.insert(search_results, start_time)
         end
 
-        if search_idx == 0 then
-            search_idx = 1
-        end
+        if search_idx == 0 then search_idx = 1 end
     end
 
     if #search_results ~= 0 then
         mp.commandv("seek", search_results[search_idx], "absolute+exact")
-        
-        local search_results_message = string.format("%s [%s/%s]", phrase, search_idx, #search_results)
+
+        local search_results_message = string.format("%s [%s/%s]", phrase,
+                                                     search_idx, #search_results)
         if auto_hide_console == false then
             print(search_results_message)
         else
             mp.osd_message(search_results_message)
         end
     else
-        local search_results_message = string.format("'%s' is not found", phrase)
+        local search_results_message =
+            string.format("'%s' is not found", phrase)
         if auto_hide_console == false then
             print(search_results_message)
         else

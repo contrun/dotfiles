@@ -11,21 +11,16 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 -- ###################################################
-
-
 -- its nothing, yet.
-
 local mp = require 'mp'
 local options = require 'mp.options'
 
-function on_pause_change(name, value)
-    print("pause")
-end
+function on_pause_change(name, value) print("pause") end
 function on_file_loaded(event)
-	print("++++INFO++++")
+    print("++++INFO++++")
     print(mp.get_property_osd("video-codec"))
-	print(mp.get_property_osd("hwdec-current"))
-	print("----INFO----")
+    print(mp.get_property_osd("hwdec-current"))
+    print("----INFO----")
 end
 mp.observe_property("pause", "bool", on_pause_change)
 mp.register_event("file-loaded", on_file_loaded)

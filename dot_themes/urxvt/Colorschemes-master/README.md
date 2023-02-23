@@ -1,12 +1,8 @@
-**Colorschemes**
-======
+# **Colorschemes**
 
-adr's *colorschemes*
-------
+## adr's _colorschemes_
 
-
-
-**'.Xresources'** *colorschemes* meant to be used with *urxvt*.
+**'.Xresources'** _colorschemes_ meant to be used with _urxvt_.
 
 Feel free to contribute.
 
@@ -15,4 +11,3 @@ Feel free to contribute.
 **Icy**: http://a.pomf.se/uf19u.png
 
 **Sad**: http://a.pomf.se/wa61u.png
-

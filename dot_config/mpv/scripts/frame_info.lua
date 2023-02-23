@@ -6,16 +6,14 @@ local o = {
     font_size = 10,
     font_color = "00FFFF",
     border_size = 1.0,
-    border_color = "000000",
+    border_color = "000000"
 }
 options.read_options(o)
 
 function get_formatting()
-    return string.format(
-        "{\\fs%d}{\\1c&H%s&}{\\bord%f}{\\3c&H%s&}",
-        o.font_size, o.font_color,
-        o.border_size, o.border_color
-    )
+    return string.format("{\\fs%d}{\\1c&H%s&}{\\bord%f}{\\3c&H%s&}",
+                         o.font_size, o.font_color, o.border_size,
+                         o.border_color)
 end
 
 function timestamp(duration)
@@ -28,12 +26,9 @@ function timestamp(duration)
 end
 
 function get_info()
-    return string.format(
-        "%sName: %s\\NTime: %s",
-        get_formatting(),
-        mp.get_property("filename"),
-        timestamp(mp.get_property_native("time-pos"))
-    )
+    return string.format("%sName: %s\\NTime: %s", get_formatting(),
+                         mp.get_property("filename"),
+                         timestamp(mp.get_property_native("time-pos")))
 end
 
 function render_info()
@@ -43,9 +38,7 @@ function render_info()
     mp.set_osd_ass(0, 0, ass.text)
 end
 
-function clear_info()
-    mp.set_osd_ass(0, 0, "")
-end
+function clear_info() mp.set_osd_ass(0, 0, "") end
 
 function toggle_info()
     if info_active then
