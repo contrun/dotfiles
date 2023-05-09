@@ -149,6 +149,10 @@ output "XMI Mi 27 NU 3613700006199" {
        scale 1.2
 }
 
+output "XMI Redmi 27 NU 3948623NN1396" {
+       scale 1.2
+}
+
 output "Technical Concepts Ltd TCL Smart TV 0x00000001" {
        scale 3.5
        mode 4096x2160@24Hz
@@ -763,6 +767,7 @@ mode "launcher" {
         bindsym r exec okular; mode  "default"
         bindsym p exec zathura; mode  "default"
         bindsym m exec telegram-desktop; mode "default"
+        bindsym x exec clash-verge; mode "default"
 
         bindsym $mod+m mode "$switch_modes"
         bindsym Escape mode "default"
