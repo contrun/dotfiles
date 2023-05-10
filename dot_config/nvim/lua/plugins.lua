@@ -583,7 +583,6 @@ return require('packer').startup({
             'rmagatti/auto-session',
             config = function()
                 require('auto-session').setup {
-                    log_level = 'debug',
                     auto_session_suppress_dirs = {
                         '~/', '~/Workspace/', '/tmp/',
                         '/run/user/1000/firenvim/'
@@ -593,16 +592,6 @@ return require('packer').startup({
         }
 
         use {'gennaro-tedesco/nvim-jqx'}
-
-        use {
-            'rmagatti/session-lens',
-            requires = {
-                'rmagatti/auto-session', 'nvim-telescope/telescope.nvim'
-            },
-            config = function()
-                require('session-lens').setup { --[[your custom config--]] }
-            end
-        }
 
         if packer_bootstrap then require('packer').sync() end
     end,
