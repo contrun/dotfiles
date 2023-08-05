@@ -29,7 +29,9 @@
     "cros": "linux",
     "bzr": "linux",
     "lizj": "linux",
-    "contrun.gowired.draft---inspiring-hooks.csb": "linux"
+    "contrun.gowired.draft---inspiring-hooks.csb": "linux",
+    "contrun-infra-zsugg6cbhjo.ssh.ws-us101.gitpod.io": "linux",
+    "contrun-gitpodnix-zof0ollfwkm.vss.gitpod.io": "linux"
   },
   "editor.multiCursorModifier": "alt",
   "editor.wordWrap": "on",
@@ -89,5 +91,6 @@
   "remote.SSH.defaultExtensions": [
     "gitpod.gitpod-remote-ssh"
   ],
-  "agdaMode.connection.agdaLanguageServer": true
+  "agdaMode.connection.agdaLanguageServer": true,
+  "redhat.telemetry.enabled": false
 }

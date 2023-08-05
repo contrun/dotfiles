@@ -1,11 +1,28 @@
 #!/usr/bin/env bash
-file="$HOME/Pictures/screenshot-$(date +%Y-%m-%d-%H-%M-%S).png"
-if [[ -z "$WAYLAND_DISPLAY" ]]; then
-    maim -s "$file"
-else
-    grimshot save area "$file"
-fi
 
-if [[ "$?" -eq "0" ]]; then
-    noti -t "screenshot" -m "saved to $file"
+screenshot() {
+  file="$1"
+  if [[ -z "$WAYLAND_DISPLAY" ]]; then
+    if command -v maim; then
+      maim -s "$file"
+    else
+      return 1
+    fi
+  else
+    if command -v grim && command -v slurp; then
+      grim -g "$(slurp)" "$file"
+    elif command -v grimshot; then
+      grimshot save area "$file"
+    else
+      return 1
+    fi
+  fi
+}
+
+file="${1:-$HOME/Pictures/screenshot-$(date +%Y-%m-%d-%H-%M-%S).png}"
+
+if screenshot "$file"; then
+  noti -t "Screenshotting succeeded" -m "saved to $file"
+else
+  noti -t "Screenshotting failed"
 fi
