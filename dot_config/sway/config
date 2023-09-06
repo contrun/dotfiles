@@ -308,8 +308,9 @@ bindsym $altmod+Shift+c exec $reload_command
 
 bindsym $mod+o exec $switch_output_command
 
-bindswitch --reload --locked lid:on output $laptop_output disable
-bindswitch --reload --locked lid:off output $laptop_output enable
+# See Screen won't turn on after resume from sleep https://github.com/swaywm/sway/issues/7228
+# bindswitch --reload --locked lid:on output $laptop_output disable
+# bindswitch --reload --locked lid:off output $laptop_output enable
 
 set $mode_system (l)ock, r(e)start sway, log(o)ut, reload (c)onfig, (s)uspend, (h)ibernate, (r)eboot, (p)oweroff
 mode "$mode_system" {
