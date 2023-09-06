@@ -55,6 +55,19 @@ default_encoding = utf-8
 # Default value: False
 enable_mouse = False
 
+# Desktop notifications
+# If this option is enabled, a Desktop Notification will be
+# displayed using the notification daemon / service.
+# If enabled but no notification is displayed, please refer to
+# https://github.com/coderholic/pyradio/desktop-notification.md
+# Valid values are:
+#    -1: disabled
+#     0: enabled (no repetition)
+#     x: enabled and repeat every x seconds
+#
+# Default value: -1
+enable_notifications = -1
+
 # Connection timeout
 # PyRadio will wait for this number of seconds to get a station/server
 # message indicating that playback has actually started.
@@ -99,6 +112,15 @@ theme = dark
 # Default value: False
 use_transparency = True
 
+# Calculated color factor
+# This is to produce Secondary Windows background color
+# A value of 0 dissables it, otherwise it is the factor
+# to change (lighten or darken) the base color.
+# For more info, please refer to
+# https://github.com/coderholic/pyradio#secondary-windows-background
+# Valid values: 0-0.2
+# Default value: 0
+calculated_color_factor = 0
 
 # Playlist management
 #
@@ -120,4 +142,25 @@ confirm_playlist_reload = True
 # Valid values: True, true, False, false
 # Default value: False
 auto_save_playlist = False
+
+# When PyRadio determines that a restricted
+# terminal is used, it will display a message
+# every time it is lounched. To disable this
+# message, change the value to False.
+# Default value: True
+show_no_themes_message = True
+
+# Remote Control server
+# A simple http server that can accept remote
+# connections and pass commands to PyRadio
+#
+# Valid values:
+#   remote_control_server_ip: localhost, LAN, lan
+#   remote_control_server_port: 1025-65535
+#
+# Default value: localhost:9998
+#                no auto start
+remote_control_server_ip = localhost
+remote_control_server_port = 9998
+remote_control_server_auto_start = False
 

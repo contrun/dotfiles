@@ -31,7 +31,8 @@
     "lizj": "linux",
     "contrun.gowired.draft---inspiring-hooks.csb": "linux",
     "contrun-infra-zsugg6cbhjo.ssh.ws-us101.gitpod.io": "linux",
-    "contrun-gitpodnix-zof0ollfwkm.vss.gitpod.io": "linux"
+    "contrun-gitpodnix-zof0ollfwkm.vss.gitpod.io": "linux",
+    "contrun-infra-i6yqn5dj0ck.ssh.ws-us103.gitpod.io": "linux"
   },
   "editor.multiCursorModifier": "alt",
   "editor.wordWrap": "on",
