@@ -8,7 +8,6 @@ set -g @tpm_plugins '          \
 
 set -g history-limit 10000
 set-option -s set-clipboard off
-bind-key -n S-F5 copy-mode -u
 
 # set-clipboard on
 set-option -g mouse on
@@ -283,6 +282,12 @@ set -g mode-keys vi
 # unbind C-b
 # set -g prefix C-a
 bind C-Space send-prefix
+bind-key -n F1 switch-client -Tprefix
+bind-key -n F2 next-window
+bind-key -n F3 select-pane -t :.+
+bind-key -n F4 copy-mode
+bind-key -n S-F4 copy-mode -u
+bind-key -n F5 choose-tree -w
 
 set -gu prefix2
 unbind C-a
