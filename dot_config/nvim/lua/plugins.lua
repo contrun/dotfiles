@@ -186,6 +186,9 @@ return require('packer').startup({
                                 "python", "vim", "lua", "haskell", "elixir",
                                 "scala", "rust", "go"
                             }
+                        }), require("neotest-go")({
+                            experimental = {test_table = true},
+                            args = {"-count=1", "-timeout=60s"}
                         })
                     }
                 })
