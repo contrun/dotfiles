@@ -11,6 +11,8 @@ vim.wo.relativenumber = true
 vim.wo.signcolumn = 'yes'
 vim.wo.cursorline = true
 
+if vim.env.IS_SMALL_SCREEN ~= nil then vim.cmd('SmallScreenModeEnable') end
+
 vim.opt_global.shortmess:remove("F")
 
 -- Behaviour

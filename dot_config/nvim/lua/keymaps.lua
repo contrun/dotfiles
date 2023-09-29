@@ -78,7 +78,8 @@ nnoremap("<leader>qp", "<Cmd>cprev<CR>")
 nnoremap("<leader>lv", "<Cmd>Vista<CR>")
 
 nnoremap("<leader>xo", "<Cmd> !xdg-open %<CR><CR>")
-nnoremap("<leader>xs", "<Cmd>source $MYVIMRC<CR>")
+nnoremap("<leader>xr", "<Cmd>source $MYVIMRC<CR>")
+nnoremap("<leader>xs", "<Cmd>SmallScreenModeToggle<CR>")
 nnoremap("<leader>xc",
          "<Cmd>silent !make -C ~/.local/share/chezmoi home-install<CR>")
 nnoremap("<leader>xp",
