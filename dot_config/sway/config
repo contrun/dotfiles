@@ -692,6 +692,7 @@ bindsym $mod+a mode "alternative launcher"
 
 mode "alternative launcher" {
         bindsym y exec swaymsg "[con_mark=scratchpad_pyradio] scratchpad show" || $terminal_with_app_id scratchpad_pyradio -e pyradio; mode "default"
+        bindsym u exec swaymsg "[con_mark=scratchpad_cmus] scratchpad show" || $terminal_with_app_id scratchpad_cmus -e cmus; mode "default"
         bindsym t exec swaymsg "[con_mark=scratchpad_htop] scratchpad show" || $terminal_with_app_id scratchpad_htop -e htop; mode "default"
         bindsym m exec swaymsg "[con_mark=scratchpad_neomutt] scratchpad show" || $terminal_with_app_id scratchpad_neomutt -e neomutt; mode "default"
         bindsym h exec swaymsg "[con_mark=scratchpad_nnn] scratchpad show" || $terminal_with_app_id scratchpad_nnn -e nnn; mode "default"
