@@ -1,0 +1,24 @@
+# Run in non-interactive mode
+auto = true
+batch = true
+
+# Propagate last modification time
+times = true
+
+# Prefer last modified files, but also keep conflicted copies
+prefer = newer
+copyonconflict = true
+
+# Watch for file modifications and repeated run syncing process
+watch = true
+repeat = watch
+
+# Detect symlink support for windows automatically
+links = true
+
+# Ignore common temporary files
+ignore = Name temp.*
+ignore = Name *~
+ignore = Name .*~
+ignore = Name *.o
+ignore = Name *.tmp
