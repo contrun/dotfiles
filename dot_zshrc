@@ -3,46 +3,46 @@
 # [ -f /etc/profile.d/my.sh ] && . /etc/profile.d/my.sh
 ZSH_CONF="full"
 if fzf_base="$(dirname "$(dirname "$(realpath "$(which fzf)")")")/share/fzf" && [[ -d $fzf_base ]]; then
-    export FZF_BASE="$fzf_base"
+  export FZF_BASE="$fzf_base"
 fi
 [[ -f ~/.zsh_conf ]] && ZSH_CONF="$(cat ~/.zsh_conf)"
 
 add_to_path() {
-    for p in $@; do
-        [[ ":$PATH:" != *":$p:"* ]] && PATH="$p:${PATH}"
-    done
-    export PATH
+  for p in $@; do
+    [[ ":$PATH:" != *":$p:"* ]] && PATH="$p:${PATH}"
+  done
+  export PATH
 }
 
 do_on_full() {
-    if [[ "$ZSH_CONF" == "full" ]]; then
-        eval "$@"
-    fi
+  if [[ "$ZSH_CONF" == "full" ]]; then
+    eval "$@"
+  fi
 }
 
 declare -a plugins
 add_plugins_on_full() {
-    if [[ "$ZSH_CONF" == "full" ]]; then
-        add_plugins "$@"
-    fi
+  if [[ "$ZSH_CONF" == "full" ]]; then
+    add_plugins "$@"
+  fi
 }
 
 add_plugins() {
-    plugins+=("$@")
+  plugins+=("$@")
 }
 
 local PLATFORM="$(uname)"
 if [[ "$PLATFORM" == 'Linux' ]]; then
-    # if [[ -z "$DISPLAY" && "${TTY:8:1}" -le 3 ]]; then
-    #     exec startx -- -ignoreABI
-    # fi
-    # my_startx
-    # alias open="open"
-    add_plugins systemd
+  # if [[ -z "$DISPLAY" && "${TTY:8:1}" -le 3 ]]; then
+  #     exec startx -- -ignoreABI
+  # fi
+  # my_startx
+  # alias open="open"
+  add_plugins systemd
 elif [[ "$PLATFORM" == 'Darwin' ]]; then
-    add_plugins brew osx
+  add_plugins brew osx
 else
-    :
+  :
 fi
 
 set -o ignoreeof
@@ -71,7 +71,7 @@ add_plugins_on_full kubectl
 add_plugins_on_full helm
 add_plugins_on_full emacs
 if [[ -d "$ZSH" ]] && ! [[ -d "$ZSH_CUSTOM/plugins/wakatime" ]]; then
-    git clone https://github.com/sobolevn/wakatime-zsh-plugin.git "$ZSH_CUSTOM/plugins/wakatime"
+  git clone https://github.com/sobolevn/wakatime-zsh-plugin.git "$ZSH_CUSTOM/plugins/wakatime"
 fi
 add_plugins_on_full wakatime
 command -v wakatime-cli >/dev/null && export ZSH_WAKATIME_BIN=wakatime-cli
@@ -122,25 +122,24 @@ export PROJECT_HOME=$HOME/Workspace
 # source $(which virtualenvwrapper.sh)
 # command -v virtualenvwrapper.sh >/dev/null && source <(sed 's/exec/source/' $(command -v virtualenvwrapper.sh))
 
-m(){
-    mailbox="$HOME/.mutt/${1}rc"
-    shift
-    [[ -f "$mailbox" ]] && neomutt -F "$mailbox" "$@" || echo "$mailbox does not exist."
+m() {
+  mailbox="$HOME/.mutt/${1}rc"
+  shift
+  [[ -f "$mailbox" ]] && neomutt -F "$mailbox" "$@" || echo "$mailbox does not exist."
 }
 
-dcleanup(){
-    docker rm -v $(docker ps --filter status=exited -q 2>/dev/null) 2>/dev/null
-    docker rmi $(docker images --filter dangling=true -q 2>/dev/null) 2>/dev/null
+dcleanup() {
+  docker rm -v $(docker ps --filter status=exited -q 2>/dev/null) 2>/dev/null
+  docker rmi $(docker images --filter dangling=true -q 2>/dev/null) 2>/dev/null
 }
 
-pb () {
-    curl -F 'clbin=<-' https://clbin.com | xclip
+pb() {
+  curl -F 'clbin=<-' https://clbin.com | xclip
 }
 
 gi() {
-    curl -sLw n https://www.gitignore.io/api/"$@"
+  curl -sLw n https://www.gitignore.io/api/"$@"
 }
-
 
 test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
 
@@ -150,7 +149,7 @@ command -v zoxide >/dev/null && eval "$(zoxide init zsh)"
 
 command -v direnv >/dev/null && eval "$(direnv hook zsh)"
 
-test -r ~/.opam/opam-init/init.sh && . ~/.opam/opam-init/init.sh > /dev/null 2>&1
+test -r ~/.opam/opam-init/init.sh && . ~/.opam/opam-init/init.sh >/dev/null 2>&1
 
 [[ -f ~/.zshrc.local ]] && source ~/.zshrc.local
 
@@ -170,7 +169,7 @@ merged_history_file="$history_dir/merged_zsh_history"
 if [[ -z "$(find "$history_dir" -newermt '1 day ago' -name "zsh_history*" 2>/dev/null)" ]]; then
   mkdir -p "$history_dir"
   cp "$HISTFILE" "$history_dir/zsh_history_$(date +%Y-%m-%d).bak"
-  merge_zsh_histories.rb "$HISTFILE" "$history_dir"/zsh_history_* > "$merged_history_file"
+  merge_zsh_histories.rb "$HISTFILE" "$history_dir"/zsh_history_* >"$merged_history_file"
 fi
 
 [[ -f ~/.ssh/wsl-agent.sh ]] && source ~/.ssh/wsl-agent.sh
