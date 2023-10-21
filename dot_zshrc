@@ -154,7 +154,7 @@ test -r ~/.opam/opam-init/init.sh && . ~/.opam/opam-init/init.sh > /dev/null 2>&
 
 [[ -f ~/.zshrc.local ]] && source ~/.zshrc.local
 
-HISTFILE=~/.zsh_history
+HISTFILE="$HOME/.zsh_history"
 HISTSIZE=999999999
 SAVEHIST=$HISTSIZE
 setopt APPEND_HISTORY
@@ -162,5 +162,15 @@ setopt EXTENDED_HISTORY
 setopt HIST_IGNORE_SPACE
 setopt INC_APPEND_HISTORY_TIME
 setopt INTERACTIVE_COMMENTS
+
+# My zsh history file is randomly truncated
+# https://unix.stackexchange.com/questions/568907/why-do-i-lose-my-zsh-history
+history_dir="$HOME/.cache/commmand_line_history"
+merged_history_file="$history_dir/merged_zsh_history"
+if [[ -z "$(find "$history_dir" -newermt '1 day ago' -name "zsh_history*" 2>/dev/null)" ]]; then
+  mkdir -p "$history_dir"
+  cp "$HISTFILE" "$history_dir/zsh_history_$(date +%Y-%m-%d).bak"
+  merge_zsh_histories.rb "$HISTFILE" "$history_dir"/zsh_history_* > "$merged_history_file"
+fi
 
 [[ -f ~/.ssh/wsl-agent.sh ]] && source ~/.ssh/wsl-agent.sh
