@@ -311,6 +311,10 @@ is_vim="ps -o state= -o comm= -t '#{pane_tty}' | grep -iqE '^[^TXZ ]+ +(\\S+\\/)
 bind -r C-n 'last-window'
 bind -r n 'last-pane'
 
+bind -r t 'new-session -c ~ -t temp'
+bind -r o run-shell 'S="#{b:pane_current_path}"; P="#{pane_current_path}"; tmux new-session -c "$P" -s "$S" -d; tmux switch-client -t "$S"'
+bind-key X confirm-before -p "Kill #S (y/n)?" "run-shell 'tmux switch-client -n \\\; kill-session -t \"#S\"'"
+
 bind-key -r h if-shell "$is_vim" 'send-prefix; send-keys h' 'select-pane -L'
 bind-key -r j if-shell "$is_vim" 'send-prefix; send-keys j' 'select-pane -D'
 bind-key -r k if-shell "$is_vim" 'send-prefix; send-keys k' 'select-pane -U'
