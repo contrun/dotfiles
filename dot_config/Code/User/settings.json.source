@@ -9,7 +9,6 @@
     "**/.factorypath": true
   },
   "editor.suggestSelection": "first",
-  "workbench.activityBar.visible": false,
   "workbench.editor.enablePreview": false,
   "workbench.editor.highlightModifiedTabs": true,
   "vsintellicode.modify.editor.suggestSelection": "automaticallyOverrodeDefaultValue",
@@ -39,7 +38,7 @@
   "editor.minimap.enabled": false,
   "remote.SSH.showLoginTerminal": true,
   "remote.SSH.remoteServerListenOnSocket": true,
-  "workbench.editor.showTabs": false,
+  "workbench.editor.showTabs": "single",
   "[rust]": {
     "editor.defaultFormatter": "matklad.rust-analyzer"
   },
@@ -93,5 +92,7 @@
     "gitpod.gitpod-remote-ssh"
   ],
   "agdaMode.connection.agdaLanguageServer": true,
-  "redhat.telemetry.enabled": false
+  "redhat.telemetry.enabled": false,
+  "workbench.activityBar.location": "hidden",
+  "dart.checkForSdkUpdates": false
 }
