@@ -50,12 +50,23 @@ local setup_servers = function()
                 return options
             end,
             ["omnisharp"] = function(options)
-                local pid = vim.fn.getpid()
-                local omnisharp_bin = "omnisharp"
-                options.cmd = {
-                    omnisharp_bin, "--languageserver", "--hostPID",
-                    tostring(pid)
+                options.handlers = {
+                    ["textDocument/definition"] = require('omnisharp_extended').handler
                 }
+                local omnisharp_bin
+                for _, bin in ipairs({"omnisharp", "OmniSharp"}) do
+                    if vim.fn.executable(bin) == 1 then
+                        omnisharp_bin = bin
+                        break
+                    end
+                end
+                if omnisharp_bin then
+                    local pid = vim.fn.getpid()
+                    options.cmd = {
+                        omnisharp_bin, "--languageserver", "--hostPID",
+                        tostring(pid)
+                    }
+                end
                 return options
             end
         }

@@ -134,6 +134,7 @@ return require('packer').startup({
         use {"williamboman/mason.nvim"}
         use {"williamboman/mason-lspconfig.nvim"}
 
+        use {"Hoffs/omnisharp-extended-lsp.nvim"}
         use {
             'ionide/Ionide-vim',
             config = function()
