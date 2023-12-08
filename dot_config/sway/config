@@ -753,6 +753,7 @@ mode "launcher" {
         bindsym e exec env LC_CTYPE=zh_CN.UTF-8 emacsclient -c -a emacs; mode "default"
         # bindsym s exec kupfer; mode "default"
         bindsym d exec goldendict; mode "default"
+        bindsym a exec android-studio; mode "default"
         bindsym c exec code; mode "default"
         bindsym f exec pcmanfm; mode "default"
         bindsym z exec zotero; mode "default"
