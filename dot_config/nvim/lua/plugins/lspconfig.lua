@@ -1,13 +1,15 @@
 local get_servers_to_install = function()
     local servers_to_install = {
         "clangd", "pyright", "jsonls", "dockerls", "rust_analyzer", "elixirls",
-        "jdtls", "zls", "gopls", "texlab", "rnix", "omnisharp"
+        "jdtls", "zls", "gopls", "texlab", "rnix"
     }
     return servers_to_install
 end
 
 local get_no_installing_servers = function()
-    local servers_unable_to_install = {"bashls", "hls", "tsserver", "jsonls"}
+    local servers_unable_to_install = {
+        "bashls", "hls", "tsserver", "jsonls", "omnisharp", "fsautocomplete"
+    }
     return servers_unable_to_install
 end
 

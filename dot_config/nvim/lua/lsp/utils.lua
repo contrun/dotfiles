@@ -43,6 +43,14 @@ function M.common_on_attach(client, bufnr)
     bufnnoremap("<leader>ls", "<cmd>Telescope lsp_document_symbols<CR>")
     bufnnoremap("<leader>l/", "<cmd>Telescope lsp_workspace_symbols<CR>")
 
+    -- https://github.com/neovim/neovim/issues/21391
+    if client.name == "omnisharp" then
+      client.server_capabilities.semanticTokensProvider.legend = {
+        tokenModifiers = { "static" },
+        tokenTypes = { "comment", "excluded", "identifier", "keyword", "keyword", "number", "operator", "operator", "preprocessor", "string", "whitespace", "text", "static", "preprocessor", "punctuation", "string", "string", "class", "delegate", "enum", "interface", "module", "struct", "typeParameter", "field", "enumMember", "constant", "local", "parameter", "method", "method", "property", "event", "namespace", "label", "xml", "xml", "xml", "xml", "xml", "xml", "xml", "xml", "xml", "xml", "xml", "xml", "xml", "xml", "xml", "xml", "xml", "xml", "xml", "xml", "xml", "regexp", "regexp", "regexp", "regexp", "regexp", "regexp", "regexp", "regexp", "regexp" }
+      }
+    end
+
     require"lsp-format".on_attach(client)
 end
 

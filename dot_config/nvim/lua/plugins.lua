@@ -134,6 +134,16 @@ return require('packer').startup({
         use {"williamboman/mason.nvim"}
         use {"williamboman/mason-lspconfig.nvim"}
 
+        use {
+            'ionide/Ionide-vim',
+            config = function()
+                -- Don't auto setup fsautocomplte for now, we will set it up with lspconfig,
+                -- which will also set some useful shortcuts.
+                vim.g["fsharp#lsp_auto_setup"] = 0
+            end
+        }
+
+
         -- use({'scalameta/nvim-metals', requires = { "nvim-lua/plenary.nvim" }})
 
         use {
