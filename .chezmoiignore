@@ -16,3 +16,5 @@ Library/Application Support/Code/User/settings.json
 {{ if ne .chezmoi.os "linux" }}
 ./.config/Code/User/settings.json
 {{ end }}
+/dprint.json
+/treefmt.toml
