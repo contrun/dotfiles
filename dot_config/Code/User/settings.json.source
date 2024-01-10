@@ -84,5 +84,12 @@
     ],
     "agdaMode.connection.agdaLanguageServer": true,
     "window.zoomLevel": 2,
-    "workbench.activityBar.location": "hidden"
+    "workbench.activityBar.location": "hidden",
+    "dart.checkForSdkUpdates": false,
+    "search.useGlobalIgnoreFiles": true,
+    "search.useParentIgnoreFiles": true,
+    "cmake.showOptionsMovedNotification": false,
+    "[graphql]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    }
 }
