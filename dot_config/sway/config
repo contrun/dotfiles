@@ -697,9 +697,9 @@ mode "alternative launcher" {
         bindsym m exec swaymsg "[con_mark=scratchpad_neomutt] scratchpad show" || $terminal_with_app_id scratchpad_neomutt -e neomutt; mode "default"
         bindsym h exec swaymsg "[con_mark=scratchpad_nnn] scratchpad show" || $terminal_with_app_id scratchpad_nnn -e nnn; mode "default"
         bindsym x exec swaymsg "[con_mark=scratchpad_sdcv] scratchpad show" || $terminal_with_app_id scratchpad_sdcv -e sdcv; mode "default"
-        bindsym i workspace focus; exec orgCapture.sh i; mode "default"
-        bindsym c workspace focus; exec orgCapture.sh c; mode "default"
-        bindsym j workspace focus; exec orgCapture.sh j; mode "default"
+        bindsym i workspace f; exec orgCapture.sh i; mode "default"
+        bindsym c workspace f; exec orgCapture.sh c; mode "default"
+        bindsym j workspace f; exec orgCapture.sh j; mode "default"
         bindsym r exec readingNotes.py; mode "default"
         bindsym n exec $terminal_with_title 'floating fzf live notes files' -e noting.sh; mode "default"
         bindsym z exec $terminal_with_title 'floating fzf zotero files' -e fzfLauncher.sh zotero; mode "default"
@@ -761,6 +761,7 @@ mode "launcher" {
         bindsym s exec screenshot.sh; mode  "default"
         bindsym y exec geany; mode "default"
         bindsym l exec calibre; mode "default"
+        bindsym g exec open logseq://; mode "default"
         # bindsym v exec vlc; mode "default"
         bindsym k exec keepassxc; mode "default"
         bindsym v exec copyq show; mode "default"
@@ -775,4 +776,12 @@ mode "launcher" {
         bindsym $mod+m mode "$switch_modes"
         bindsym Escape mode "default"
         bindsym Return mode "default"
+}
+
+input 1267:12795:ASUE120D:00_04F3:31FB_Touchpad {
+        tap enabled
+}
+
+input 2:7:SynPS\/2_Synaptics_TouchPad {
+        tap enabled
 }
