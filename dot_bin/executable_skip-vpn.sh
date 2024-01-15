@@ -30,6 +30,27 @@ TABLE="${TABLE:-64}"
 # systemd-run --collect --slice=noproxy --user --pty --shell
 CGROUP="${CGROUP:-/user.slice/user-$INVOKER.slice/user@$INVOKER.service/app.slice/noproxy.service,/user.slice/user-$INVOKER.slice/user@$INVOKER.service/noproxy.slice}"
 
+while getopts "i:f:m:t:c:g:" opt; do
+  case "$opt" in
+  i)
+    INVOKER="$OPTARG"
+    ;;
+  f | m)
+    FWMARK="$OPTARG"
+    ;;
+  t)
+    TABLE="$OPTARG"
+    ;;
+  c | g)
+    CGROUP="$OPTARG"
+    ;;
+  \?)
+    echo "Invalid option: -$OPTARG" >&2
+    exit 1
+    ;;
+  esac
+done
+
 # Make all packets with "$FWMARK" route through table "$TABLE".
 if [[ -z "$(ip rule list fwmark "$FWMARK" table "$TABLE")" ]]; then
   ip rule add fwmark "$FWMARK" table "$TABLE"
@@ -40,14 +61,16 @@ default_route_table="$(ip route show default)"
 ip route replace table "$TABLE" $default_route_table
 
 # Delete some default route in this table which is created by unknown reason.
-if ! ip route delete local default dev lo scope host table "$TABLE" >& /dev/null; then
+if ! ip route delete local default dev lo scope host table "$TABLE" >&/dev/null; then
   :
 fi
 
 # Set marks for sockets in certain cgroups.
 sed -n 1p <<<"$CGROUP" | tr ',' '\n' | while read -r group; do
   if ! iptables -t mangle -C OUTPUT -m cgroup --path "$group" -j MARK --set-mark "$FWMARK"; then
-    iptables -t mangle -I OUTPUT -m cgroup --path "$group" -j MARK --set-mark "$FWMARK"
+    if ! iptables -t mangle -I OUTPUT -m cgroup --path "$group" -j MARK --set-mark "$FWMARK"; then
+      :
+    fi
   fi
 done
 
