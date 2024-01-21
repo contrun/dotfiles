@@ -60,9 +60,12 @@ exec aw-server
 exec aw-watcher-afk
 exec aw-watcher-window
 exec_always systemctl --user import-environment DISPLAY WAYLAND_DISPLAY
+# WAYLAND_DISPLAY XDG_CURRENT_DESKTOP requried to share screen
+# https://github.com/emersion/xdg-desktop-portal-wlr/wiki/%22It-doesn't-work%22-Troubleshooting-Checklist
+exec dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=sway
 exec_always systemctl --user start foot || foot --server
 exec_always "$(dirname "$(dirname "$(realpath $(which kdeconnect-cli))")")/libexec/kdeconnectd"
-exec_always fcitx -d --replace
+exec_always fcitx5 -d --replace
 exec_always copyq
 exec_always swaybg -m fill -i "$(shuf -n1 -e ~/Storage/wallpapers/*)"
 # exec libinput-gestures-setup start
