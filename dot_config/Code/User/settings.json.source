@@ -56,9 +56,9 @@
     "terminal.integrated.allowChords": false,
     "editor.minimap.enabled": false,
     "files.watcherExclude": {
-        "**/.bloop": true,
-        "**/.metals": true,
-        "**/.ammonite": true
+      "**/.bloop": true,
+      "**/.metals": true,
+      "**/.ammonite": true
     },
     "julia.symbolCacheDownload": true,
     "go.toolsManagement.autoUpdate": true,
@@ -83,7 +83,7 @@
         "gitpod.gitpod-remote-ssh"
     ],
     "agdaMode.connection.agdaLanguageServer": true,
-    "window.zoomLevel": 2,
+    "window.zoomLevel": 1,
     "workbench.activityBar.location": "hidden",
     "dart.checkForSdkUpdates": false,
     "search.useGlobalIgnoreFiles": true,
@@ -91,5 +91,23 @@
     "cmake.showOptionsMovedNotification": false,
     "[graphql]": {
       "editor.defaultFormatter": "esbenp.prettier-vscode"
-    }
+    },
+    "[jsonc]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[toml]": {
+      "editor.defaultFormatter": "tamasfe.even-better-toml"
+    },
+    "[javascript]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[typescriptreact]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[typescript]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "julia.enableTelemetry": false,
+    "gitlens.ai.experimental.provider": "openai",
+    "gitlens.ai.experimental.openai.model": "gpt-4-1106-preview"
 }
