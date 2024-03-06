@@ -716,6 +716,7 @@ mode "alternative launcher" {
         bindsym o exec $terminal_with_title 'floating fzf files' -e fzfLauncher.sh; mode "default"
         # bindsym z exec $terminal_with_title 'floating zotero files' -e zoteroOpen.sh; mode "default"
         bindsym e exec $terminal_with_title 'floating files' -e ranger; mode "default"
+        bindsym p exec $terminal_with_title 'floating pronounce.sh' -e pronounce.sh; mode "default"
 
         bindsym $mod+m mode "$switch_modes"
         bindsym Escape mode "default"
@@ -764,7 +765,8 @@ mode "launcher" {
         bindsym s exec screenshot.sh; mode  "default"
         bindsym y exec geany; mode "default"
         bindsym l exec calibre; mode "default"
-        bindsym g exec open logseq://; mode "default"
+        bindsym g exec logseq; mode "default"
+        bindsym u exec logseq; mode "default"
         # bindsym v exec vlc; mode "default"
         bindsym k exec keepassxc; mode "default"
         bindsym v exec copyq show; mode "default"
@@ -772,7 +774,7 @@ mode "launcher" {
         bindsym o exec okular; mode  "default"
         bindsym b exec wezterm connect box; mode  "default"
         bindsym r exec okular; mode  "default"
-        bindsym p exec zathura; mode  "default"
+        bindsym p exec rofi-zathura.sh; mode  "default"
         bindsym m exec telegram-desktop; mode "default"
         bindsym x exec clash-verge; mode "default"
 
