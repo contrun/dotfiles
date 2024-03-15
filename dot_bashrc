@@ -3,3 +3,5 @@
 
 # If not running interactively, don't do anything
 [[ $- != *i* ]] && return
+
+[[ -f ~/.bashrc.local ]] && source ~/.bashrc.local
