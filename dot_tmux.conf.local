@@ -327,4 +327,11 @@ bind -r L if-shell "$is_vim" 'send-prefix; send-keys L' 'resize-pane -R 1'
 
 unbind C-c
 
+unbind-key -T copy-mode-vi y
+unbind-key -T copy-mode-vi Escape
+unbind-key -T copy-mode-vi MouseDragEnd1Pane
+
 set -g @plugin 'tmux-plugins/tmux-logging'
+set -g @plugin 'tmux-plugins/tmux-yank'
+
+set -g @yank_action 'copy-pipe' # or 'copy-pipe-and-cancel' for the default
