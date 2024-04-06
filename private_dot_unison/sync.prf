@@ -7,7 +7,7 @@ root = Sync
 
 # Note that path specified must exist on both side, otherwise the following error would be reported
 # Fatal error: Filesystem watcher error: Path '/home/e/Sync/apps/atuin' does not exist
-The watcher can be disabled by setting preference 'watch' to false
+# The watcher can be disabled by setting preference 'watch' to false
 # This is because we specified repeat=watch and watch=true in our common config.
 
 path = apps/atuin

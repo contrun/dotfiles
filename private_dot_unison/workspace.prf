@@ -1,0 +1,14 @@
+source common-sync-options
+
+label = sync files to Workspace directory
+
+root = Workspace
+root = ssh://bison-vagrant//home/vagrant/Workspace
+
+path = ckb-pcn-node
+path = Notes
+path = bs2
+path = infra
+path = stark-anatomy
+path = winterfell
+path = handson-ml3
