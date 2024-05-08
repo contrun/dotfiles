@@ -22,3 +22,23 @@ ignore = Name *~
 ignore = Name .*~
 ignore = Name *.o
 ignore = Name *.tmp
+ignore = Name *.log
+ignore = Name .DStore
+ignore = Name .DS_Store
+ignore = Name *.output
+
+# Ignore artifacts directory of common programming languages
+# https://superuser.com/questions/1350918/unison-not-ignoring-paths
+ignore = Name {*/,.*/}.direnv
+ignore = Name {*/,.*/}.devenv
+ignore = Name {*/,.*/}.venv
+ignore = Name {*/,.*/}.parcel-cache
+ignore = Name {*/,.*/}target
+ignore = Name {*/,.*/}node_modules
+ignore = Name {*/,.*/}.pnpm
+ignore = Name {*/,.*/}.yarn
+ignore = Name {*/,.*/}.next
+ignore = Name {*/,.*/}.dart_tool
+ignore = Name {*/,.*/}flutter/ephemeral
+ignore = Name {*/,.*/}Flutter/ephemeral
+ignore = Name {*/,.*/}.metals
