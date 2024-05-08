@@ -161,6 +161,10 @@ output "Technical Concepts Ltd TCL Smart TV 0x00000001" {
        mode 4096x2160@24Hz
 }
 
+output "XMI Redmi 27 NU 3948622Y80B61" {
+       scale 1.4
+}
+
 # start a terminal
 bindsym $mod+Return exec $terminal
 bindsym $mod+t exec swaymsg "[con_mark=$scratchpad_terminal_name] scratchpad show" || $terminal_with_app_id $scratchpad_terminal_name
