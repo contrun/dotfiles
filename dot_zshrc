@@ -78,7 +78,7 @@ command -v wakatime-cli >/dev/null && export ZSH_WAKATIME_BIN=wakatime-cli
 add_plugins fzf
 add_plugins_on_full gitignore
 add_plugins_on_full golang
-add_plugins_on_full gpg-agent
+# add_plugins_on_full gpg-agent
 # add_plugins_on_full ssh-agent
 add_plugins_on_full thefuck
 add_plugins_on_full httpie
