@@ -30,6 +30,14 @@
 [core]
 	pager = delta
 ;	excludesFile = ~/.gitignore
+;	https://stackoverflow.com/questions/66366582/github-unexpected-disconnect-while-reading-sideband-packet
+  packedGitLimit = 512m 
+  packedGitWindowSize = 512m 
+
+[pack] 
+  deltaCacheSize = 2047m 
+  packSizeLimit = 2047m 
+  windowMemory = 2047m
 
 [interactive]
 	diffFilter = delta --color-only
