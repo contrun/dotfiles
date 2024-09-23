@@ -10,8 +10,8 @@ prefer = newer
 copyonconflict = true
 
 # Watch for file modifications and repeated run syncing process
-watch = true
-repeat = watch
+# watch = true
+# repeat = watch
 
 # Detect symlink support for windows automatically
 links = true
@@ -29,6 +29,7 @@ ignore = Name *.output
 
 # Ignore artifacts directory of common programming languages
 # https://superuser.com/questions/1350918/unison-not-ignoring-paths
+ignore = Name {*/,.*/}result
 ignore = Name {*/,.*/}.direnv
 ignore = Name {*/,.*/}.devenv
 ignore = Name {*/,.*/}.venv
@@ -42,3 +43,4 @@ ignore = Name {*/,.*/}.dart_tool
 ignore = Name {*/,.*/}flutter/ephemeral
 ignore = Name {*/,.*/}Flutter/ephemeral
 ignore = Name {*/,.*/}.metals
+ignore = Name {*/,.*/}.idea
