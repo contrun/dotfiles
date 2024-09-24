@@ -8,7 +8,7 @@ end
 
 local get_no_installing_servers = function()
     local servers_unable_to_install = {
-        "bashls", "hls", "tsserver", "jsonls", "omnisharp", "fsautocomplete"
+        "bashls", "hls", "ts_ls", "jsonls", "omnisharp", "fsautocomplete"
     }
     return servers_unable_to_install
 end

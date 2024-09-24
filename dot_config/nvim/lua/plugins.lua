@@ -163,7 +163,8 @@ return require('packer').startup({
                 "Pocco81/dap-buddy.nvim", "theHamsta/nvim-dap-virtual-text",
                 "rcarriga/nvim-dap-ui", "mfussenegger/nvim-dap-python",
                 "mfussenegger/nvim-jdtls", "nvim-telescope/telescope-dap.nvim",
-                "leoluz/nvim-dap-go", "jbyuki/one-small-step-for-vimkind"
+                "leoluz/nvim-dap-go", "jbyuki/one-small-step-for-vimkind",
+		"nvim-neotest/nvim-nio"
             },
             config = function() require('plugins.dapconfig') end
         }
