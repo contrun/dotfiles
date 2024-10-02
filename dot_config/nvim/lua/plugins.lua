@@ -607,6 +607,8 @@ return require('packer').startup({
 
     use { 'gennaro-tedesco/nvim-jqx' }
 
+    use { 'github/copilot.vim' }
+
     if packer_bootstrap then require('packer').sync() end
   end,
   config = {
