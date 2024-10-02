@@ -26,6 +26,13 @@
 		}
 	}
 
+	order trojan before file_server
+	trojan {
+		caddy
+		no_proxy
+		users e {$TROJAN_PASSWORD:changethepasswordhere}
+	}
+
 	order authenticate before respond
 	order authorize before basicauth
 
@@ -105,6 +112,10 @@
 localhost:{$CADDY_PORT:2016} 127.0.0.1:{$CADDY_PORT:2016} :{$CADDY_PORT:2016} {
 	log
 
+	trojan {
+		connect_method
+		websocket
+	}
 	rewrite /auth /auth/
 	route /auth/* {
 		authenticate * with myportal
