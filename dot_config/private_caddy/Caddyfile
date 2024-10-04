@@ -3,6 +3,12 @@
 	acme_dns cloudflare {$CLOUDFLARE_API_TOKEN:faketoken}
 	email {$ACME_EMAIL:admin@example.com}
 	auto_https disable_redirects
+
+	storage postgres {
+		connection_string {$POSTGRES_URL}
+		disable_ddl false
+	}
+
 	order replace after encode
 	servers {
 		listener_wrappers {
