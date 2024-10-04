@@ -132,23 +132,18 @@ localhost:{$CADDY_PORT:2016} 127.0.0.1:{$CADDY_PORT:2016} :{$CADDY_PORT:2016} {
 		respond "Hello, world!"
 	}
 
-	handle /search* {
+	handle /searxng* {
 		# TODO: Check if it is OK to reverse porxy their website
-		reverse_proxy https://search.privacyredirect.com {
+		# They are selected from https://searx.space/
+		# Since we are serving searxng in a subpath, so we need to choose all
+		# websites with https://[DOMAIN]/searxng/ as the searx url.
+		reverse_proxy https://search.leptons.xyz https://search.nordh.tech https://searxng.site {
+			lb_policy first
+			fail_duration 30s
 			header_up -X-Forwarded-For
 			header_up -X-Forwarded-Proto
 			header_up -X-Forwarded-Host
 			header_up Host {upstream_hostport}
-			header_up Accept-Encoding identity
-		}
-		@notpost not method POST
-		uri @notpost strip_prefix /search
-		replace @notpost stream {
-			match {
-				header Content-Type application/javascript*
-				header Content-Type text/html*
-			}
-			re "(?P<tag>src|href)=\"((?P<slash>/?)(?P<url>[^/\"#/\{][^:\"]+))\"" "${tag}=\"${slash}{args[0]}/${url}\""
 		}
 	}
 
