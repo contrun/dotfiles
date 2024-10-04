@@ -46,11 +46,11 @@
 		oauth identity provider generic {
 			realm generic
 			driver generic
-			client_id {env.OIDC_CLIENT_ID}
-			client_secret {env.OIDC_CLIENT_SECRET}
+			client_id {$OIDC_CLIENT_ID}
+			client_secret {$OIDC_CLIENT_SECRET}
 			scopes openid email profile
-			base_auth_url {env.OIDC_BASE_URL}
-			metadata_url {env.OIDC_BASE_URL}/.well-known/openid-configuration
+			base_auth_url {$OIDC_BASE_URL}
+			metadata_url {$OIDC_BASE_URL}/.well-known/openid-configuration
 		}
 
 		authentication portal myportal {
@@ -130,6 +130,26 @@ localhost:{$CADDY_PORT:2016} 127.0.0.1:{$CADDY_PORT:2016} :{$CADDY_PORT:2016} {
 	rewrite /health-check /health-check/
 	handle /health-check/ {
 		respond "Hello, world!"
+	}
+
+	handle /search* {
+		# TODO: Check if it is OK to reverse porxy their website
+		reverse_proxy https://search.privacyredirect.com {
+			header_up -X-Forwarded-For
+			header_up -X-Forwarded-Proto
+			header_up -X-Forwarded-Host
+			header_up Host {upstream_hostport}
+			header_up Accept-Encoding identity
+		}
+		@notpost not method POST
+		uri @notpost strip_prefix /search
+		replace @notpost stream {
+			match {
+				header Content-Type application/javascript*
+				header Content-Type text/html*
+			}
+			re "(?P<tag>src|href)=\"((?P<slash>/?)(?P<url>[^/\"#/\{][^:\"]+))\"" "${tag}=\"${slash}{args[0]}/${url}\""
+		}
 	}
 
 	import app dufs http://localhost:5000
