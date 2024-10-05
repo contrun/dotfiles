@@ -1,7 +1,7 @@
 local get_servers_to_install = function()
   local servers_to_install = {
     "clangd", "pyright", "jsonls", "dockerls", "rust_analyzer", "elixirls",
-    "jdtls", "zls", "gopls", "texlab", "rnix"
+    "zls", "gopls", "texlab", "rnix"
   }
   return servers_to_install
 end

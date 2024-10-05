@@ -128,6 +128,7 @@ return require('packer').startup({
     -- LSP server
     use {
       'neovim/nvim-lspconfig',
+      requires = { "mfussenegger/nvim-jdtls" },
       config = function() require('plugins.lspconfig') end
     }
 
