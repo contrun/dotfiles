@@ -46,11 +46,11 @@
 		oauth identity provider generic {
 			realm generic
 			driver generic
-			client_id {$OIDC_CLIENT_ID}
-			client_secret {$OIDC_CLIENT_SECRET}
+			client_id {env.OIDC_CLIENT_ID}
+			client_secret {env.OIDC_CLIENT_SECRET}
 			scopes openid email profile
-			base_auth_url {$OIDC_BASE_URL}
-			metadata_url {$OIDC_BASE_URL}/.well-known/openid-configuration
+			base_auth_url {env.OIDC_BASE_URL}
+			metadata_url {env.OIDC_BASE_URL}/.well-known/openid-configuration
 		}
 
 		authentication portal myportal {
@@ -130,21 +130,6 @@ localhost:{$CADDY_PORT:2016} 127.0.0.1:{$CADDY_PORT:2016} :{$CADDY_PORT:2016} {
 	rewrite /health-check /health-check/
 	handle /health-check/ {
 		respond "Hello, world!"
-	}
-
-	handle /searxng* {
-		# TODO: Check if it is OK to reverse porxy their website
-		# They are selected from https://searx.space/
-		# Since we are serving searxng in a subpath, so we need to choose all
-		# websites with https://[DOMAIN]/searxng/ as the searx url.
-		reverse_proxy https://search.leptons.xyz https://search.nordh.tech https://searxng.site {
-			lb_policy first
-			fail_duration 30s
-			header_up -X-Forwarded-For
-			header_up -X-Forwarded-Proto
-			header_up -X-Forwarded-Host
-			header_up Host {upstream_hostport}
-		}
 	}
 
 	import app dufs http://localhost:5000
