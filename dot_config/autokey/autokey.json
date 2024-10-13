@@ -11,16 +11,9 @@
     "enableQT4Workaround": false,
     "interfaceType": "XRecord",
     "undoUsingBackspace": true,
-    "windowDefaultSize": [
-      3838,
-      2158
-    ],
+    "windowDefaultSize": [3838, 2158],
     "hPanePosition": 1248,
-    "columnWidths": [
-      150,
-      50,
-      100
-    ],
+    "columnWidths": [150, 50, 100],
     "showToolbar": true,
     "notificationIcon": "autokey-status",
     "workAroundApps": ".*VirtualBox.*|krdc.Krdc",
@@ -30,17 +23,12 @@
   "folders": [],
   "toggleServiceHotkey": {
     "enabled": true,
-    "modifiers": [
-      "<shift>",
-      "<super>"
-    ],
+    "modifiers": ["<shift>", "<super>"],
     "hotKey": "k"
   },
   "configHotkey": {
     "enabled": true,
-    "modifiers": [
-      "<super>"
-    ],
+    "modifiers": ["<super>"],
     "hotKey": "k"
   }
 }

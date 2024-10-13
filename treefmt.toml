@@ -1,3 +1,9 @@
 [formatter.nix]
 command = "nixpkgs-fmt"
 includes = ["*.nix"]
+
+[formatter.dprint]
+command = "dprint"
+excludes = []
+includes = [".*"]
+options = ["fmt"]
