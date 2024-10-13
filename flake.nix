@@ -1,7 +1,7 @@
 {
   description = "Nixos configurations";
 
-  inputs = {};
+  inputs = { };
 
-  outputs = {...} @ inputs: {getDotfile = path: ./. + "/${path}";};
+  outputs = { ... } @ inputs: { getDotfile = path: ./. + "/${path}"; };
 }

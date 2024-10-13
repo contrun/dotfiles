@@ -1,8 +1,7 @@
-{
-  pkgs,
-  config,
-  ...
+{ pkgs
+, config
+, ...
 }: {
-  environment.packages = with pkgs; [neovim chezmoi gnumake];
+  environment.packages = with pkgs; [ neovim chezmoi gnumake ];
   system.stateVersion = "22.05";
 }
