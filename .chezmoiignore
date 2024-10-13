@@ -18,3 +18,4 @@ Library/Application Support/Code/User/settings.json
 {{ end }}
 /dprint.json
 /treefmt.toml
+/.pre-commit-config.yaml
