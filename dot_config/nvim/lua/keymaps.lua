@@ -87,6 +87,7 @@ nnoremap("<leader>xp",
 nnoremap("<leader>xP", "<Cmd>PackerSync<CR>")
 
 nnoremap("<leader>gg", "<Cmd>Neogit<CR>")
+nnoremap("<leader>gf", "<Cmd>lua require('telescope').extensions.chezmoi.find_files()<CR>")
 
 -- Show line diagnostics
 nnoremap("<leader>d",
