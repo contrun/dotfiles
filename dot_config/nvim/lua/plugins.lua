@@ -145,7 +145,6 @@ return require('packer').startup({
       end
     }
 
-
     -- use({'scalameta/nvim-metals', requires = { "nvim-lua/plenary.nvim" }})
 
     use {
@@ -571,8 +570,11 @@ return require('packer').startup({
     use { 'sindrets/diffview.nvim', requires = 'nvim-lua/plenary.nvim' }
 
     use {
-      'TimUntersberger/neogit',
-      requires = { 'nvim-lua/plenary.nvim', 'sindrets/diffview.nvim' },
+      'NeogitOrg/neogit',
+      requires = {
+        'nvim-lua/plenary.nvim', 'sindrets/diffview.nvim',
+        'nvim-telescope/telescope.nvim'
+      },
       config = function()
         local neogit = require("neogit")
         neogit.setup {
