@@ -594,17 +594,17 @@ return require('packer').startup({
 
     use { 'conweller/findr.vim' }
 
-    use {
-      'rmagatti/auto-session',
-      config = function()
-        require('auto-session').setup {
-          auto_session_suppress_dirs = {
-            '~/', '~/Workspace/', '/tmp/',
-            '/run/user/1000/firenvim/'
-          }
-        }
-      end
-    }
+    --  use {
+    --    'rmagatti/auto-session',
+    --    config = function()
+    --      require('auto-session').setup {
+    --        auto_session_suppress_dirs = {
+    --          '~/', '~/Workspace/', '/tmp/',
+    --          '/run/user/1000/firenvim/'
+    --        }
+    --      }
+    --    end
+    --  }
 
     use {
       'xvzc/chezmoi.nvim',
