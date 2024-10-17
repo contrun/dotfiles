@@ -787,6 +787,11 @@ mode "launcher" {
         bindsym Return mode "default"
 }
 
+mode passthrough {
+        bindsym $mod+F12 mode "default"
+}
+bindsym $mod+F12 mode passthrough
+
 input 1267:12795:ASUE120D:00_04F3:31FB_Touchpad {
         tap enabled
 }
