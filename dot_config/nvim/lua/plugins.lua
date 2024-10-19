@@ -3,58 +3,57 @@ local execute = vim.api.nvim_command
 local fn = vim.fn
 local cmd = vim.cmd
 
--- Boostrap Packer
-local install_path = fn.stdpath('data') .. '/site/pack/packer/start/packer.nvim'
-local packer_bootstrap
-if fn.empty(fn.glob(install_path)) > 0 then
-  packer_bootstrap = fn.system({
-    'git', 'clone', 'https://github.com/wbthomason/packer.nvim',
-    install_path
-  })
+-- Bootstrap lazy.nvim
+local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+if not (vim.uv or vim.loop).fs_stat(lazypath) then
+  local lazyrepo = "https://github.com/folke/lazy.nvim.git"
+  local out = vim.fn.system({ "git", "clone", "--filter=blob:none", "--branch=stable", lazyrepo, lazypath })
+  if vim.v.shell_error ~= 0 then
+    vim.api.nvim_echo({
+      { "Failed to clone lazy.nvim:\n", "ErrorMsg" },
+      { out,                            "WarningMsg" },
+      { "\nPress any key to exit..." },
+    }, true, {})
+    vim.fn.getchar()
+    os.exit(1)
+  end
 end
+vim.opt.rtp:prepend(lazypath)
 
--- Rerun PackerCompile everytime pluggins.lua is updated
-cmd([[
-  augroup packer_user_config
-    autocmd!
-    autocmd BufWritePost plugins.lua source <afile> | PackerCompile
-  augroup end
-]])
+-- Make sure to setup `mapleader` and `maplocalleader` before
+-- loading lazy.nvim so that mappings are correct.
+-- This is also a good place to setup other settings (vim.opt)
+vim.g.mapleader = " "
+vim.g.maplocalleader = "\\"
 
--- Load Packer
-cmd [[packadd packer.nvim]]
-
--- Initialize pluggins
-return require('packer').startup({
-  function(use)
-    -- Let Packer manage itself
-    use { 'wbthomason/packer.nvim' }
-
-    use "nvim-lua/plenary.nvim"
+-- Setup lazy.nvim
+require("lazy").setup({
+  spec = {
+    "nvim-lua/plenary.nvim",
 
     -- Formatting
-    use 'shoukoo/commentary.nvim'
-    use 'sbdchd/neoformat'
-    use {
+    'shoukoo/commentary.nvim',
+    'sbdchd/neoformat',
+    {
       'lukas-reineke/lsp-format.nvim',
       config = function() require("lsp-format").setup {} end
-    }
+    },
 
     -- Easier navigation
-    use 'junegunn/vim-easy-align'
-    use 'andymass/vim-matchup'
+    'junegunn/vim-easy-align',
+    'andymass/vim-matchup',
 
     -- Themes
-    use 'folke/tokyonight.nvim'
-    use 'marko-cerovac/material.nvim'
+    'folke/tokyonight.nvim',
+    'marko-cerovac/material.nvim',
 
-    use 'ryvnf/readline.vim'
+    'ryvnf/readline.vim',
 
-    -- use 'airblade/vim-gitgutter'  -- The standard one I use
+    -- 'airblade/vim-gitgutter'  -- The standard one I use
     -- Trying out gitsigns
-    use {
+    {
       'lewis6991/gitsigns.nvim',
-      requires = { 'nvim-lua/plenary.nvim' },
+      dependencies = { 'nvim-lua/plenary.nvim' },
       config = function()
         require('gitsigns').setup {
           on_attach = function(bufnr)
@@ -110,44 +109,44 @@ return require('packer').startup({
           end
         }
       end
-    }
+    },
 
-    use 'rhysd/git-messenger.vim'
+    'rhysd/git-messenger.vim',
 
-    use 'kassio/neoterm'
+    'kassio/neoterm',
 
-    use {
+    {
       'folke/neodev.nvim',
       config = function()
         require("neodev").setup({
           library = { plugins = { "neotest" }, types = true }
         })
       end
-    }
+    },
 
     -- LSP server
-    use {
+    {
       'neovim/nvim-lspconfig',
-      requires = { "mfussenegger/nvim-jdtls" },
+      dependencies = { "mfussenegger/nvim-jdtls" },
       config = function() require('plugins.lspconfig') end
-    }
+    },
 
-    use { "williamboman/mason.nvim" }
-    use { "williamboman/mason-lspconfig.nvim" }
+    { "williamboman/mason.nvim" },
+    { "williamboman/mason-lspconfig.nvim" },
 
-    use { "Hoffs/omnisharp-extended-lsp.nvim" }
-    use {
+    { "Hoffs/omnisharp-extended-lsp.nvim" },
+    {
       'ionide/Ionide-vim',
       config = function()
         -- Don't auto setup fsautocomplte for now, we will set it up with lspconfig,
         -- which will also set some useful shortcuts.
         vim.g["fsharp#lsp_auto_setup"] = 0
       end
-    }
+    },
 
-    -- use({'scalameta/nvim-metals', requires = { "nvim-lua/plenary.nvim" }})
+    -- use({'scalameta/nvim-metals', dependencies = { "nvim-lua/plenary.nvim" }})
 
-    use {
+    {
       'onsails/lspkind.nvim',
       config = function()
         require('lspkind').init {
@@ -155,11 +154,11 @@ return require('packer').startup({
           preset = 'codicons'
         }
       end
-    }
+    },
 
-    use {
+    {
       'mfussenegger/nvim-dap',
-      requires = {
+      dependencies = {
         "Pocco81/dap-buddy.nvim", "theHamsta/nvim-dap-virtual-text",
         "rcarriga/nvim-dap-ui", "mfussenegger/nvim-dap-python",
         "mfussenegger/nvim-jdtls", "nvim-telescope/telescope-dap.nvim",
@@ -167,18 +166,18 @@ return require('packer').startup({
         "nvim-neotest/nvim-nio"
       },
       config = function() require('plugins.dapconfig') end
-    }
+    },
 
-    use { "rcarriga/nvim-dap-ui", requires = { "mfussenegger/nvim-dap" } }
+    { "rcarriga/nvim-dap-ui",    dependencies = { "mfussenegger/nvim-dap" } },
 
-    use {
+    {
       "theHamsta/nvim-dap-virtual-text",
-      requires = { "mfussenegger/nvim-dap" }
-    }
+      dependencies = { "mfussenegger/nvim-dap" }
+    },
 
-    use {
+    {
       "nvim-neotest/neotest",
-      requires = {
+      dependencies = {
         "nvim-lua/plenary.nvim", "nvim-treesitter/nvim-treesitter",
         "antoinemadec/FixCursorHold.nvim",
         "nvim-neotest/neotest-vim-test", "nvim-neotest/neotest-plenary",
@@ -228,11 +227,11 @@ return require('packer').startup({
           require('neotest').summary.toggle()
         end, opts)
       end
-    }
+    },
 
-    use {
+    {
       'EthanJWright/vs-tasks.nvim',
-      requires = {
+      dependencies = {
         'nvim-lua/popup.nvim', 'nvim-lua/plenary.nvim',
         'nvim-telescope/telescope.nvim'
       },
@@ -252,46 +251,46 @@ return require('packer').startup({
           require('telescope').extensions.vstask.launch()
         end, opts)
       end
-    }
+    },
 
     -- Autocomplete
-    use "L3MON4D3/LuaSnip" -- Snippet engine
+    'L3MON4D3/LuaSnip', -- Snippet engine
 
-    use "liuchengxu/vista.vim"
+    'liuchengxu/vista.vim',
 
-    use {
+    {
       "hrsh7th/nvim-cmp",
       -- Sources for nvim-cmp
-      requires = {
+      dependencies = {
         "hrsh7th/cmp-nvim-lsp", "hrsh7th/cmp-buffer",
         "hrsh7th/cmp-path", "hrsh7th/cmp-nvim-lua",
         "saadparwaiz1/cmp_luasnip"
       },
       config = function() require('plugins.cmp') end
-    }
+    },
 
     -- statusline
-    use {
+    {
       'hoob3rt/lualine.nvim',
       config = function() require('plugins.lualine') end
-    }
+    },
 
-    use { 'lambdalisue/suda.vim' }
+    { 'lambdalisue/suda.vim' },
 
-    use { 'wakatime/vim-wakatime' }
+    { 'wakatime/vim-wakatime' },
 
-    use { 'dstein64/vim-startuptime' }
+    { 'dstein64/vim-startuptime' },
 
     -- Treesitter
-    use {
+    {
       'nvim-treesitter/nvim-treesitter',
       config = function() require('plugins.treesitter') end,
       run = ':TSUpdate'
-    }
+    },
 
-    use {
+    {
       "nvim-treesitter/nvim-treesitter-textobjects",
-      requires = 'nvim-treesitter/nvim-treesitter',
+      dependencies = 'nvim-treesitter/nvim-treesitter',
       config = function()
         require 'nvim-treesitter.configs'.setup {
           textobjects = {
@@ -345,13 +344,13 @@ return require('packer').startup({
           }
         }
       end
-    }
+    },
 
     -- TODO: fix
     -- packer.nvim: Error running config for nvim-treesitter-textobjects: ...ed-0.6.1/share/nvim/runtime/lua/vim/treesitter/query.lua:161: query: invalid node type at position 13
-    use {
+    {
       "mizlan/iswap.nvim",
-      requires = 'nvim-treesitter/nvim-treesitter',
+      dependencies = 'nvim-treesitter/nvim-treesitter',
       config = function()
         require('iswap').setup {
           -- The keys that will be used as a selection, in order
@@ -383,12 +382,11 @@ return require('packer').startup({
           hl_grey_priority = '1000'
         }
       end
-    }
+    },
 
-    use {
-      "glacambre/firenvim",
-      disable = false,
-      run = function() vim.fn["firenvim#install"](0) end,
+    {
+      'glacambre/firenvim',
+      build = function() vim.fn["firenvim#install"](0) end,
       config = function()
         if vim.g.started_by_firenvim == true then
           vim.cmd [[
@@ -415,11 +413,11 @@ return require('packer').startup({
         ]]
         end
       end
-    }
+    },
 
     -- TODO: fix
     -- Failed to get context: ...ed-0.6.1/share/nvim/runtime/lua/vim/treesitter/query.lua:161: query: invalid field at position 18
-    -- use {
+    -- {
     --     "romgrk/nvim-treesitter-context",
     --     config = function()
     --         require'treesitter-context'.setup {
@@ -453,19 +451,19 @@ return require('packer').startup({
     --     end
     -- }
 
-    use 'nvim-orgmode/orgmode'
+    'nvim-orgmode/orgmode',
 
     -- Telescope
-    use {
+    {
       'nvim-telescope/telescope.nvim',
-      requires = { 'nvim-lua/plenary.nvim' },
+      dependencies = { 'nvim-lua/plenary.nvim' },
       config = function() require('plugins.telescope') end
-    }
+    },
 
-    use { 'nvim-telescope/telescope-fzf-native.nvim', run = 'make' }
+    { 'nvim-telescope/telescope-fzf-native.nvim', build = 'make' },
 
-    use {
-      "AckslD/nvim-neoclip.lua",
+    {
+      'AckslD/nvim-neoclip.lua',
       config = function()
         require('neoclip').setup {
           history = 1000,
@@ -510,9 +508,9 @@ return require('packer').startup({
           }
         }
       end
-    }
-    use {
-      "folke/which-key.nvim",
+    },
+    {
+      'folke/which-key.nvim',
       config = function()
         require("which-key").setup {
           -- your configuration comes here
@@ -520,10 +518,10 @@ return require('packer').startup({
           -- refer to the configuration section below
         }
       end
-    }
+    },
 
-    use {
-      "aserowy/tmux.nvim",
+    {
+      'aserowy/tmux.nvim',
       config = function()
         require("tmux").setup {
           -- overwrite default configuration
@@ -543,11 +541,11 @@ return require('packer').startup({
           }
         }
       end
-    }
+    },
 
-    use {
-      "folke/trouble.nvim",
-      requires = "kyazdani42/nvim-web-devicons",
+    {
+      'folke/trouble.nvim',
+      dependencies = 'kyazdani42/nvim-web-devicons',
       config = function()
         require("trouble").setup {
           -- your configuration comes here
@@ -555,23 +553,23 @@ return require('packer').startup({
           -- refer to the configuration section below
         }
       end
-    }
+    },
 
     -- https://github.com/rockerBOO/awesome-neovim/issues/315
-    use {
-      "ur4ltz/surround.nvim",
+    {
+      'ur4ltz/surround.nvim',
       config = function()
         require "surround".setup { mappings_style = "sandwich" }
       end
-    }
+    },
 
-    use { 'fidian/hexmode' }
+    { 'fidian/hexmode' },
 
-    use { 'sindrets/diffview.nvim', requires = 'nvim-lua/plenary.nvim' }
+    { 'sindrets/diffview.nvim',                   dependencies = 'nvim-lua/plenary.nvim' },
 
-    use {
+    {
       'NeogitOrg/neogit',
-      requires = {
+      dependencies = {
         'nvim-lua/plenary.nvim', 'sindrets/diffview.nvim',
         'nvim-telescope/telescope.nvim'
       },
@@ -582,21 +580,21 @@ return require('packer').startup({
           integrations = { diffview = true }
         }
       end,
-      opt = true,
+      lazy = true,
       cmd = { 'Neogit' }
-    }
+    },
 
-    use {
+    {
       'ruifm/gitlinker.nvim',
-      requires = 'nvim-lua/plenary.nvim',
+      dependencies = 'nvim-lua/plenary.nvim',
       config = function()
         require "gitlinker".setup({ mappings = "<leader>gy" })
       end
-    }
+    },
 
-    use { 'conweller/findr.vim' }
+    { 'conweller/findr.vim' },
 
-    --  use {
+    --  {
     --    'rmagatti/auto-session',
     --    config = function()
     --      require('auto-session').setup {
@@ -608,9 +606,9 @@ return require('packer').startup({
     --    end
     --  }
 
-    use {
+    {
       'xvzc/chezmoi.nvim',
-      requires = { 'nvim-lua/plenary.nvim' },
+      dependencies = { 'nvim-lua/plenary.nvim' },
       config = function()
         require("chezmoi").setup {
           --  e.g. ~/.local/share/chezmoi/*
@@ -626,18 +624,16 @@ return require('packer').startup({
           })
         }
       end
-    }
+    },
 
-    use { 'gennaro-tedesco/nvim-jqx' }
+    { 'gennaro-tedesco/nvim-jqx' },
 
-    use { 'github/copilot.vim' }
+    { 'github/copilot.vim' },
 
-    if packer_bootstrap then require('packer').sync() end
-  end,
-  config = {
-    profile = {
-      enable = true,
-      threshold = 1 -- the amount in ms that a plugins load time must be over for it to be included in the profile
-    }
-  }
+  },
+  -- Configure any other settings here. See the documentation for more details.
+  -- colorscheme that will be used when installing plugins.
+  install = { colorscheme = { "habamax" } },
+  -- automatically check for plugin updates
+  checker = { enabled = true },
 })
