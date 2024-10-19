@@ -6,7 +6,7 @@ set $altmod $mod+Control
 set $terminal foot
 set $terminal_with_app_id $terminal -a
 set $terminal_with_title $terminal -T
-set $reload_command make -C ~/.local/share/chezmoi/ home-install && swaymsg reload
+set $reload_command swaymsg reload
 set $browser_command env MOZ_ENABLE_WAYLAND=1 firefox
 set $scratchpad_terminal_name scratchpad_terminal
 set $switch_output_command swaymsg -r -t get_workspaces | jq -r 'map(select(.visible == true) | select(.focused == false))[0].output' | xargs -n 1 -t -r swaymsg focus output
@@ -202,6 +202,29 @@ bindsym $mod+F2 workspace next
 bindsym $mod+bracketleft workspace prev
 bindsym $mod+bracketright workspace next
 
+# function key mode
+bindsym $mod+F10 mode "fnkey"
+mode "fnkey" {
+# for chromebooks to change volume and backlight
+        bindsym F8 exec pamixer --toggle-mute && pkill -RTMIN+17 i3blocks
+        bindsym F9 exec pamixer --decrease 5 && pkill -RTMIN+17 i3blocks
+        bindsym F10 exec pamixer --increase 5 && pkill -RTMIN+17 i3blocks
+        bindsym F7 exec xbacklight -inc 10
+        bindsym F6 exec xbacklight -dec 10
+
+        bindsym $mod+m mode "$switch_modes"
+        bindsym Escape mode "default"
+        bindsym Return mode "default"
+}
+
+# enter fullscreen mode for the focused container
+bindsym $mod+F11 fullscreen
+
+mode passthrough {
+        bindsym $mod+F12 mode "default"
+}
+bindsym $mod+F12 mode passthrough
+
 # next and last workspace
 # bindsym $mod+n exec swaymsg workspace number "$(($(swaymsg -t get_workspaces | jq '.[].num' | sort -rn | head -n1) + 1))"
 # bindsym $altmod+n exec swaymsg move container to workspace number "$(($(swaymsg -t get_workspaces | jq '.[].num' | sort -rn | head -n1) + 1))"
@@ -209,9 +232,6 @@ bindsym $mod+Shift+bracketright exec swaymsg workspace number "$(swaymsg -t get_
 bindsym $mod+Shift+bracketleft exec swaymsg workspace number "$(swaymsg -t get_workspaces | jq '.[].num' | sort -rn | tail -n1)"
 bindsym $altmod+bracketright exec swaymsg move container to workspace number "$(swaymsg -t get_workspaces | jq '.[].num' | sort -n | tail -n1)"
 bindsym $altmod+bracketleft exec swaymsg move container to workspace number "$(swaymsg -t get_workspaces | jq '.[].num' | sort -rn | tail -n1)"
-
-# enter fullscreen mode for the focused container
-bindsym $mod+f fullscreen
 
 # change container layout
 bindsym $mod+n layout toggle all
@@ -627,8 +647,9 @@ bindsym Mod5+F7 exec xbacklight -inc 10
 bindsym Mod5+F6 exec xbacklight -dec 10
 
 # rofi bindings
-bindsym Mod1+space exec bemenu-run
-bindsym $mod+s exec bemenu-run
+bindsym Mod1+space exec rofi -show drun
+bindsym $mod+s exec rofi -show search -modi search:rofi-web-search.py -i -p "Search: "
+# bindsym $mod+f exec bemenu-run
 
 # move any window to the current workspace
 # bindsym F8 exec python ~/.config/i3/quickswitch.py
@@ -642,22 +663,6 @@ mode "output" {
         bindsym j exec swaymsg move workspace to output down
         bindsym k exec swaymsg move workspace to output up
         bindsym l exec swaymsg move workspace to output right
-
-        bindsym $mod+m mode "$switch_modes"
-        bindsym Escape mode "default"
-        bindsym Return mode "default"
-}
-
-# function key mode
-bindsym $mod+F10 mode "fnkey"
-
-mode "fnkey" {
-# for chromebooks to change volume and backlight
-        bindsym F8 exec pamixer --toggle-mute && pkill -RTMIN+17 i3blocks
-        bindsym F9 exec pamixer --decrease 5 && pkill -RTMIN+17 i3blocks
-        bindsym F10 exec pamixer --increase 5 && pkill -RTMIN+17 i3blocks
-        bindsym F7 exec xbacklight -inc 10
-        bindsym F6 exec xbacklight -dec 10
 
         bindsym $mod+m mode "$switch_modes"
         bindsym Escape mode "default"
@@ -787,10 +792,6 @@ mode "launcher" {
         bindsym Return mode "default"
 }
 
-mode passthrough {
-        bindsym $mod+F12 mode "default"
-}
-bindsym $mod+F12 mode passthrough
 
 input 1267:12795:ASUE120D:00_04F3:31FB_Touchpad {
         tap enabled
