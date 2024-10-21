@@ -2,6 +2,9 @@
 
 set -euo pipefail
 
+# Mostly copied from
+# https://github.com/rclone/rclone/issues/671#issuecomment-1153700933
+
 if ! cd "$@"; then
   >&2 echo "Folder $* not found"
   exit 1
@@ -24,7 +27,8 @@ while IFS= read -r -d $'\0' path <&3; do
     [[ $ignore =~ ^# ]] && continue
 
     # Trim spaces using parameter expansion
-    ignore=${ignore##+([[:space:]])}
+    # Starting and trailling whitespace can be escaped with \, but we ignore that anyway
+    ignore="${ignore##+([[:space:]])}"
 
     # Ignore empty lines
     [[ -z "$ignore" ]] && continue
@@ -32,7 +36,7 @@ while IFS= read -r -d $'\0' path <&3; do
     # An optional prefix "!" which negates the pattern.
     if [[ $ignore == !* ]]; then
       # Use parameter expansion instead of sed
-      ignore=${ignore#!}
+      ignore="${ignore#!}"
       include=true
     else
       include=false
@@ -40,20 +44,14 @@ while IFS= read -r -d $'\0' path <&3; do
 
     pattern="$ignore"
 
-    # A separator before the end of the pattern makes it absolute
-    if [[ $ignore =~ / && $ignore != */ ]]; then
-      # Use parameter expansion instead of sed
+    # A pattern with a slash in the middle or beginning means this is a absolute path,
+    # while a trailing slash means this is a directory.
+    if [[ "${ignore%/}" =~ / ]]; then
       pattern="${root%/}/${pattern#/}"
     else
       # Mimic relative search by making an absolute WRT to current directory,
       # preceded by a recursive glob `**`
       pattern="${root%/}/**/$pattern"
-    fi
-
-    # A separator at the end only matches directories
-    if [[ $ignore =~ /$ ]]; then
-      # rclone only matches files, so we need to add `**` to match a directory
-      pattern="$pattern**"
     fi
 
     if [[ $include = true ]]; then
@@ -63,12 +61,17 @@ while IFS= read -r -d $'\0' path <&3; do
 
     fi
 
-    # If the pattern doesn't end with `/`, include the file variant:
-    [[ $ignore =~ [^/]$ ]] && echo "$pattern"
-
-    # In any case, include the directory variant:
-    # Use parameter expansion instead of sed
-    echo "${pattern%/}/**"
+    # A separator at the end only matches directories
+    if [[ $ignore =~ /$ ]]; then
+      # rclone only matches files, so we need to add `**` to match a directory
+      echo "$pattern**"
+    else
+      # The pattern doesn't end with `/`, it may be a file or a directory
+      # The output below is for the case this is a file
+      echo "$pattern"
+      # The output below is for the case this is a directory
+      echo "$pattern/**"
+    fi
   done <"$path"
 done 3< <(find ./ -type f -name '.gitignore' -print0) | tee "$tmprcloneignore"
 
