@@ -44,6 +44,9 @@
 
 	security {
 		oauth identity provider generic {
+			delay_start 5
+			retry_attempts 3
+			retry_interval 10
 			realm generic
 			driver generic
 			client_id {env.OIDC_CLIENT_ID}
