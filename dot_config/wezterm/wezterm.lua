@@ -58,7 +58,8 @@ wezterm.on('format-tab-title', function(tab)
 end)
 
 local default_machine = 'dev'
-local default_domain = 'SSHMUX:' .. default_machine
+local sshmux_domain = 'SSHMUX:' .. default_machine
+local tlsssh_domain = 'TLSSSH:' .. default_machine
 
 local config = {}
 
@@ -74,10 +75,13 @@ for _, dom in ipairs(config.ssh_domains) do
   -- The dom name here can start with SSH: or SSHMUX:
   -- We remove the prefix here.
   local server_name = strip_sshmux_prefix(dom.name)
-  local tls_name = server_name .. '.tls'
+  -- TLS connection
+  local tls_name = 'TLS:' .. server_name
+  -- TLS connection bootstrapped by SSH
+  local tls_ssh_name = 'TLSSSH:' .. server_name
   local tls_client_found = false
   for _, tls in ipairs(config.tls_clients) do
-    if tls.name == tls_name then
+    if tls.name == tls_ssh_name then
       tls_client_found = true
       break
     end
@@ -86,16 +90,36 @@ for _, dom in ipairs(config.ssh_domains) do
   -- If we have already set this name in the tls_config, then just skip
   -- the rest of the loop.
   if not tls_client_found then
-    local conf = {
+    -- My ssh hosts start with default/dev are all aliases for other machines.
+    -- We need to find out the real hostnames for these aliases.
+    -- Follow https://unix.stackexchange.com/questions/25611/how-to-find-out-the-ip-of-an-ssh-hostname
+    -- We can use the command `ssh -G database | awk '/^hostname / { print $2 }'`
+    -- to get the real hostname.
+    local hostname = dom.remote_address
+    if server_name:find '^dev' or server_name:find '^default' then
+      -- Don't use shell here, as that would make this config file not portable.
+      local success, stdout, _stderr = wezterm.run_child_process { 'ssh', '-G', server_name }
+      if success and stdout then
+        -- The hostname output should be in the format `hostname <hostname>`
+        -- We need to extract the hostname from this output.
+        hostname = stdout:match('hostname%s+(%S+)') or hostname
+      end
+      wezterm.log_info('hostname', hostname)
+    end
+
+    local tls_conf = {
       name = tls_name,
-      remote_address = dom.remote_address .. ":4443",
+      remote_address = hostname .. ":4443",
+    }
+    local tls_ssh_conf = {
+      name = tls_ssh_name,
+      remote_address = hostname .. ":4443",
       bootstrap_via_ssh = server_name
     }
-    wezterm.log_info('domain', dom)
-    wezterm.log_info('config', conf)
 
     -- Insert the config to config.tls_clients
-    config.tls_clients[#config.tls_clients + 1] = conf
+    config.tls_clients[#config.tls_clients + 1] = tls_conf
+    config.tls_clients[#config.tls_clients + 1] = tls_ssh_conf
   end
 end
 
@@ -113,11 +137,11 @@ config.launch_menu = {
   {
     -- Optional label to show in the launcher. If omitted, a label
     -- is derived from the `args`
-    label = 'wezterm cli spawn --domain-name ' .. default_domain,
+    label = 'wezterm cli spawn --domain-name ' .. sshmux_domain,
     -- The argument array to spawn.  If omitted the default program
     -- will be used as described in the documentation above
     -- wezterm cli spawn --domain-name SSHMUX:my.server
-    args = { 'wezterm', 'cli', 'spawn', '--domain-name', default_domain }
+    args = { 'wezterm', 'cli', 'spawn', '--domain-name', sshmux_domain }
 
     -- You can specify an alternative current working directory;
     -- if you don't specify one then a default based on the OSC 7
@@ -133,11 +157,11 @@ config.launch_menu = {
   {
     -- Optional label to show in the launcher. If omitted, a label
     -- is derived from the `args`
-    label = 'wezterm connect ' .. default_domain,
+    label = 'wezterm connect ' .. sshmux_domain,
     -- The argument array to spawn.  If omitted the default program
     -- will be used as described in the documentation above
     -- wezterm cli spawn --domain-name SSHMUX:my.server
-    args = { 'wezterm', 'connect', default_domain }
+    args = { 'wezterm', 'connect', sshmux_domain }
 
     -- You can specify an alternative current working directory;
     -- if you don't specify one then a default based on the OSC 7
