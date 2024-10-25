@@ -281,4 +281,10 @@ config.key_tables = {
   },
 }
 
+if wezterm.target_triple == 'x86_64-pc-windows-msvc' then
+  config.default_prog = { 'powershell.exe' }
+  -- https://github.com/wez/wezterm/discussions/3772#discussioncomment-7201688
+  config.ssh_backend = "Ssh2"
+end
+
 return config
