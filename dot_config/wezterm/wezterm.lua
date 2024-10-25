@@ -15,6 +15,10 @@ function scheme_for_appearance(appearance)
   end
 end
 
+local function strip_sshmux_prefix(domain_name)
+  return domain_name:gsub('^SSH[MUX]*:', '')
+end
+
 wezterm.on('update-status', function(window)
   -- Grab the utf8 character for the "powerline" left facing
   -- solid arrow.
@@ -39,22 +43,69 @@ end)
 -- Show which key table is active in the status area
 wezterm.on('update-right-status', function(window, pane)
   local name = window:active_key_table()
-  if name then
-    name = 'TABLE: ' .. name
-  end
+  if name then name = 'TABLE: ' .. name end
   window:set_right_status(name or '')
 end)
 
-local default_domain = 'SSHMUX:dev'
+wezterm.on('format-tab-title', function(tab)
+  local pane = tab.active_pane
+  local title = pane.title
+  if pane.domain_name and pane.domain_name ~= 'local' then
+    local domain_name = strip_sshmux_prefix(pane.domain_name)
+    title = title .. ' - ' .. domain_name
+  end
+  return title
+end)
+
+local default_machine = 'dev'
+local default_domain = 'SSHMUX:' .. default_machine
 
 local config = {}
 
+config.tls_clients = {}
+
 config.ssh_domains = wezterm.default_ssh_domains()
 for _, dom in ipairs(config.ssh_domains) do
-  wezterm.log_info('setting multiplexing to WezTerm for ' .. dom.name)
+  -- Default ssh domains are Posix, but we can override that later.
   dom.assume_shell = 'Posix'
   dom.local_echo_threshold_ms = 10
+
+  -- Create a tls client for each ssh domain.
+  -- The dom name here can start with SSH: or SSHMUX:
+  -- We remove the prefix here.
+  local server_name = strip_sshmux_prefix(dom.name)
+  local tls_name = server_name .. '.tls'
+  local tls_client_found = false
+  for _, tls in ipairs(config.tls_clients) do
+    if tls.name == tls_name then
+      tls_client_found = true
+      break
+    end
+  end
+
+  -- If we have already set this name in the tls_config, then just skip
+  -- the rest of the loop.
+  if not tls_client_found then
+    local conf = {
+      name = tls_name,
+      remote_address = dom.remote_address .. ":4443",
+      bootstrap_via_ssh = server_name
+    }
+    wezterm.log_info('domain', dom)
+    wezterm.log_info('config', conf)
+
+    -- Insert the config to config.tls_clients
+    config.tls_clients[#config.tls_clients + 1] = conf
+  end
 end
+
+config.tls_servers = {
+  {
+    -- The host:port combination on which the server will listen
+    -- for connections
+    bind_address = '[::]:4443'
+  }
+}
 
 config.color_scheme = scheme_for_appearance(get_appearance())
 
@@ -62,9 +113,30 @@ config.launch_menu = {
   {
     -- Optional label to show in the launcher. If omitted, a label
     -- is derived from the `args`
+    label = 'wezterm cli spawn --domain-name ' .. default_domain,
+    -- The argument array to spawn.  If omitted the default program
+    -- will be used as described in the documentation above
+    -- wezterm cli spawn --domain-name SSHMUX:my.server
+    args = { 'wezterm', 'cli', 'spawn', '--domain-name', default_domain }
+
+    -- You can specify an alternative current working directory;
+    -- if you don't specify one then a default based on the OSC 7
+    -- escape sequence will be used (see the Shell Integration
+    -- docs), falling back to the home directory.
+    -- cwd = "/some/path"
+
+    -- You can override environment variables just for this command
+    -- by setting this here.  It has the same semantics as the main
+    -- set_environment_variables configuration option described above
+    -- set_environment_variables = { FOO = "bar" },
+  },
+  {
+    -- Optional label to show in the launcher. If omitted, a label
+    -- is derived from the `args`
     label = 'wezterm connect ' .. default_domain,
     -- The argument array to spawn.  If omitted the default program
     -- will be used as described in the documentation above
+    -- wezterm cli spawn --domain-name SSHMUX:my.server
     args = { 'wezterm', 'connect', default_domain }
 
     -- You can specify an alternative current working directory;
