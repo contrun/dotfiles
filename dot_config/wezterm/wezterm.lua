@@ -104,7 +104,6 @@ for _, dom in ipairs(config.ssh_domains) do
         -- We need to extract the hostname from this output.
         hostname = stdout:match('hostname%s+(%S+)') or hostname
       end
-      wezterm.log_info('hostname', hostname)
     end
 
     local tls_conf = {
@@ -133,47 +132,23 @@ config.tls_servers = {
 
 config.color_scheme = scheme_for_appearance(get_appearance())
 
-config.launch_menu = {
-  {
-    -- Optional label to show in the launcher. If omitted, a label
-    -- is derived from the `args`
-    label = 'wezterm cli spawn --domain-name ' .. sshmux_domain,
-    -- The argument array to spawn.  If omitted the default program
-    -- will be used as described in the documentation above
-    -- wezterm cli spawn --domain-name SSHMUX:my.server
-    args = { 'wezterm', 'cli', 'spawn', '--domain-name', sshmux_domain }
-
-    -- You can specify an alternative current working directory;
-    -- if you don't specify one then a default based on the OSC 7
-    -- escape sequence will be used (see the Shell Integration
-    -- docs), falling back to the home directory.
-    -- cwd = "/some/path"
-
-    -- You can override environment variables just for this command
-    -- by setting this here.  It has the same semantics as the main
-    -- set_environment_variables configuration option described above
-    -- set_environment_variables = { FOO = "bar" },
-  },
-  {
-    -- Optional label to show in the launcher. If omitted, a label
-    -- is derived from the `args`
-    label = 'wezterm connect ' .. sshmux_domain,
-    -- The argument array to spawn.  If omitted the default program
-    -- will be used as described in the documentation above
-    -- wezterm cli spawn --domain-name SSHMUX:my.server
-    args = { 'wezterm', 'connect', sshmux_domain }
-
-    -- You can specify an alternative current working directory;
-    -- if you don't specify one then a default based on the OSC 7
-    -- escape sequence will be used (see the Shell Integration
-    -- docs), falling back to the home directory.
-    -- cwd = "/some/path"
-
-    -- You can override environment variables just for this command
-    -- by setting this here.  It has the same semantics as the main
-    -- set_environment_variables configuration option described above
-    -- set_environment_variables = { FOO = "bar" },
+-- Generate launch_menu items for the domain
+local function generate_launch_menu(domain)
+  return {
+    {
+      label = 'wezterm cli spawn --domain-name ' .. domain,
+      args = { 'wezterm', 'cli', 'spawn', '--domain-name', domain }
+    },
+    {
+      label = 'wezterm connect ' .. domain,
+      args = { 'wezterm', 'connect', domain }
+    }
   }
+end
+
+config.launch_menu = {
+  table.unpack(generate_launch_menu(sshmux_domain)),
+  table.unpack(generate_launch_menu(tlsssh_domain))
 }
 
 -- timeout_milliseconds defaults to 1000 and can be omitted
