@@ -38,7 +38,9 @@
     "bison-vagrant": "linux",
     "zklab-5": "linux",
     "*.gitpod.io": "linux",
-    "dev": "linux"
+    "dev": "linux",
+    "devts": "linux",
+    "aol": "linux"
   },
   "editor.multiCursorModifier": "alt",
   "editor.wordWrap": "on",
@@ -49,7 +51,9 @@
     "editor.defaultFormatter": "rust-lang.rust-analyzer"
   },
   "terminal.integrated.scrollback": 100000,
-  "terminal.integrated.commandsToSkipShell": ["language-julia.interrupt"],
+  "terminal.integrated.commandsToSkipShell": [
+    "language-julia.interrupt"
+  ],
   "cmake.configureOnOpen": true,
   "clangd.onConfigChanged": "restart",
   "[cpp]": {
@@ -81,7 +85,9 @@
       }
     }
   },
-  "remote.SSH.defaultExtensions": ["gitpod.gitpod-remote-ssh"],
+  "remote.SSH.defaultExtensions": [
+    "gitpod.gitpod-remote-ssh"
+  ],
   "agdaMode.connection.agdaLanguageServer": true,
   "window.zoomLevel": 1,
   "workbench.activityBar.location": "hidden",
@@ -93,7 +99,7 @@
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "[jsonc]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+    "editor.defaultFormatter": "vscode.json-language-features"
   },
   "[toml]": {
     "editor.defaultFormatter": "tamasfe.even-better-toml"
@@ -119,5 +125,16 @@
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "editor.formatOnSave": true,
-  "lldb.suppressUpdateNotifications": true
+  "lldb.suppressUpdateNotifications": true,
+  "remote.SSH.connectTimeout": 60,
+  "github.copilot.enable": {
+    "*": true,
+    "plaintext": false,
+    "markdown": false,
+    "scminput": false
+  },
+  "task.problemMatchers.neverPrompt": {
+    "shell": true
+  },
+  "workbench.colorTheme": "Default Light Modern"
 }
