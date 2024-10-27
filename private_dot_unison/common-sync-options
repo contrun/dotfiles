@@ -43,7 +43,10 @@ ignore = Name .com.apple.timemachine.donotpresent
 ignore = Regex .*/.*\.gguf
 ignore = Regex .*/.*\.avd
 
-# Programming languages build artifacts
+# Programming languages build artifacts files
+ignore = Regex .*/__debug_bin.*
+
+# Programming languages build artifacts directories
 ignore = Regex .*/result
 ignore = Regex .*/result-[0-9]+
 ignore = Regex .*/\.direnv
@@ -82,3 +85,6 @@ ignore = Regex .*/\$RECYCLE\.BIN
 # Generic temporary directories
 ignore = Regex .*/\.cache
 ignore = Regex .*/tmp
+
+# Some specific temporary directories
+ignore = Regex .*/node-data
