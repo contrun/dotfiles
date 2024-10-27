@@ -3,7 +3,7 @@ set $mod mod1+mod4
 set $altmod $mod+Control
 
 # TODO: `footclient htop` does not worki
-set $terminal foot
+set $terminal wezterm
 set $terminal_with_app_id $terminal -a
 set $terminal_with_title $terminal -T
 set $reload_command swaymsg reload

@@ -1,13 +1,15 @@
 local wezterm = require 'wezterm'
 
+local is_windows = wezterm.target_triple:find 'windows'
+
 -- wezterm.gui is not available to the mux server, so take care to
 -- do something reasonable when this config is evaluated by the mux
-function get_appearance()
+local function get_appearance()
   if wezterm.gui then return wezterm.gui.get_appearance() end
   return 'Light'
 end
 
-function scheme_for_appearance(appearance)
+local function scheme_for_appearance(appearance)
   if appearance:find 'Dark' then
     return 'Builtin Solarized Dark'
   else
@@ -58,8 +60,18 @@ wezterm.on('format-tab-title', function(tab)
 end)
 
 local default_machine = 'dev'
+local default_tls_port = 4443
 local sshmux_domain = 'SSHMUX:' .. default_machine
 local tlsssh_domain = 'TLSSSH:' .. default_machine
+local dev_domain = tlsssh_domain
+-- There is a problem while launching the wezterm with tls connection.
+-- I encountered
+-- mux::connui > while running ConnectionUI loop: recv_timeout: channel is empty and disconnected
+-- (os error 267); terminating
+-- TODO: Investigate this issue.
+if is_windows then
+  dev_domain = sshmux_domain
+end
 
 local config = {}
 
@@ -106,17 +118,17 @@ for _, dom in ipairs(config.ssh_domains) do
       end
     end
 
+    local remote_address = hostname .. ":" .. default_tls_port
     local tls_conf = {
       name = tls_name,
-      remote_address = hostname .. ":4443",
+      remote_address = remote_address,
     }
     local tls_ssh_conf = {
       name = tls_ssh_name,
-      remote_address = hostname .. ":4443",
+      remote_address = remote_address,
       bootstrap_via_ssh = server_name
     }
 
-    -- Insert the config to config.tls_clients
     config.tls_clients[#config.tls_clients + 1] = tls_conf
     config.tls_clients[#config.tls_clients + 1] = tls_ssh_conf
   end
@@ -175,33 +187,18 @@ config.keys = {
     action = wezterm.action.SplitVertical { domain = 'CurrentPaneDomain' },
   },
   {
-    key = 'l',
-    mods = 'CTRL|SHIFT',
-    action = wezterm.action.DisableDefaultAssignment,
-  },
-  {
     key = 'd',
     mods = 'LEADER|CTRL|SHIFT',
     action = wezterm.action.ShowDebugOverlay,
   },
   {
-    key = 'l',
-    mods = 'CTRL|SHIFT',
-    action = wezterm.action.ShowLauncher,
-  },
-  {
     key = 's',
-    mods = 'CTRL|SHIFT',
-    action = wezterm.action.QuickSelect,
-  },
-  {
-    key = 'c',
-    mods = 'CTRL|SHIFT',
+    mods = 'CTRL|ALT',
     action = wezterm.action.QuickSelect,
   },
   {
     key = 'o',
-    mods = 'CTRL|SHIFT',
+    mods = 'CTRL|ALT',
     action = wezterm.action.QuickSelectArgs {
       label = 'open url',
       patterns = {
@@ -213,6 +210,49 @@ config.keys = {
         wezterm.open_with(url)
       end),
     },
+  },
+
+  {
+    key = 't',
+    mods = 'CTRL|ALT',
+    action = wezterm.action.SpawnTab 'DefaultDomain',
+  },
+  {
+    key = 'a',
+    mods = 'CTRL|ALT',
+    action = wezterm.action.AttachDomain(dev_domain),
+  },
+  {
+    key = 'd',
+    mods = 'CTRL|ALT',
+    action = wezterm.action.DetachDomain {
+      DomainName = dev_domain
+    },
+  },
+  {
+    key = 'l',
+    mods = 'CTRL|ALT',
+    action = wezterm.action.ShowLauncher,
+  },
+  {
+    key = 'h',
+    mods = 'CTRL|ALT',
+    action = wezterm.action.SplitHorizontal { domain = 'CurrentPaneDomain' },
+  },
+  {
+    key = 'v',
+    mods = 'CTRL|ALT',
+    action = wezterm.action.SplitVertical { domain = 'CurrentPaneDomain' },
+  },
+  {
+    key = 'n',
+    mods = 'CTRL|ALT',
+    action = wezterm.action.ActivatePaneDirection 'Next',
+  },
+  {
+    key = 'p',
+    mods = 'CTRL|ALT',
+    action = wezterm.action.ActivatePaneDirection 'Prev',
   },
 
   -- CTRL+SHIFT+Space, followed by 'r' will put us in resize-pane
@@ -281,7 +321,7 @@ config.key_tables = {
   },
 }
 
-if wezterm.target_triple == 'x86_64-pc-windows-msvc' then
+if is_windows then
   config.default_prog = { 'powershell.exe' }
   -- https://github.com/wez/wezterm/discussions/3772#discussioncomment-7201688
   config.ssh_backend = "Ssh2"
